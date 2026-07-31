@@ -23,7 +23,44 @@ export const profile = {
   } satisfies Localized,
   location: { zh: "北京，中国", en: "Beijing, China" } satisfies Localized,
   email: "w274398243@hotmail.com",
+  phone: {
+    display: "+86 137 1880 1573",
+    href: "+8613718801573",
+  },
 };
+
+export const projects = [
+  {
+    index: "01",
+    type: {
+      zh: "个人网站 · 交互作品",
+      en: "Personal site · Interactive work",
+    } satisfies Localized,
+    title: {
+      zh: "Rui Wang Research Portfolio",
+      en: "Rui Wang Research Portfolio",
+    } satisfies Localized,
+    summary: {
+      zh: "将简历、研究案例与人机协作方法整合为一套中英双语个人作品系统，而不是把纸质简历简单搬到网页上。",
+      en: "A bilingual portfolio system that brings together my résumé, research cases, and human–AI method instead of simply moving a paper CV onto the web.",
+    } satisfies Localized,
+    problem: {
+      zh: "如何让招聘方快速理解我的研究能力，同时看到我对产品、信息结构与交互体验的判断。",
+      en: "Help recruiters understand my research capability quickly while making my product, information-architecture, and interaction judgment visible.",
+    } satisfies Localized,
+    contribution: {
+      zh: "独立完成内容架构、双语表达、视觉系统、交互设计、前端实现与持续发布。",
+      en: "Independently shaped the content architecture, bilingual narrative, visual system, interaction design, front-end implementation, and ongoing release process.",
+    } satisfies Localized,
+    outcome: {
+      zh: "形成可持续更新、可按岗位扩展、兼顾桌面与移动端体验的个人主页。",
+      en: "Created a professional portfolio that is continuously maintainable, adaptable by role, and designed for both desktop and mobile.",
+    } satisfies Localized,
+    tags: ["Next.js", "TypeScript", "Bilingual UX", "GitHub Pages"],
+    liveUrl: "https://bruc3wang.github.io/rui-wang-resume/",
+    sourceUrl: "https://github.com/Bruc3wAng/rui-wang-resume",
+  },
+];
 
 export const experiences = [
   {

@@ -16,6 +16,9 @@ test("exports the bilingual public profile", async () => {
   assert.match(en, /Lenovo/);
   assert.match(zh, /7 个海外市场/);
   assert.match(zh, /查看研究案例/);
+  assert.match(zh, /把研究方法与 AI 工作流/);
+  assert.match(zh, /\+86 137 1880 1573/);
+  assert.match(zh, /⌘K/);
   assert.match(zh, /data-header-theme="night"/);
   assert.match(zh, /data-header-theme="teal"/);
   if (process.env.NEXT_PUBLIC_BASE_PATH) {
@@ -25,13 +28,13 @@ test("exports the bilingual public profile", async () => {
   }
 });
 
-test("does not expose the private phone number or internal project codes", async () => {
+test("publishes approved contact details without internal project codes", async () => {
   const files = await Promise.all([
     readFile(new URL("out/index.html", root), "utf8"),
     readFile(new URL("content/resume.ts", root), "utf8"),
   ]);
   const publicText = files.join("\n");
-  assert.doesNotMatch(publicText, /137\s*1880\s*1573/);
+  assert.match(publicText, /137\s*1880\s*1573/);
   assert.doesNotMatch(publicText, /Dreamina|BHT|TT生活服务|短剧项目/i);
 });
 

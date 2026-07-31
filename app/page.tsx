@@ -22,6 +22,7 @@ const personSchema = {
     name: "University of Toronto",
   },
   email: "mailto:w274398243@hotmail.com",
+  telephone: "+86-137-1880-1573",
   address: {
     "@type": "PostalAddress",
     addressLocality: "Beijing",

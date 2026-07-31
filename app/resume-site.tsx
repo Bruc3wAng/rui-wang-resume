@@ -9,6 +9,7 @@ import {
   experiences,
   type Language,
   profile,
+  projects,
   workflow,
 } from "../content/resume";
 
@@ -18,6 +19,7 @@ const copy = {
       ["经历", "experience"],
       ["研究案例", "work"],
       ["AI 方法", "method"],
+      ["个人作品", "projects"],
       ["能力", "capabilities"],
     ],
     availability: "现居北京 · 关注市场研究、用户洞察、数据分析与研究策略机会",
@@ -71,6 +73,16 @@ const copy = {
     codex: "Codex 承担",
     methodFoot:
       "研究员始终负责范围与定义、例外判断、业务影响、客户反馈和最终批准；Codex 负责批量阅读、计算、比对与结构化生成。清晰的人机边界，是效率能够转化为质量的前提。",
+    projectsEyebrow: "BUILT BY ME / 个人作品",
+    projectsTitle: "把研究方法与 AI 工作流，做成真正可以使用的产品。",
+    projectsIntro:
+      "这里展示我独立设计、搭建并持续迭代的网站与工具。每个作品都回答三个问题：解决什么、我做了什么，以及最后形成了什么。",
+    projectProblem: "解决的问题",
+    projectContribution: "我的工作",
+    projectOutcome: "形成的结果",
+    viewLive: "在线体验",
+    viewSource: "查看源码",
+    commandHint: "按 ⌘K / Ctrl K 快速浏览本站",
     capabilityEyebrow: "CAPABILITY STACK / 能力组合",
     capabilityTitle: "面向市场研究、数据分析与研究运营的能力组合。",
     capabilityIntro:
@@ -79,12 +91,21 @@ const copy = {
     languages: "语言",
     languageValue: "普通话（母语）｜英语（TOEFL 110）",
     contactEyebrow: "CONTACT / 联系方式",
-    contactTitle: "开放市场研究、用户洞察、数据分析与研究策略机会。",
+    contactTitle: "如果你正在研究用户、市场或产品，我们可以聊聊。",
     contactBody:
-      "优先考虑北京机会，也可接受上海、杭州与深圳。目标方向包括市场研究、用户洞察、数据分析及研究 / 策略运营。",
-    emailMe: "发送邮件",
+      "欢迎就市场研究、用户洞察、数据分析、AI 工作流及相关机会联系我。北京优先，也可接受上海、杭州与深圳。",
     copyEmail: "复制邮箱",
-    copied: "已复制",
+    copyPhone: "复制电话",
+    emailCopied: "邮箱已复制",
+    phoneCopied: "电话已复制",
+    emailLabel: "邮箱",
+    phoneLabel: "电话",
+    commandEyebrow: "QUICK ACCESS / 快速访问",
+    commandTitle: "去哪里？",
+    commandClose: "关闭",
+    commandNavigate: "浏览页面",
+    commandContact: "联系与链接",
+    commandGithub: "打开 GitHub",
     updated: "更新于 2026.07",
     backTop: "返回顶部",
   },
@@ -93,6 +114,7 @@ const copy = {
       ["Experience", "experience"],
       ["Selected work", "work"],
       ["AI method", "method"],
+      ["Projects", "projects"],
       ["Capabilities", "capabilities"],
     ],
     availability:
@@ -158,6 +180,17 @@ const copy = {
     codex: "Codex handles",
     methodFoot:
       "The researcher always owns scope and definitions, exception judgment, business impact, client feedback, and final approval. Codex supports batch reading, calculation, comparison, and structured generation. Clear ownership is what turns speed into research quality.",
+    projectsEyebrow: "BUILT BY ME",
+    projectsTitle:
+      "Turning research methods and AI workflows into products people can use.",
+    projectsIntro:
+      "This is where I share websites and tools I independently design, build, and improve. Each piece shows the problem, my contribution, and the working outcome.",
+    projectProblem: "Problem",
+    projectContribution: "My contribution",
+    projectOutcome: "Outcome",
+    viewLive: "View live",
+    viewSource: "View source",
+    commandHint: "Press ⌘K / Ctrl K to navigate",
     capabilityEyebrow: "CAPABILITY STACK",
     capabilityTitle:
       "A capability stack for market research, analytics, and research operations.",
@@ -168,18 +201,28 @@ const copy = {
     languageValue: "Mandarin Chinese (Native) | English (TOEFL 110)",
     contactEyebrow: "CONTACT",
     contactTitle:
-      "Open to market research, user insights, analytics, and research strategy opportunities.",
+      "If you are exploring users, markets, or products, let’s talk.",
     contactBody:
-      "Beijing is my preferred base; I am also open to Shanghai, Hangzhou, and Shenzhen. I am interested in market research, user insights, analytics, and research or strategy operations.",
-    emailMe: "Email me",
+      "Reach out about market research, user insights, data analytics, AI workflows, or relevant opportunities. Beijing is preferred; Shanghai, Hangzhou, and Shenzhen also work.",
     copyEmail: "Copy email",
-    copied: "Copied",
+    copyPhone: "Copy phone",
+    emailCopied: "Email copied",
+    phoneCopied: "Phone copied",
+    emailLabel: "Email",
+    phoneLabel: "Phone",
+    commandEyebrow: "QUICK ACCESS",
+    commandTitle: "Where to?",
+    commandClose: "Close",
+    commandNavigate: "Navigate",
+    commandContact: "Contact & links",
+    commandGithub: "Open GitHub",
     updated: "Updated Jul 2026",
     backTop: "Back to top",
   },
 } as const;
 
 type HeaderTheme = "light" | "night" | "teal";
+type CopiedField = "email" | "phone" | null;
 
 function Arrow({ direction = "right" }: { direction?: "right" | "up" }) {
   return (
@@ -293,7 +336,8 @@ function ResearchVisual({
 }
 
 export function ResumeSite({ language }: { language: Language }) {
-  const [copied, setCopied] = useState(false);
+  const [copiedField, setCopiedField] = useState<CopiedField>(null);
+  const [commandOpen, setCommandOpen] = useState(false);
   const [activeCase, setActiveCase] = useState(0);
   const [activeWorkflow, setActiveWorkflow] = useState(0);
   const [headerTheme, setHeaderTheme] = useState<HeaderTheme>("light");
@@ -355,14 +399,62 @@ export function ResumeSite({ language }: { language: Language }) {
     };
   }, []);
 
-  async function copyEmail() {
-    try {
-      await navigator.clipboard.writeText(profile.email);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1800);
-    } catch {
-      window.location.href = `mailto:${profile.email}`;
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (
+        (event.metaKey || event.ctrlKey) &&
+        event.key.toLowerCase() === "k"
+      ) {
+        event.preventDefault();
+        setCommandOpen((current) => !current);
+      }
+
+      if (event.key === "Escape") {
+        setCommandOpen(false);
+      }
     }
+
+    window.addEventListener("keydown", handleKeyDown);
+    document.body.style.overflow = commandOpen ? "hidden" : "";
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "";
+    };
+  }, [commandOpen]);
+
+  async function copyValue(value: string, field: Exclude<CopiedField, null>) {
+    let copied = false;
+
+    try {
+      if (!navigator.clipboard || !window.isSecureContext) {
+        throw new Error("Clipboard API unavailable");
+      }
+      await navigator.clipboard.writeText(value);
+      copied = true;
+    } catch {
+      const textArea = document.createElement("textarea");
+      textArea.value = value;
+      textArea.setAttribute("readonly", "");
+      textArea.style.position = "fixed";
+      textArea.style.opacity = "0";
+      document.body.appendChild(textArea);
+      textArea.select();
+      copied = document.execCommand("copy");
+      textArea.remove();
+    }
+
+    if (copied) {
+      setCopiedField(field);
+      window.setTimeout(() => setCopiedField(null), 1800);
+    }
+  }
+
+  function navigateTo(target: string) {
+    setCommandOpen(false);
+    window.setTimeout(() => {
+      document.getElementById(target)?.scrollIntoView({ behavior: "smooth" });
+    }, 0);
   }
 
   return (
@@ -422,6 +514,19 @@ export function ResumeSite({ language }: { language: Language }) {
             >
               EN
             </a>
+            <button
+              className="command-trigger"
+              type="button"
+              onClick={() => setCommandOpen(true)}
+              aria-label={
+                language === "zh"
+                  ? "打开快速访问"
+                  : "Open quick access"
+              }
+              title={t.commandHint}
+            >
+              ⌘K
+            </button>
           </div>
         </div>
       </header>
@@ -730,6 +835,101 @@ export function ResumeSite({ language }: { language: Language }) {
         <p className="method-footnote">{t.methodFoot}</p>
       </section>
 
+      <section id="projects" className="projects-section section-pad">
+        <p className="eyebrow">{t.projectsEyebrow}</p>
+        <div className="projects-heading">
+          <h2>{t.projectsTitle}</h2>
+          <div>
+            <p>{t.projectsIntro}</p>
+            <button
+              type="button"
+              className="shortcut-hint"
+              onClick={() => setCommandOpen(true)}
+            >
+              <span aria-hidden="true">⌘K</span>
+              {t.commandHint}
+            </button>
+          </div>
+        </div>
+
+        <div className="project-list">
+          {projects.map((project) => (
+            <article className="project-card" key={project.index}>
+              <div className="project-preview" aria-hidden="true">
+                <div className="preview-bar">
+                  <span />
+                  <span />
+                  <span />
+                  <b>PORTFOLIO / 01</b>
+                </div>
+                <div className="preview-canvas">
+                  <span className="preview-kicker">RESEARCH × DATA × AI</span>
+                  <strong>RUI WANG</strong>
+                  <div className="preview-lines">
+                    <i />
+                    <i />
+                    <i />
+                  </div>
+                  <div className="preview-grid">
+                    <span>01</span>
+                    <span>02</span>
+                    <span>03</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="project-content">
+                <div className="project-meta">
+                  <span>{project.index}</span>
+                  <span>{project.type[language]}</span>
+                </div>
+                <h3>{project.title[language]}</h3>
+                <p className="project-summary">{project.summary[language]}</p>
+                <dl className="project-facts">
+                  <div>
+                    <dt>{t.projectProblem}</dt>
+                    <dd>{project.problem[language]}</dd>
+                  </div>
+                  <div>
+                    <dt>{t.projectContribution}</dt>
+                    <dd>{project.contribution[language]}</dd>
+                  </div>
+                  <div>
+                    <dt>{t.projectOutcome}</dt>
+                    <dd>{project.outcome[language]}</dd>
+                  </div>
+                </dl>
+                <ul className="project-tags" aria-label="Technology">
+                  {project.tags.map((tag) => (
+                    <li key={tag}>{tag}</li>
+                  ))}
+                </ul>
+                <div className="project-links">
+                  <a
+                    className="button button-primary"
+                    href={project.liveUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {t.viewLive}
+                    <Arrow />
+                  </a>
+                  <a
+                    className="button button-ghost"
+                    href={project.sourceUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {t.viewSource}
+                    <Arrow />
+                  </a>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
       <section id="capabilities" className="capabilities-section section-pad">
         <p className="eyebrow">{t.capabilityEyebrow}</p>
         <div className="capability-heading">
@@ -765,7 +965,11 @@ export function ResumeSite({ language }: { language: Language }) {
         </div>
       </section>
 
-      <section className="contact-section" data-header-theme="teal">
+      <section
+        id="contact"
+        className="contact-section"
+        data-header-theme="teal"
+      >
         <div className="contact-inner">
           <p className="eyebrow eyebrow-light">{t.contactEyebrow}</p>
           <div className="contact-grid">
@@ -773,22 +977,45 @@ export function ResumeSite({ language }: { language: Language }) {
             <div>
               <p>{t.contactBody}</p>
               <div className="contact-actions">
-                <a className="button button-light" href={`mailto:${profile.email}`}>
-                  {t.emailMe}
-                  <Arrow />
-                </a>
                 <button
-                  className="text-button"
+                  className="button button-light"
                   type="button"
-                  onClick={copyEmail}
+                  onClick={() => copyValue(profile.email, "email")}
                   aria-live="polite"
                 >
-                  {copied ? t.copied : t.copyEmail}
+                  {copiedField === "email"
+                    ? t.emailCopied
+                    : t.copyEmail}
+                  <span aria-hidden="true">01</span>
+                </button>
+                <button
+                  className="button button-outline-light"
+                  type="button"
+                  onClick={() => copyValue(profile.phone.href, "phone")}
+                  aria-live="polite"
+                >
+                  {copiedField === "phone"
+                    ? t.phoneCopied
+                    : t.copyPhone}
+                  <span aria-hidden="true">02</span>
                 </button>
               </div>
-              <a className="email-link" href={`mailto:${profile.email}`}>
-                {profile.email}
-              </a>
+              <dl className="contact-details">
+                <div>
+                  <dt>{t.emailLabel}</dt>
+                  <dd>
+                    <a href={`mailto:${profile.email}`}>{profile.email}</a>
+                  </dd>
+                </div>
+                <div>
+                  <dt>{t.phoneLabel}</dt>
+                  <dd>
+                    <a href={`tel:${profile.phone.href}`}>
+                      {profile.phone.display}
+                    </a>
+                  </dd>
+                </div>
+              </dl>
             </div>
           </div>
         </div>
@@ -807,6 +1034,104 @@ export function ResumeSite({ language }: { language: Language }) {
           </a>
         </div>
       </footer>
+
+      {commandOpen ? (
+        <div
+          className="command-backdrop"
+          onMouseDown={(event) => {
+            if (event.currentTarget === event.target) {
+              setCommandOpen(false);
+            }
+          }}
+        >
+          <section
+            className="command-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="command-title"
+          >
+            <header>
+              <div>
+                <p>{t.commandEyebrow}</p>
+                <h2 id="command-title">{t.commandTitle}</h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCommandOpen(false)}
+                autoFocus
+              >
+                {t.commandClose}
+                <span aria-hidden="true">Esc</span>
+              </button>
+            </header>
+            <div className="command-group">
+              <p>{t.commandNavigate}</p>
+              <div>
+                {t.nav.map(([label, target], index) => (
+                  <button
+                    type="button"
+                    onClick={() => navigateTo(target)}
+                    key={target}
+                  >
+                    <span>0{index + 1}</span>
+                    <strong>{label}</strong>
+                    <span aria-hidden="true">→</span>
+                  </button>
+                ))}
+                <button type="button" onClick={() => navigateTo("contact")}>
+                  <span>0{t.nav.length + 1}</span>
+                  <strong>
+                    {language === "zh" ? "联系方式" : "Contact"}
+                  </strong>
+                  <span aria-hidden="true">→</span>
+                </button>
+              </div>
+            </div>
+            <div className="command-group command-utilities">
+              <p>{t.commandContact}</p>
+              <div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    void copyValue(profile.email, "email");
+                    setCommandOpen(false);
+                  }}
+                >
+                  <span>↗</span>
+                  <strong>{t.copyEmail}</strong>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    void copyValue(profile.phone.href, "phone");
+                    setCommandOpen(false);
+                  }}
+                >
+                  <span>↗</span>
+                  <strong>{t.copyPhone}</strong>
+                </button>
+                <a
+                  href="https://github.com/Bruc3wAng/rui-wang-resume"
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={() => setCommandOpen(false)}
+                >
+                  <span>↗</span>
+                  <strong>{t.commandGithub}</strong>
+                </a>
+              </div>
+            </div>
+          </section>
+        </div>
+      ) : null}
+
+      <div className="copy-toast" role="status" aria-live="polite">
+        {copiedField === "email"
+          ? t.emailCopied
+          : copiedField === "phone"
+            ? t.phoneCopied
+            : ""}
+      </div>
     </main>
   );
 }
