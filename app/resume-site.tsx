@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import {
   capabilities,
@@ -21,7 +21,7 @@ const copy = {
       ["能力", "capabilities"],
     ],
     availability: "现居北京 · 关注市场研究、用户洞察、数据分析与研究策略机会",
-    viewWork: "查看脱敏研究案例",
+    viewWork: "查看研究案例",
     download: "下载中文简历",
     profileIndex: "PROFILE / 01",
     profileCurrent: "当前",
@@ -53,11 +53,10 @@ const copy = {
     researchMix: "方法组合",
     researchMixValue: "定量为主 · 定性为辅",
     earlierExperience: "EARLIER EXPERIENCE",
-    workEyebrow: "SELECTED WORK / 脱敏研究案例",
-    workTitle: "代表性研究场景与方法（已脱敏）。",
+    workEyebrow: "SELECTED WORK / 研究案例",
+    workTitle: "代表性研究场景与方法。",
     workIntro:
       "案例覆盖品牌追踪、搜索体验、内容消费与海外产品用研，重点呈现研究问题、本人角色、分析方法与决策价值。",
-    workNote: "公开版本已移除内部项目名、样本明细、业务数据与未公开结论。",
     role: "我的角色",
     challenge: "研究问题",
     approach: "分析方法",
@@ -86,7 +85,6 @@ const copy = {
     emailMe: "发送邮件",
     copyEmail: "复制邮箱",
     copied: "已复制",
-    publicNote: "公开主页 · 客户与案例信息已按披露边界处理",
     updated: "更新于 2026.07",
     backTop: "返回顶部",
   },
@@ -140,12 +138,10 @@ const copy = {
     researchMix: "Research mix",
     researchMixValue: "Quantitative-led · Qualitative support",
     earlierExperience: "EARLIER EXPERIENCE",
-    workEyebrow: "SELECTED WORK · ANONYMIZED",
-    workTitle: "Selected research contexts and methods (anonymized).",
+    workEyebrow: "SELECTED WORK",
+    workTitle: "Selected research contexts and methods.",
     workIntro:
       "The cases span brand tracking, search experience, content consumption, and overseas product research, focusing on the research question, my role, analytical approach, and decision value.",
-    workNote:
-      "Internal project names, sample details, business data, and unpublished findings have been removed.",
     role: "My role",
     challenge: "Research question",
     approach: "Analytical approach",
@@ -178,12 +174,12 @@ const copy = {
     emailMe: "Email me",
     copyEmail: "Copy email",
     copied: "Copied",
-    publicNote:
-      "Public profile · Client and case information follows disclosure boundaries",
     updated: "Updated Jul 2026",
     backTop: "Back to top",
   },
 } as const;
+
+type HeaderTheme = "light" | "night" | "teal";
 
 function Arrow({ direction = "right" }: { direction?: "right" | "up" }) {
   return (
@@ -300,12 +296,64 @@ export function ResumeSite({ language }: { language: Language }) {
   const [copied, setCopied] = useState(false);
   const [activeCase, setActiveCase] = useState(0);
   const [activeWorkflow, setActiveWorkflow] = useState(0);
+  const [headerTheme, setHeaderTheme] = useState<HeaderTheme>("light");
   const t = copy[language];
   const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
   const currentExperience = experiences[0];
   const earlierExperience = experiences[1];
   const selectedCase = cases[activeCase];
   const selectedWorkflow = workflow[activeWorkflow];
+
+  useEffect(() => {
+    let animationFrame = 0;
+
+    function updateHeaderTheme() {
+      animationFrame = 0;
+      const header = document.querySelector<HTMLElement>(
+        ".site-header-shell",
+      );
+      const sampleY = header
+        ? Math.max(1, header.getBoundingClientRect().bottom + 1)
+        : 71;
+      let nextTheme: HeaderTheme = "light";
+
+      document
+        .querySelectorAll<HTMLElement>("[data-header-theme]")
+        .forEach((section) => {
+          const bounds = section.getBoundingClientRect();
+          if (bounds.top <= sampleY && bounds.bottom > sampleY) {
+            const theme = section.dataset.headerTheme;
+            if (theme === "night" || theme === "teal") {
+              nextTheme = theme;
+            }
+          }
+        });
+
+      setHeaderTheme((current) =>
+        current === nextTheme ? current : nextTheme,
+      );
+    }
+
+    function scheduleHeaderUpdate() {
+      if (animationFrame === 0) {
+        animationFrame = window.requestAnimationFrame(updateHeaderTheme);
+      }
+    }
+
+    updateHeaderTheme();
+    window.addEventListener("scroll", scheduleHeaderUpdate, { passive: true });
+    window.addEventListener("resize", scheduleHeaderUpdate);
+    window.addEventListener("hashchange", scheduleHeaderUpdate);
+
+    return () => {
+      window.removeEventListener("scroll", scheduleHeaderUpdate);
+      window.removeEventListener("resize", scheduleHeaderUpdate);
+      window.removeEventListener("hashchange", scheduleHeaderUpdate);
+      if (animationFrame !== 0) {
+        window.cancelAnimationFrame(animationFrame);
+      }
+    };
+  }, []);
 
   async function copyEmail() {
     try {
@@ -327,41 +375,54 @@ export function ResumeSite({ language }: { language: Language }) {
         {language === "zh" ? "跳至主要内容" : "Skip to main content"}
       </a>
 
-      <header className="site-header">
-        <a className="brand" href="#top" aria-label={profile.namePair[language]}>
-          <span className="brand-mark">RW</span>
-          <span className="brand-name">{profile.namePair[language]}</span>
-        </a>
-        <nav
-          className="desktop-nav"
-          aria-label={language === "zh" ? "主导航" : "Primary navigation"}
-        >
-          {t.nav.map(([label, target]) => (
-            <a key={target} href={`#${target}`}>
-              {label}
+      <header
+        className={`site-header-shell header-${headerTheme}`}
+        data-theme={headerTheme}
+      >
+        <div className="site-header">
+          <a
+            className="brand"
+            href="#top"
+            aria-label={profile.namePair[language]}
+          >
+            <span className="brand-mark">RW</span>
+            <span className="brand-name">{profile.namePair[language]}</span>
+          </a>
+          <nav
+            className="desktop-nav"
+            aria-label={
+              language === "zh" ? "主导航" : "Primary navigation"
+            }
+          >
+            {t.nav.map(([label, target]) => (
+              <a key={target} href={`#${target}`}>
+                {label}
+              </a>
+            ))}
+          </nav>
+          <div
+            className="language-switch"
+            aria-label={
+              language === "zh" ? "语言切换" : "Language switcher"
+            }
+          >
+            <GlobeIcon />
+            <a
+              className={language === "zh" ? "active" : ""}
+              aria-current={language === "zh" ? "page" : undefined}
+              href={`${basePath}/`}
+            >
+              中
             </a>
-          ))}
-        </nav>
-        <div
-          className="language-switch"
-          aria-label={language === "zh" ? "语言切换" : "Language switcher"}
-        >
-          <GlobeIcon />
-          <a
-            className={language === "zh" ? "active" : ""}
-            aria-current={language === "zh" ? "page" : undefined}
-            href={`${basePath}/`}
-          >
-            中
-          </a>
-          <span aria-hidden="true">/</span>
-          <a
-            className={language === "en" ? "active" : ""}
-            aria-current={language === "en" ? "page" : undefined}
-            href={`${basePath}/en/`}
-          >
-            EN
-          </a>
+            <span aria-hidden="true">/</span>
+            <a
+              className={language === "en" ? "active" : ""}
+              aria-current={language === "en" ? "page" : undefined}
+              href={`${basePath}/en/`}
+            >
+              EN
+            </a>
+          </div>
         </div>
       </header>
 
@@ -527,14 +588,17 @@ export function ResumeSite({ language }: { language: Language }) {
         </article>
       </section>
 
-      <section id="work" className="work-section">
+      <section
+        id="work"
+        className="work-section"
+        data-header-theme="night"
+      >
         <div className="work-inner">
           <p className="eyebrow eyebrow-light">{t.workEyebrow}</p>
           <div className="work-heading">
             <h2>{t.workTitle}</h2>
             <div>
               <p>{t.workIntro}</p>
-              <small>{t.workNote}</small>
             </div>
           </div>
 
@@ -701,7 +765,7 @@ export function ResumeSite({ language }: { language: Language }) {
         </div>
       </section>
 
-      <section className="contact-section">
+      <section className="contact-section" data-header-theme="teal">
         <div className="contact-inner">
           <p className="eyebrow eyebrow-light">{t.contactEyebrow}</p>
           <div className="contact-grid">
@@ -733,7 +797,7 @@ export function ResumeSite({ language }: { language: Language }) {
       <footer>
         <div>
           <span>{profile.namePair[language]}</span>
-          <span>{t.publicNote}</span>
+          <span>{profile.positioning[language]}</span>
         </div>
         <div>
           <span>{t.updated}</span>

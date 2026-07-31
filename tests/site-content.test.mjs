@@ -15,6 +15,9 @@ test("exports the bilingual public profile", async () => {
   assert.match(en, /ByteDance/);
   assert.match(en, /Lenovo/);
   assert.match(zh, /7 个海外市场/);
+  assert.match(zh, /查看研究案例/);
+  assert.match(zh, /data-header-theme="night"/);
+  assert.match(zh, /data-header-theme="teal"/);
   if (process.env.NEXT_PUBLIC_BASE_PATH) {
     assert.match(zh, /\/rui-wang-resume\/en\//);
     assert.match(zh, /\/rui-wang-resume\/resume\/rui-wang-resume-zh\.pdf/);
@@ -30,6 +33,18 @@ test("does not expose the private phone number or internal project codes", async
   const publicText = files.join("\n");
   assert.doesNotMatch(publicText, /137\s*1880\s*1573/);
   assert.doesNotMatch(publicText, /Dreamina|BHT|TT生活服务|短剧项目/i);
+});
+
+test("keeps internal disclosure language out of the visitor experience", async () => {
+  const [zh, en] = await Promise.all([
+    readFile(new URL("out/index.html", root), "utf8"),
+    readFile(new URL("out/en/index.html", root), "utf8"),
+  ]);
+  assert.doesNotMatch(zh, /脱敏|已移除|公开边界|公开主页/);
+  assert.doesNotMatch(
+    en,
+    /anonymized|anonymization|public profile|disclosure boundaries/i,
+  );
 });
 
 test("ships the current Chinese resume and portrait", async () => {
