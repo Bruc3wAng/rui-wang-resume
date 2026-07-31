@@ -30,7 +30,7 @@ draw.text((78, 181), "Market &", font=font(GEORGIA, 55), fill=navy)
 draw.text((78, 244), "User Research", font=font(GEORGIA, 55), fill=navy)
 draw.text(
     (81, 338),
-    "DATA ANALYTICS  ·  HUMAN × AI WORKFLOWS",
+    "QUANTITATIVE RESEARCH  ·  MULTI-MARKET INSIGHTS",
     font=font(GEORGIA_BOLD, 17),
     fill=navy,
 )
@@ -43,7 +43,7 @@ draw.text(
 )
 draw.text(
     (80, 522),
-    "FRAME THE QUESTION. BUILD THE EVIDENCE. FORM THE DECISION.",
+    "RESEARCH DESIGN  ·  ANALYTICAL DIAGNOSIS  ·  AI WORKFLOWS",
     font=font(GEORGIA, 12),
     fill=muted,
 )

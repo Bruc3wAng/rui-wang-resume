@@ -10,16 +10,16 @@ export const profile = {
     en: "Research Executive at Ipsos",
   } satisfies Localized,
   headline: {
-    zh: "以研究定义问题，以数据形成判断，以 AI 放大专业能力。",
-    en: "Frame the question. Build the evidence. Scale research quality with AI.",
+    zh: "用定量研究与数据分析，回答产品、品牌与用户问题。",
+    en: "Research and data for product, brand, and audience decisions.",
   } satisfies Localized,
   positioning: {
-    zh: "市场与用户研究｜数据洞察｜AI 工作流自动化",
-    en: "Market & User Research | Data Analytics | AI Workflow Automation",
+    zh: "定量研究｜数据分析｜多市场洞察｜AI 研究工作流",
+    en: "Quantitative Research | Data Analytics | Multi-market Insights | AI Research Workflows",
   } satisfies Localized,
   summary: {
-    zh: "以定量研究为核心、定性研究为补充，聚焦海外用户研究、品牌追踪、人群洞察与产品体验。我擅长把开放性的业务问题转化为研究框架、测量体系和可执行洞察，并将研究标准进一步沉淀为可复用的人机协作工作流。",
-    en: "Quantitative-first researcher with complementary qualitative experience across international user research, brand tracking, audience insights, and product experience. I translate ambiguous business questions into structured research frameworks, measurement systems, and actionable decisions—then operationalize those standards through reusable human-AI workflows.",
+    zh: "现任 Ipsos Research Executive，以定量研究为主、定性为辅，服务字节跳动、联想等核心客户。工作覆盖海外用户研究、品牌 Tracking、人群洞察与产品体验，能够从研究设计、多市场执行、分析诊断到交付审核推进完整研究链路，并将研究标准沉淀为已用于正式项目的人机协作工作流。",
+    en: "Research Executive at Ipsos, primarily focused on quantitative research with complementary qualitative experience. I support core clients including ByteDance and Lenovo across international user research, brand tracking, audience insights, and product experience—spanning research design, multi-market execution, analytical diagnosis, and delivery review. I also turn research standards into reusable human–AI workflows used in live projects.",
   } satisfies Localized,
   location: { zh: "北京，中国", en: "Beijing, China" } satisfies Localized,
   email: "w274398243@hotmail.com",
@@ -93,6 +93,10 @@ export const cases = [
       en: "Multi-market Brand Tracking & Difference Diagnosis",
     } satisfies Localized,
     scope: { zh: "定量研究 · 7 个海外市场", en: "Quantitative · Seven markets" } satisfies Localized,
+    role: {
+      zh: "深度参与 · 多市场分析与质量治理",
+      en: "Deep involvement · Multi-market analysis and quality governance",
+    } satisfies Localized,
     problem: {
       zh: "在多市场、多层级口径并存的条件下，识别趋势与差异背后的真实信号，并保证汇总结论能够被复核。",
       en: "Separate genuine signals from definition and aggregation effects across markets while keeping consolidated conclusions reviewable.",
@@ -113,6 +117,10 @@ export const cases = [
       en: "International Search Experience & User Mindset",
     } satisfies Localized,
     scope: { zh: "定量主导 · 产品与用户研究", en: "Quantitative-led · Product & user research" } satisfies Localized,
+    role: {
+      zh: "主要负责 · 项目统筹、执行与数据交付",
+      en: "Primary ownership · Coordination, execution, and data delivery",
+    } satisfies Localized,
     problem: {
       zh: "理解不同使用情境下的搜索需求、认知与行为路径，为产品体验与策略优先级提供证据。",
       en: "Understand search needs, perceptions, and behavior paths across use contexts to inform product experience and strategic priorities.",
@@ -133,6 +141,10 @@ export const cases = [
       en: "U.S. Content Consumption & Audience Insights",
     } satisfies Localized,
     scope: { zh: "定量研究 · 内容与人群策略", en: "Quantitative · Content & audience strategy" } satisfies Localized,
+    role: {
+      zh: "主要负责 · 研究执行、分析框架与交付协调",
+      en: "Primary ownership · Execution, analytical framing, and delivery",
+    } satisfies Localized,
     problem: {
       zh: "在内容类型、用户特征与消费行为之间建立可解释的联系，识别关键人群及其需求差异。",
       en: "Build explainable links among content genres, audience characteristics, and consumption behavior to identify priority segments and unmet needs.",
@@ -153,6 +165,10 @@ export const cases = [
       en: "Overseas AI Product Research & European Fieldwork",
     } satisfies Localized,
     scope: { zh: "混合研究 · 跨文化执行", en: "Mixed methods · Cross-cultural execution" } satisfies Localized,
+    role: {
+      zh: "深度参与 · 定量 / 定性研究与跨文化执行",
+      en: "Deep involvement · Mixed-method and cross-cultural execution",
+    } satisfies Localized,
     problem: {
       zh: "在语言、文化与使用环境差异下理解产品认知、真实使用体验与潜在进入障碍。",
       en: "Understand product perceptions, lived usage experience, and adoption barriers across language, culture, and context.",

@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     template: "%s — Rui Wang",
   },
   description:
-    "Bilingual professional profile of Rui Wang, Research Executive at Ipsos, specializing in quantitative research, data analytics, and human-AI research workflows.",
+    "Bilingual research portfolio of Rui Wang, Research Executive at Ipsos, focused on quantitative research, multi-market insights, data analytics, and human-AI research workflows.",
   keywords: [
     "Rui Wang",
     "王睿",
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
     siteName: "Rui Wang — Research Portfolio",
     title: "王睿 Rui Wang — Market & User Research",
     description:
-      "Research Executive at Ipsos. Quantitative research, multi-market analytics, consumer insights, and AI workflow automation.",
+      "Research Executive at Ipsos. Quantitative research, multi-market insights, data analytics, and human-AI research workflows.",
     images: [
       {
         url: `${siteUrl}/social-preview.png`,
@@ -55,7 +55,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "王睿 Rui Wang — Market & User Research",
     description:
-      "Research Executive at Ipsos. Research, analytics, and human-AI workflows.",
+      "Research Executive at Ipsos. Quantitative research, analytics, and human-AI workflows.",
     images: [`${siteUrl}/social-preview.png`],
   },
 };
