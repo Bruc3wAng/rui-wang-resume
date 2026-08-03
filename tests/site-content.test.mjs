@@ -15,8 +15,14 @@ test("exports the bilingual public profile", async () => {
   assert.match(en, /ByteDance/);
   assert.match(en, /Lenovo/);
   assert.match(zh, /7 个海外市场/);
-  assert.match(zh, /查看研究案例/);
-  assert.match(zh, /把研究方法与 AI 工作流/);
+  assert.match(zh, /查看工作经历/);
+  assert.match(zh, /个人产品案例：把真实需求做成有结构的交互原型/);
+  assert.match(zh, /光影工坊/);
+  assert.match(zh, /39 家餐厅/);
+  assert.ok(
+    zh.indexOf("EXPERIENCE / 工作经历") <
+      zh.indexOf("HOW I WORK / 工作方式"),
+  );
   assert.match(zh, /\+86 137 1880 1573/);
   assert.match(zh, /⌘K/);
   assert.match(zh, /data-header-theme="night"/);

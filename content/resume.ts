@@ -32,6 +32,65 @@ export const profile = {
 export const projects = [
   {
     index: "01",
+    visual: "photo",
+    type: {
+      zh: "个人产品案例 · 影像工作流",
+      en: "Personal product case · Image workflow",
+    } satisfies Localized,
+    title: {
+      zh: "光影工坊 / Photo Workbench",
+      en: "Photo Workbench / 光影工坊",
+    } satisfies Localized,
+    summary: {
+      zh: "围绕照片筛选、精修、版本比较与拼图输出，设计一套本地优先的影像工作台，将可逆调色与生成式编辑纳入同一验收流程。",
+      en: "A local-first image workspace for selection, retouching, version comparison, and collage output, bringing reversible grading and generative editing into one review flow.",
+    } satisfies Localized,
+    problem: {
+      zh: "照片处理工具彼此割裂，版本比较、身份一致性与最终验收缺少统一工作区。",
+      en: "Photo tools are fragmented, leaving version comparison, identity consistency, and final review without a shared workspace.",
+    } satisfies Localized,
+    contribution: {
+      zh: "定义处理模块、版本结构与分轮验收机制，完成桌面、平板和手机端工作台及多方案对比交互。",
+      en: "Defined the processing modules, version structure, and staged review system, then built responsive workspaces and multi-option comparison flows.",
+    } satisfies Localized,
+    outcome: {
+      zh: "形成包含 7 张样片、3 套风格与 2 种拼图比例的可交互原型，并保留完整版本记录。",
+      en: "Built an interactive prototype covering seven sample images, three visual directions, two collage ratios, and a complete version trail.",
+    } satisfies Localized,
+    tags: ["Next.js", "AI Image Workflow", "Local-first", "Responsive UX"],
+  },
+  {
+    index: "02",
+    visual: "dining",
+    type: {
+      zh: "个人产品案例 · 决策工具",
+      en: "Personal product case · Decision tool",
+    } satisfies Localized,
+    title: {
+      zh: "Dinner Notes / 今晚吃什么",
+      en: "Dinner Notes / 今晚吃什么",
+    } satisfies Localized,
+    summary: {
+      zh: "把餐厅选择、在家做饭与饭后安排组织成一套轻量决策系统，让距离、口味、预算与近期记录共同参与推荐。",
+      en: "A lightweight decision system that connects restaurant choice, home cooking, and after-dinner plans through distance, taste, budget, and recent history.",
+    } satisfies Localized,
+    problem: {
+      zh: "日常选择容易被信息过载和重复讨论拖慢，偏好、收藏与近期体验也难以持续积累。",
+      en: "Everyday choices slow down under information overload, while preferences, saved places, and recent experiences remain scattered.",
+    } satisfies Localized,
+    contribution: {
+      zh: "设计餐厅数据结构、筛选规则、偏好权重与本地记录逻辑，并完成移动端优先的推荐和收藏交互。",
+      en: "Designed the restaurant schema, filtering rules, preference weighting, and local history logic, then built a mobile-first recommendation and saving experience.",
+    } satisfies Localized,
+    outcome: {
+      zh: "形成包含 39 家餐厅、7 类口味、22 道菜谱与 18 个饭后选项的本地可交互原型。",
+      en: "Built a local interactive prototype with 39 restaurants, seven taste directions, 22 recipes, and 18 after-dinner options.",
+    } satisfies Localized,
+    tags: ["JavaScript", "Decision Rules", "Local Storage", "Mobile UX"],
+  },
+  {
+    index: "03",
+    visual: "portfolio",
     type: {
       zh: "个人网站 · 交互作品",
       en: "Personal site · Interactive work",
@@ -41,20 +100,20 @@ export const projects = [
       en: "Rui Wang Research Portfolio",
     } satisfies Localized,
     summary: {
-      zh: "将简历、研究案例与人机协作方法整合为一套中英双语个人作品系统，而不是把纸质简历简单搬到网页上。",
-      en: "A bilingual portfolio system that brings together my résumé, research cases, and human–AI method instead of simply moving a paper CV onto the web.",
+      zh: "将工作经历、研究案例与人机协作方法整合为一套中英双语职业主页。",
+      en: "A bilingual professional site bringing together work experience, research cases, and a human–AI research method.",
     } satisfies Localized,
     problem: {
-      zh: "如何让招聘方快速理解我的研究能力，同时看到我对产品、信息结构与交互体验的判断。",
-      en: "Help recruiters understand my research capability quickly while making my product, information-architecture, and interaction judgment visible.",
+      zh: "让招聘方快速理解研究能力，同时看到我对信息结构、产品表达与交互体验的判断。",
+      en: "Help recruiters understand my research capability quickly while making my information-architecture, product, and interaction judgment visible.",
     } satisfies Localized,
     contribution: {
       zh: "独立完成内容架构、双语表达、视觉系统、交互设计、前端实现与持续发布。",
       en: "Independently shaped the content architecture, bilingual narrative, visual system, interaction design, front-end implementation, and ongoing release process.",
     } satisfies Localized,
     outcome: {
-      zh: "形成可持续更新、可按岗位扩展、兼顾桌面与移动端体验的个人主页。",
-      en: "Created a professional portfolio that is continuously maintainable, adaptable by role, and designed for both desktop and mobile.",
+      zh: "形成可持续更新、可按岗位扩展并兼顾桌面与移动端体验的个人主页。",
+      en: "Created a maintainable portfolio that can adapt by role and works across desktop and mobile.",
     } satisfies Localized,
     tags: ["Next.js", "TypeScript", "Bilingual UX", "GitHub Pages"],
     liveUrl: "https://bruc3wang.github.io/rui-wang-resume/",

@@ -1,13 +1,14 @@
 # Rui Wang — Bilingual Research Portfolio
 
-A bilingual professional profile for Rui Wang (王睿), Research Executive at Ipsos. The site presents market and user research experience, anonymized case themes, analytical capabilities, and a reusable human–AI research workflow.
+A bilingual professional profile for Rui Wang (王睿), Research Executive at Ipsos. The site leads with work experience, then presents research contexts, analytical capabilities, a reusable human–AI research workflow, and selected personal product cases.
 
-## Public information boundary
+## Site highlights
 
-- ByteDance and Lenovo appear only at client level.
-- All project themes are anonymized.
-- The public site excludes phone number, internal project codes, sample details, pricing, and unpublished findings.
-- The downloadable Chinese résumé contains fuller contact details.
+- Experience-first Chinese and English pages
+- Quantitative research, multi-market insight, and delivery ownership
+- Interactive research-case and human–AI workflow modules
+- Personal product cases demonstrating product thinking and implementation
+- Responsive layouts for desktop, tablet, and mobile
 
 ## Local development
 

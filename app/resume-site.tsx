@@ -23,7 +23,7 @@ const copy = {
       ["能力", "capabilities"],
     ],
     availability: "现居北京 · 关注市场研究、用户洞察、数据分析与研究策略机会",
-    viewWork: "查看研究案例",
+    viewWork: "查看工作经历",
     download: "下载中文简历",
     profileIndex: "PROFILE / 01",
     profileCurrent: "当前",
@@ -74,12 +74,12 @@ const copy = {
     methodFoot:
       "研究员始终负责范围与定义、例外判断、业务影响、客户反馈和最终批准；Codex 负责批量阅读、计算、比对与结构化生成。清晰的人机边界，是效率能够转化为质量的前提。",
     projectsEyebrow: "BUILT BY ME / 个人作品",
-    projectsTitle: "把研究方法与 AI 工作流，做成真正可以使用的产品。",
+    projectsTitle: "个人产品案例：把真实需求做成有结构的交互原型。",
     projectsIntro:
-      "这里展示我独立设计、搭建并持续迭代的网站与工具。每个作品都回答三个问题：解决什么、我做了什么，以及最后形成了什么。",
+      "这些案例重点呈现我如何定义问题、组织信息、设计规则并借助 AI 完成实现。目前以个人原型与持续迭代作品为主。",
     projectProblem: "解决的问题",
     projectContribution: "我的工作",
-    projectOutcome: "形成的结果",
+    projectOutcome: "当前产出",
     viewLive: "在线体验",
     viewSource: "查看源码",
     commandHint: "按 ⌘K / Ctrl K 快速浏览本站",
@@ -106,7 +106,7 @@ const copy = {
     commandNavigate: "浏览页面",
     commandContact: "联系与链接",
     commandGithub: "打开 GitHub",
-    updated: "更新于 2026.07",
+    updated: "更新于 2026.08",
     backTop: "返回顶部",
   },
   en: {
@@ -119,7 +119,7 @@ const copy = {
     ],
     availability:
       "Based in Beijing · Exploring opportunities in market research, user insights, analytics, and research strategy",
-    viewWork: "Explore selected work",
+    viewWork: "View experience",
     download: "Download Chinese résumé",
     profileIndex: "PROFILE / 01",
     profileCurrent: "Current",
@@ -182,12 +182,12 @@ const copy = {
       "The researcher always owns scope and definitions, exception judgment, business impact, client feedback, and final approval. Codex supports batch reading, calculation, comparison, and structured generation. Clear ownership is what turns speed into research quality.",
     projectsEyebrow: "BUILT BY ME",
     projectsTitle:
-      "Turning research methods and AI workflows into products people can use.",
+      "Personal product cases: turning real needs into structured, interactive prototypes.",
     projectsIntro:
-      "This is where I share websites and tools I independently design, build, and improve. Each piece shows the problem, my contribution, and the working outcome.",
+      "These cases show how I frame a problem, organize information, design rules, and use AI to build the experience. They currently remain personal prototypes and evolving works.",
     projectProblem: "Problem",
     projectContribution: "My contribution",
-    projectOutcome: "Outcome",
+    projectOutcome: "Current output",
     viewLive: "View live",
     viewSource: "View source",
     commandHint: "Press ⌘K / Ctrl K to navigate",
@@ -216,7 +216,7 @@ const copy = {
     commandNavigate: "Navigate",
     commandContact: "Contact & links",
     commandGithub: "Open GitHub",
-    updated: "Updated Jul 2026",
+    updated: "Updated Aug 2026",
     backTop: "Back to top",
   },
 } as const;
@@ -330,6 +330,66 @@ function ResearchVisual({
         <span>03</span>
         <span>04</span>
         <strong>{language === "zh" ? "本地语境" : "LOCAL CONTEXT"}</strong>
+      </div>
+    </div>
+  );
+}
+
+function ProjectVisual({
+  visual,
+  language,
+  index,
+}: {
+  visual: string;
+  language: Language;
+  index: string;
+}) {
+  const content =
+    visual === "photo"
+      ? {
+          label: "PHOTO WORKBENCH",
+          kicker: "LOCAL-FIRST × AI IMAGE WORKFLOW",
+          title: language === "zh" ? "光影工坊" : "PHOTO LAB",
+          metrics: ["7 IMAGES", "3 LOOKS", "2 RATIOS"],
+        }
+      : visual === "dining"
+        ? {
+            label: "DINNER NOTES",
+            kicker: "DECISION RULES × PERSONAL DATA",
+            title: "DINNER NOTES",
+            metrics: ["39 PLACES", "7 TASTES", "22 + 18"],
+          }
+        : {
+            label: "RESEARCH PORTFOLIO",
+            kicker: "RESEARCH × DATA × AI",
+            title: "RUI WANG",
+            metrics: ["ZH / EN", "DESKTOP", "MOBILE"],
+          };
+
+  return (
+    <div
+      className={`project-preview project-preview-${visual}`}
+      aria-hidden="true"
+    >
+      <div className="preview-bar">
+        <span />
+        <span />
+        <span />
+        <b>{content.label} / {index}</b>
+      </div>
+      <div className="preview-canvas">
+        <span className="preview-kicker">{content.kicker}</span>
+        <strong>{content.title}</strong>
+        <div className="preview-lines">
+          <i />
+          <i />
+          <i />
+        </div>
+        <div className="preview-grid">
+          {content.metrics.map((metric) => (
+            <span key={metric}>{metric}</span>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -550,7 +610,7 @@ export function ResumeSite({ language }: { language: Language }) {
             ))}
           </dl>
           <div className="hero-actions">
-            <a className="button button-primary" href="#work">
+            <a className="button button-primary" href="#experience">
               {t.viewWork}
               <Arrow />
             </a>
@@ -606,32 +666,6 @@ export function ResumeSite({ language }: { language: Language }) {
             </div>
           </dl>
         </aside>
-      </section>
-
-      <section className="about section-pad">
-        <p className="eyebrow">{t.introEyebrow}</p>
-        <div className="section-intro two-column-intro">
-          <h2>{t.introTitle}</h2>
-          <div>
-            <p className="lead">{t.introBody}</p>
-            <p className="supporting-copy">{t.introNote}</p>
-          </div>
-        </div>
-        <div className="research-chain">
-          <div className="chain-heading">
-            <span>{t.chainLabel}</span>
-            <span>01 → 05</span>
-          </div>
-          <ol>
-            {t.researchChain.map((stage, index) => (
-              <li key={stage}>
-                <span>0{index + 1}</span>
-                <strong>{stage}</strong>
-              </li>
-            ))}
-          </ol>
-          <p>{t.chainOwner}</p>
-        </div>
       </section>
 
       <section id="experience" className="experience-section section-pad">
@@ -691,6 +725,32 @@ export function ResumeSite({ language }: { language: Language }) {
           </div>
           <span>{earlierExperience.meta[language]}</span>
         </article>
+      </section>
+
+      <section className="about section-pad">
+        <p className="eyebrow">{t.introEyebrow}</p>
+        <div className="section-intro two-column-intro">
+          <h2>{t.introTitle}</h2>
+          <div>
+            <p className="lead">{t.introBody}</p>
+            <p className="supporting-copy">{t.introNote}</p>
+          </div>
+        </div>
+        <div className="research-chain">
+          <div className="chain-heading">
+            <span>{t.chainLabel}</span>
+            <span>01 → 05</span>
+          </div>
+          <ol>
+            {t.researchChain.map((stage, index) => (
+              <li key={stage}>
+                <span>0{index + 1}</span>
+                <strong>{stage}</strong>
+              </li>
+            ))}
+          </ol>
+          <p>{t.chainOwner}</p>
+        </div>
       </section>
 
       <section
@@ -855,28 +915,11 @@ export function ResumeSite({ language }: { language: Language }) {
         <div className="project-list">
           {projects.map((project) => (
             <article className="project-card" key={project.index}>
-              <div className="project-preview" aria-hidden="true">
-                <div className="preview-bar">
-                  <span />
-                  <span />
-                  <span />
-                  <b>PORTFOLIO / 01</b>
-                </div>
-                <div className="preview-canvas">
-                  <span className="preview-kicker">RESEARCH × DATA × AI</span>
-                  <strong>RUI WANG</strong>
-                  <div className="preview-lines">
-                    <i />
-                    <i />
-                    <i />
-                  </div>
-                  <div className="preview-grid">
-                    <span>01</span>
-                    <span>02</span>
-                    <span>03</span>
-                  </div>
-                </div>
-              </div>
+              <ProjectVisual
+                visual={project.visual}
+                language={language}
+                index={project.index}
+              />
 
               <div className="project-content">
                 <div className="project-meta">
@@ -904,26 +947,28 @@ export function ResumeSite({ language }: { language: Language }) {
                     <li key={tag}>{tag}</li>
                   ))}
                 </ul>
-                <div className="project-links">
-                  <a
-                    className="button button-primary"
-                    href={project.liveUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    {t.viewLive}
-                    <Arrow />
-                  </a>
-                  <a
-                    className="button button-ghost"
-                    href={project.sourceUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    {t.viewSource}
-                    <Arrow />
-                  </a>
-                </div>
+                {"liveUrl" in project && "sourceUrl" in project ? (
+                  <div className="project-links">
+                    <a
+                      className="button button-primary"
+                      href={project.liveUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {t.viewLive}
+                      <Arrow />
+                    </a>
+                    <a
+                      className="button button-ghost"
+                      href={project.sourceUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {t.viewSource}
+                      <Arrow />
+                    </a>
+                  </div>
+                ) : null}
               </div>
             </article>
           ))}
