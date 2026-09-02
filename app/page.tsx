@@ -4,7 +4,7 @@ import { ResumeSite } from "./resume-site";
 export const metadata: Metadata = {
   title: "王睿 Rui Wang — Market & User Research",
   description:
-    "Ipsos Research Executive focused on quantitative market and user research, multi-market analytics, consumer insights, and AI workflow automation.",
+    "王睿，益普索 Research Executive，服务字节跳动与联想。定量研究、多市场分析、消费者洞察、AI研究工作流与研究数据产品。",
 };
 
 const personSchema = {
@@ -36,6 +36,8 @@ const personSchema = {
     "Data Analytics",
     "Multi-market Research",
     "AI Workflow Automation",
+    "Research Data Products",
+    "SQLite Data Modelling",
   ],
 };
 

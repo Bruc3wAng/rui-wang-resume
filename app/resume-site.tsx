@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import resumeRelease from "../content/resume-release.json";
 import {
   capabilities,
   cases,
@@ -22,34 +23,34 @@ const copy = {
       ["个人作品", "projects"],
       ["能力", "capabilities"],
     ],
-    availability: "现居北京 · 关注市场研究、用户洞察、数据分析与研究策略机会",
+    availability: "北京 · 市场研究、用户洞察与数据分析",
     viewWork: "查看工作经历",
     download: "下载中文简历",
     profileIndex: "PROFILE / 01",
     profileCurrent: "当前",
     profileFocus: "专业重心",
-    profileBuilding: "AI 实践",
+    profileBuilding: "研究实践",
     profileCurrentValue: "Ipsos · Research Executive",
     profileFocusValue: "定量研究与多市场洞察",
-    profileBuildingValue: "正式交付中的人机协作工作流",
+    profileBuildingValue: "AI 工作流与研究数据产品",
     heroFacts: [
       ["研究方法", "定量主导 · 定性补充"],
       ["研究范围", "海外用户 · 品牌 · 产品"],
       ["多市场经验", "Tracking 覆盖 7 个海外市场"],
     ],
     introEyebrow: "HOW I WORK / 工作方式",
-    introTitle: "从研究设计到交付审核，完整推进复杂研究项目。",
+    introTitle: "先明确研究问题，再组织数据与分析。",
     introBody:
-      "我的核心价值不在于完成某一个执行环节，而在于让整条研究链路保持一致：前期把业务问题转化为可验证的研究设计，中期统筹多市场执行并判断质量风险，后期完成分析诊断、洞察提炼与交付复核。",
+      "我会先明确客户需要作出什么判断，再确定研究问题、指标和分析方法。在执行过程中协调各方口径，分析时检查数据是否可比，最后把发现整理为有依据的判断与建议。",
     introNote:
-      "我负责研究员必须承担的判断：定义口径、处理例外、评估业务影响并对最终输出负责；工具用于批量处理、计算、比对与校验。",
+      "近期也将这套思路用于数据产品：从研究需求出发设计数据库，保留信息来源，并让查询、比较和导出使用同一套定义。",
     researchChain: ["业务问题", "研究设计", "多市场执行", "分析诊断", "决策支持"],
     chainLabel: "一条完整的研究链路",
-    chainOwner: "贯穿全程：口径定义、例外判断、风险治理与沟通推动",
+    chainOwner: "每个阶段都明确：要回答什么、需要哪些证据、由谁作出判断。",
     experienceEyebrow: "EXPERIENCE / 工作经历",
-    experienceTitle: "Ipsos｜Research Executive（数据研究分析）",
+    experienceTitle: "在益普索的研究经历。",
     clientScope: "客户范围",
-    clientScopeValue: "字节跳动、联想等核心客户",
+    clientScopeValue: "字节跳动与联想",
     researchScope: "研究主题",
     researchScopeValue: "海外用户、品牌 Tracking、人群洞察与产品体验",
     researchMix: "方法组合",
@@ -58,35 +59,36 @@ const copy = {
     workEyebrow: "SELECTED WORK / 研究案例",
     workTitle: "代表性研究场景与方法。",
     workIntro:
-      "案例覆盖品牌追踪、搜索体验、内容消费与海外产品用研，重点呈现研究问题、本人角色、分析方法与决策价值。",
+      "从品牌表现到用户体验，围绕具体问题选择研究方法，并把分析结果用于产品与市场判断。",
     role: "我的角色",
     challenge: "研究问题",
     approach: "分析方法",
     value: "决策价值",
     selectCase: "切换研究案例",
     methodEyebrow: "HUMAN × AI / 研究方法",
-    methodTitle: "AI 研究工作流：覆盖设计、执行、数据质量与交付审核。",
+    methodTitle: "把研究规则做成可复用的工具。",
     methodIntro:
-      "不是让 AI 代替研究判断，而是把研究规范、校验逻辑、异常处理与结构化留痕做成可复用系统。当前工作流覆盖 4 个核心研究阶段和 7 类关键节点，已经进入正式交付并被同事复用。",
-    methodSignal: "4 个研究阶段 · 7 类关键节点 · 正式交付 / 团队复用",
+      "我用 Codex 将问卷、样本、数据与分析表之间的检查规则做成工具和 Skills 库。每次使用时，先明确适用范围，再处理例外并复核结果。相关工具已用于正式交付并被同事采用。",
+    methodSignal: "正式项目使用 · 同事复用",
     researcher: "研究员负责",
     codex: "Codex 承担",
     methodFoot:
-      "研究员始终负责范围与定义、例外判断、业务影响、客户反馈和最终批准；Codex 负责批量阅读、计算、比对与结构化生成。清晰的人机边界，是效率能够转化为质量的前提。",
+      "随着项目推进，将验证过的规则和处理方式补充进工具库，让后续项目可以复用。",
     projectsEyebrow: "BUILT BY ME / 个人作品",
-    projectsTitle: "个人产品案例：把真实需求做成有结构的交互原型。",
+    projectsTitle: "把研究经验延伸为数据产品。",
     projectsIntro:
-      "这些案例重点呈现我如何定义问题、组织信息、设计规则并借助 AI 完成实现。目前以个人原型与持续迭代作品为主。",
+      "从研究数据库到网页交互，探索如何让资料更易查询、比较，并用于后续分析。",
+    moreProjects: "其他个人作品",
     projectProblem: "解决的问题",
     projectContribution: "我的工作",
     projectOutcome: "当前产出",
     viewLive: "在线体验",
     viewSource: "查看源码",
     commandHint: "按 ⌘K / Ctrl K 快速浏览本站",
-    capabilityEyebrow: "CAPABILITY STACK / 能力组合",
-    capabilityTitle: "面向市场研究、数据分析与研究运营的能力组合。",
+    capabilityEyebrow: "CAPABILITIES / 专业能力",
+    capabilityTitle: "研究、分析与产品实现。",
     capabilityIntro:
-      "我用研究方法定义问题，用分析能力建立证据，用项目运营推动复杂协作，再用 AI 把可重复的方法沉淀下来。",
+      "以研究方法和数据分析为基础，结合跨团队项目经验、数据库设计与 AI 工作流实践。",
     education: "教育背景",
     languages: "语言",
     languageValue: "普通话（母语）｜英语（TOEFL 110）",
@@ -106,7 +108,7 @@ const copy = {
     commandNavigate: "浏览页面",
     commandContact: "联系与链接",
     commandGithub: "打开 GitHub",
-    updated: "更新于 2026.08",
+    updated: `更新于 ${resumeRelease.updatedAt.slice(0, 7).replace("-", ".")}`,
     backTop: "返回顶部",
   },
   en: {
@@ -118,16 +120,16 @@ const copy = {
       ["Capabilities", "capabilities"],
     ],
     availability:
-      "Based in Beijing · Exploring opportunities in market research, user insights, analytics, and research strategy",
+      "Beijing · Market research, user insights, and data analytics",
     viewWork: "View experience",
     download: "Download Chinese résumé",
     profileIndex: "PROFILE / 01",
     profileCurrent: "Current",
     profileFocus: "Focus",
-    profileBuilding: "AI practice",
+    profileBuilding: "Practice",
     profileCurrentValue: "Ipsos · Research Executive",
     profileFocusValue: "Quantitative & multi-market insight",
-    profileBuildingValue: "Human–AI workflows in live delivery",
+    profileBuildingValue: "AI workflows & research-data products",
     heroFacts: [
       ["Research mix", "Quantitative-led · Qualitative support"],
       ["Research scope", "International users · Brand · Product"],
@@ -135,11 +137,11 @@ const copy = {
     ],
     introEyebrow: "HOW I WORK",
     introTitle:
-      "Moving complex research from study design through to delivery review.",
+      "Start with the research question. Then organize the evidence.",
     introBody:
-      "My value is not limited to one execution task. I keep the full research chain coherent: translating business questions into testable designs, coordinating multi-market execution and quality risk, then carrying the evidence through analytical diagnosis, insight synthesis, and delivery review.",
+      "I start by understanding the decision a client needs to make, then define the research questions, measures, and analytical approach. I align teams during execution, check comparability during analysis, and turn findings into evidence-backed recommendations.",
     introNote:
-      "I own the judgments a researcher must make: defining metrics, resolving exceptions, assessing business impact, and approving final output. Tools support batch processing, calculation, comparison, and validation.",
+      "I also apply this approach to data products: designing a database around research needs, preserving source information, and keeping retrieval, comparison, and exports consistent.",
     researchChain: [
       "Business question",
       "Research design",
@@ -149,11 +151,11 @@ const copy = {
     ],
     chainLabel: "One connected research chain",
     chainOwner:
-      "Across every stage: definitions, exception judgment, risk governance, and alignment",
+      "At each stage: a clear question, the evidence needed, and responsibility for the judgment.",
     experienceEyebrow: "EXPERIENCE",
-    experienceTitle: "Ipsos | Research Executive",
+    experienceTitle: "Research experience at Ipsos.",
     clientScope: "Client scope",
-    clientScopeValue: "Core clients including ByteDance and Lenovo",
+    clientScopeValue: "ByteDance and Lenovo",
     researchScope: "Research themes",
     researchScopeValue:
       "International users, brand tracking, audience insights, and product experience",
@@ -163,7 +165,7 @@ const copy = {
     workEyebrow: "SELECTED WORK",
     workTitle: "Selected research contexts and methods.",
     workIntro:
-      "The cases span brand tracking, search experience, content consumption, and overseas product research, focusing on the research question, my role, analytical approach, and decision value.",
+      "From brand performance to user experience, I select methods around a specific question and use the findings to inform product and market decisions.",
     role: "My role",
     challenge: "Research question",
     approach: "Analytical approach",
@@ -171,31 +173,32 @@ const copy = {
     selectCase: "Select a research case",
     methodEyebrow: "HUMAN × AI · RESEARCH METHOD",
     methodTitle:
-      "An AI research workflow across design, execution, data quality, and delivery review.",
+      "Turn research rules into reusable tools.",
     methodIntro:
-      "The goal is not to outsource judgment. I turn research standards, validation logic, exception handling, and traceability into a reusable operating system. The workflow now spans four core stages and seven types of critical nodes, and is used in live delivery and by colleagues.",
+      "I use Codex to build tools and a Skills library from checking rules across questionnaires, samples, datasets, and analysis tables. Each use starts with a defined scope, followed by exception handling and output review. The tools are used in live delivery and have been adopted by colleagues.",
     methodSignal:
-      "4 research stages · 7 node types · Live delivery / team reuse",
+      "Used in live projects · Adopted by colleagues",
     researcher: "Researcher owns",
     codex: "Codex handles",
     methodFoot:
-      "The researcher always owns scope and definitions, exception judgment, business impact, client feedback, and final approval. Codex supports batch reading, calculation, comparison, and structured generation. Clear ownership is what turns speed into research quality.",
+      "As projects progress, tested rules and handling methods become part of the tool library for reuse in future work.",
     projectsEyebrow: "BUILT BY ME",
     projectsTitle:
-      "Personal product cases: turning real needs into structured, interactive prototypes.",
+      "Extending research into data products.",
     projectsIntro:
-      "These cases show how I frame a problem, organize information, design rules, and use AI to build the experience. They currently remain personal prototypes and evolving works.",
+      "From research databases to web interactions, I explore how information can become easier to retrieve, compare, and use in analysis.",
+    moreProjects: "Other personal projects",
     projectProblem: "Problem",
     projectContribution: "My contribution",
     projectOutcome: "Current output",
     viewLive: "View live",
     viewSource: "View source",
     commandHint: "Press ⌘K / Ctrl K to navigate",
-    capabilityEyebrow: "CAPABILITY STACK",
+    capabilityEyebrow: "CAPABILITIES",
     capabilityTitle:
-      "A capability stack for market research, analytics, and research operations.",
+      "Research, analytics, and product development.",
     capabilityIntro:
-      "I use research methods to frame the problem, analytics to build the evidence, project operations to move complex collaboration forward, and AI to make repeatable methods reusable.",
+      "Research methods and data analysis, supported by cross-team delivery experience, database design, and AI-assisted workflows.",
     education: "Education",
     languages: "Languages",
     languageValue: "Mandarin Chinese (Native) | English (TOEFL 110)",
@@ -216,7 +219,7 @@ const copy = {
     commandNavigate: "Navigate",
     commandContact: "Contact & links",
     commandGithub: "Open GitHub",
-    updated: "Updated Aug 2026",
+    updated: `Updated ${resumeRelease.updatedAt}`,
     backTop: "Back to top",
   },
 } as const;
@@ -335,63 +338,64 @@ function ResearchVisual({
   );
 }
 
-function ProjectVisual({
-  visual,
-  language,
-  index,
-}: {
-  visual: string;
-  language: Language;
-  index: string;
-}) {
-  const content =
-    visual === "photo"
-      ? {
-          label: "PHOTO WORKBENCH",
-          kicker: "LOCAL-FIRST × AI IMAGE WORKFLOW",
-          title: language === "zh" ? "光影工坊" : "PHOTO LAB",
-          metrics: ["7 IMAGES", "3 LOOKS", "2 RATIOS"],
-        }
-      : visual === "dining"
-        ? {
-            label: "DINNER NOTES",
-            kicker: "DECISION RULES × PERSONAL DATA",
-            title: "DINNER NOTES",
-            metrics: ["39 PLACES", "7 TASTES", "22 + 18"],
-          }
-        : {
-            label: "RESEARCH PORTFOLIO",
-            kicker: "RESEARCH × DATA × AI",
-            title: "RUI WANG",
-            metrics: ["ZH / EN", "DESKTOP", "MOBILE"],
-          };
+function ResearchDataMap({ language }: { language: Language }) {
+  const steps = language === "zh"
+    ? [
+        ["资料与定义", "市场资料 · 商品信息 · 来源与时间"],
+        ["研究数据库", "品类 · 渠道 · 商品 · 指标口径"],
+        ["查询与分析", "筛选 · 比较 · 明细 · 导出"],
+      ]
+    : [
+        ["Sources & definitions", "Market information · Products · Source dates"],
+        ["Research database", "Categories · Channels · Products · Metrics"],
+        ["Explore & analyze", "Filter · Compare · Inspect · Export"],
+      ];
 
   return (
-    <div
-      className={`project-preview project-preview-${visual}`}
-      aria-hidden="true"
-    >
-      <div className="preview-bar">
-        <span />
-        <span />
-        <span />
-        <b>{content.label} / {index}</b>
-      </div>
-      <div className="preview-canvas">
-        <span className="preview-kicker">{content.kicker}</span>
-        <strong>{content.title}</strong>
-        <div className="preview-lines">
-          <i />
-          <i />
-          <i />
-        </div>
-        <div className="preview-grid">
-          {content.metrics.map((metric) => (
-            <span key={metric}>{metric}</span>
-          ))}
-        </div>
-      </div>
+    <div className="research-data-map">
+      <p className="mini-label">RESEARCH DATA</p>
+      <ol>
+        {steps.map(([title, detail], index) => (
+          <li key={title}>
+            <span aria-hidden="true">0{index + 1}</span>
+            <div><strong>{title}</strong><p>{detail}</p></div>
+            {index < steps.length - 1 ? <span className="data-step-arrow" aria-hidden="true">↓</span> : null}
+          </li>
+        ))}
+      </ol>
     </div>
+  );
+}
+
+function ProjectCard({ project, language, featured = false }: {
+  project: (typeof projects)[number];
+  language: Language;
+  featured?: boolean;
+}) {
+  const t = copy[language];
+  return (
+    <article className={`project-card${featured ? " project-featured" : ""}`}>
+      {featured ? <ResearchDataMap language={language} /> : null}
+      <div className="project-content">
+        <div className="project-meta"><span>{project.index}</span><span>{project.type[language]}</span></div>
+        <h3>{project.title[language]}</h3>
+        <p className="project-summary">{project.summary[language]}</p>
+        <dl className="project-facts">
+          <div><dt>{t.projectProblem}</dt><dd>{project.problem[language]}</dd></div>
+          <div><dt>{t.projectContribution}</dt><dd>{project.contribution[language]}</dd></div>
+          <div><dt>{t.projectOutcome}</dt><dd>{project.outcome[language]}</dd></div>
+        </dl>
+        <ul className="project-tags" aria-label={language === "zh" ? "技术与方法" : "Technology and methods"}>
+          {project.tags.map((tag) => <li key={tag}>{tag}</li>)}
+        </ul>
+        {"liveUrl" in project && "sourceUrl" in project ? (
+          <div className="project-links">
+            <a className="button button-primary" href={project.liveUrl} target="_blank" rel="noreferrer">{t.viewLive}<Arrow /></a>
+            <a className="button button-ghost" href={project.sourceUrl} target="_blank" rel="noreferrer">{t.viewSource}<Arrow /></a>
+          </div>
+        ) : null}
+      </div>
+    </article>
   );
 }
 
@@ -616,8 +620,8 @@ export function ResumeSite({ language }: { language: Language }) {
             </a>
             <a
               className="button button-ghost"
-              href={`${basePath}/resume/rui-wang-resume-zh.pdf`}
-              download
+              href={`${basePath}/resume/rui-wang-resume-zh.pdf?v=${resumeRelease.contentVersion}`}
+              download={resumeRelease.downloadFileName}
             >
               {t.download}
               <DownloadIcon />
@@ -913,65 +917,13 @@ export function ResumeSite({ language }: { language: Language }) {
         </div>
 
         <div className="project-list">
-          {projects.map((project) => (
-            <article className="project-card" key={project.index}>
-              <ProjectVisual
-                visual={project.visual}
-                language={language}
-                index={project.index}
-              />
-
-              <div className="project-content">
-                <div className="project-meta">
-                  <span>{project.index}</span>
-                  <span>{project.type[language]}</span>
-                </div>
-                <h3>{project.title[language]}</h3>
-                <p className="project-summary">{project.summary[language]}</p>
-                <dl className="project-facts">
-                  <div>
-                    <dt>{t.projectProblem}</dt>
-                    <dd>{project.problem[language]}</dd>
-                  </div>
-                  <div>
-                    <dt>{t.projectContribution}</dt>
-                    <dd>{project.contribution[language]}</dd>
-                  </div>
-                  <div>
-                    <dt>{t.projectOutcome}</dt>
-                    <dd>{project.outcome[language]}</dd>
-                  </div>
-                </dl>
-                <ul className="project-tags" aria-label="Technology">
-                  {project.tags.map((tag) => (
-                    <li key={tag}>{tag}</li>
-                  ))}
-                </ul>
-                {"liveUrl" in project && "sourceUrl" in project ? (
-                  <div className="project-links">
-                    <a
-                      className="button button-primary"
-                      href={project.liveUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      {t.viewLive}
-                      <Arrow />
-                    </a>
-                    <a
-                      className="button button-ghost"
-                      href={project.sourceUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      {t.viewSource}
-                      <Arrow />
-                    </a>
-                  </div>
-                ) : null}
-              </div>
-            </article>
-          ))}
+          <ProjectCard project={projects[0]} language={language} featured />
+          <details className="other-projects">
+            <summary><span>{t.moreProjects}</span><span className="other-projects-count">{projects.length - 1}</span><Arrow /></summary>
+            <div className="secondary-project-list">
+              {projects.slice(1).map((project) => <ProjectCard key={project.index} project={project} language={language} />)}
+            </div>
+          </details>
         </div>
       </section>
 

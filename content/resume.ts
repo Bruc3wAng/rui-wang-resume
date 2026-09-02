@@ -18,8 +18,8 @@ export const profile = {
     en: "Quantitative Research | Data Analytics | Multi-market Insights | AI Research Workflows",
   } satisfies Localized,
   summary: {
-    zh: "现任 Ipsos Research Executive，以定量研究为主、定性为辅，服务字节跳动、联想等核心客户。工作覆盖海外用户研究、品牌 Tracking、人群洞察与产品体验，能够从研究设计、多市场执行、分析诊断到交付审核推进完整研究链路，并将研究标准沉淀为已用于正式项目的人机协作工作流。",
-    en: "Research Executive at Ipsos, primarily focused on quantitative research with complementary qualitative experience. I support core clients including ByteDance and Lenovo across international user research, brand tracking, audience insights, and product experience—spanning research design, multi-market execution, analytical diagnosis, and delivery review. I also turn research standards into reusable human–AI workflows used in live projects.",
+    zh: "我在益普索从事定量研究，服务字节跳动与联想。工作覆盖多市场品牌追踪、海外用户研究与产品体验；同时搭建用于正式交付的 AI 研究工具，并将研究经验延伸至数据库设计与数据产品原型开发。",
+    en: "I am a Research Executive at Ipsos, serving ByteDance and Lenovo across multi-market brand tracking, international user research, and product experience. Alongside quantitative research, I build AI-assisted tools used in live delivery and develop research databases and data-product prototypes.",
   } satisfies Localized,
   location: { zh: "北京，中国", en: "Beijing, China" } satisfies Localized,
   email: "w274398243@hotmail.com",
@@ -32,6 +32,35 @@ export const profile = {
 export const projects = [
   {
     index: "01",
+    visual: "database",
+    type: {
+      zh: "个人研究产品原型",
+      en: "Personal research-product prototype",
+    } satisfies Localized,
+    title: {
+      zh: "市场研究全链路模型与数据平台",
+      en: "Market Research Model & Data Platform",
+    } satisfies Localized,
+    summary: {
+      zh: "以消费品研究为场景，把分散的市场与商品资料组织成可查询、可比较的研究数据库，并实现网页交互。",
+      en: "A consumer-goods research prototype that organizes scattered market and product information into a queryable research database with an interactive web interface.",
+    } satisfies Localized,
+    problem: {
+      zh: "不同来源的品类、时间和指标定义不一致，资料很难直接用于研究比较。",
+      en: "Category, time, and metric definitions differ across sources, making research comparisons difficult.",
+    } satisfies Localized,
+    contribution: {
+      zh: "设计 SQLite 数据结构，统一品类、渠道、商品与时间维度，建立来源追溯和指标校验规则；借助 Codex 完成数据库与网页原型。",
+      en: "Designed a SQLite data structure with consistent category, channel, product, and time dimensions, source traceability, and metric validation. Used Codex to build the database and web prototype.",
+    } satisfies Localized,
+    outcome: {
+      zh: "实现多维筛选、图表与明细联动及结果导出；围绕品类比较、价格规格分析等需求，形成数据要求、验收标准和产品可行性评估方案。",
+      en: "Implemented multi-dimensional filters, linked charts and detail views, and result exports. Defined data requirements, acceptance criteria, and feasibility plans for category comparisons and price-pack analysis.",
+    } satisfies Localized,
+    tags: ["SQLite", "Data Modelling", "Research Design", "Codex"],
+  },
+  {
+    index: "02",
     visual: "photo",
     type: {
       zh: "个人产品案例 · 影像工作流",
@@ -54,13 +83,13 @@ export const projects = [
       en: "Defined the processing modules, version structure, and staged review system, then built responsive workspaces and multi-option comparison flows.",
     } satisfies Localized,
     outcome: {
-      zh: "形成包含 7 张样片、3 套风格与 2 种拼图比例的可交互原型，并保留完整版本记录。",
-      en: "Built an interactive prototype covering seven sample images, three visual directions, two collage ratios, and a complete version trail.",
+      zh: "已形成照片选择、风格对比、版本记录与拼图输出的交互原型。",
+      en: "Built an interactive prototype for photo selection, style comparison, version history, and collage output.",
     } satisfies Localized,
     tags: ["Next.js", "AI Image Workflow", "Local-first", "Responsive UX"],
   },
   {
-    index: "02",
+    index: "03",
     visual: "dining",
     type: {
       zh: "个人产品案例 · 决策工具",
@@ -83,13 +112,13 @@ export const projects = [
       en: "Designed the restaurant schema, filtering rules, preference weighting, and local history logic, then built a mobile-first recommendation and saving experience.",
     } satisfies Localized,
     outcome: {
-      zh: "形成包含 39 家餐厅、7 类口味、22 道菜谱与 18 个饭后选项的本地可交互原型。",
-      en: "Built a local interactive prototype with 39 restaurants, seven taste directions, 22 recipes, and 18 after-dinner options.",
+      zh: "已形成餐厅筛选、偏好记录、菜谱和饭后安排的本地交互原型。",
+      en: "Built a local interactive prototype for restaurant filtering, preference history, recipes, and after-dinner plans.",
     } satisfies Localized,
     tags: ["JavaScript", "Decision Rules", "Local Storage", "Mobile UX"],
   },
   {
-    index: "03",
+    index: "04",
     visual: "portfolio",
     type: {
       zh: "个人网站 · 交互作品",
@@ -108,8 +137,8 @@ export const projects = [
       en: "Help recruiters understand my research capability quickly while making my information-architecture, product, and interaction judgment visible.",
     } satisfies Localized,
     contribution: {
-      zh: "独立完成内容架构、双语表达、视觉系统、交互设计、前端实现与持续发布。",
-      en: "Independently shaped the content architecture, bilingual narrative, visual system, interaction design, front-end implementation, and ongoing release process.",
+      zh: "负责内容架构、双语表达、视觉与交互设计，借助 Codex 完成前端实现、测试和持续更新。",
+      en: "Shaped the content architecture, bilingual copy, visual design, and interactions, using Codex for front-end implementation, testing, and ongoing updates.",
     } satisfies Localized,
     outcome: {
       zh: "形成可持续更新、可按岗位扩展并兼顾桌面与移动端体验的个人主页。",
@@ -126,41 +155,41 @@ export const experiences = [
     period: { zh: "2026.03 — 至今", en: "Mar 2026 — Present" } satisfies Localized,
     company: { zh: "益普索 Ipsos", en: "Ipsos" } satisfies Localized,
     title: {
-      zh: "Research Executive（数据研究分析）",
+      zh: "Research Executive（定量研究）",
       en: "Research Executive",
     } satisfies Localized,
-    meta: { zh: "北京 · 驻场", en: "Beijing, China · On-site" } satisfies Localized,
+    meta: { zh: "北京 · 现场办公", en: "Beijing, China · On-site" } satisfies Localized,
     summary: {
-      zh: "服务字节跳动、联想等核心客户，主责海外搜索体验与美国内容消费研究的关键工作流，并深度参与品牌 Tracking、AI 产品海外用研、用户画像及欧洲实地研究。",
-      en: "Partner with core clients including ByteDance and Lenovo, leading key workstreams in international search experience and U.S. content-consumption research while contributing deeply to brand tracking, overseas AI product research, audience profiling, and European field studies.",
+      zh: "负责两项海外研究的核心环节，协调客户、供应商与内部团队推进研究设计、执行和交付；深度参与多市场品牌追踪、AI 产品海外用研、企业用户画像及海外实地研究。",
+      en: "Own core workstreams across two international studies, coordinating clients, vendors, and internal teams through design, fieldwork, and delivery. Contribute substantially to multi-market brand tracking, international AI product research, business-user profiling, and overseas field studies.",
     } satisfies Localized,
     bullets: [
       {
-        label: { zh: "研究问题建模", en: "Research framing" },
+        label: { zh: "研究设计与洞察", en: "Research design & insights" },
         text: {
-          zh: "将开放性业务问题拆解为研究假设、指标体系、测量设计与可执行方案，明确研究边界与决策路径。",
-          en: "Translate open-ended business questions into research hypotheses, measurement frameworks, study designs, and decision-ready plans.",
+          zh: "将品牌认知、用户需求和产品体验问题转化为研究方案；结合定量数据、定性资料和案头研究，识别用户群体间的需求差异。",
+          en: "Turn questions about brand perceptions, user needs, and product experience into research designs. Combine quantitative data, qualitative findings, and desk research to identify differences between audience groups.",
         },
       },
       {
-        label: { zh: "多市场项目统筹", en: "Multi-market leadership" },
+        label: { zh: "跨团队项目推进", en: "Research coordination" },
         text: {
-          zh: "统筹问卷与测量、抽样与配额、跨市场执行、数据分析及汇报交付，协调客户、供应商与内部团队的关键口径与风险。",
-          en: "Coordinate survey design, sampling and quotas, multi-market execution, analysis, and reporting while aligning clients, vendors, and internal teams on definitions and risk.",
+          zh: "协调研究设计、执行与交付中的衔接问题，明确各方任务和判断标准，推动研究口径分歧、样本与数据问题得到解决。",
+          en: "Coordinate the handoffs between study design, execution, and delivery. Clarify responsibilities and research definitions, and work with teams to resolve sampling and data issues.",
         },
       },
       {
-        label: { zh: "分析与质量治理", en: "Analytics & governance" },
+        label: { zh: "多市场数据分析", en: "Cross-market analysis" },
         text: {
-          zh: "围绕人群分层、跨市场比较、趋势判断与差异诊断设计分析路径，并建立贯穿研究设计至最终输出的质量治理机制。",
-          en: "Design analytical approaches for segmentation, cross-market comparison, trend interpretation, and difference diagnosis, supported by end-to-end quality governance.",
+          zh: "参与覆盖美、英、德、日、韩、印尼及巴西 7 个海外市场的追踪研究，开展用户分层、交叉分析和趋势比较，复核市场结果与整体汇总。",
+          en: "Analyze a tracking program across seven markets: the US, UK, Germany, Japan, South Korea, Indonesia, and Brazil. Use segmentation, cross-tab analysis, and trend comparison, reconciling market-level and consolidated results.",
         },
       },
       {
-        label: { zh: "AI 方法资产化", en: "AI method development" },
+        label: { zh: "AI 研究工作流", en: "AI-assisted research workflows" },
         text: {
-          zh: "将研究标准、校验规则与异常处理沉淀为 Codex Skills、SOP 与辅助工具，覆盖 4 个核心研究阶段和 7 类关键节点，已用于正式交付并被同事复用。",
-          en: "Operationalize research standards, validation rules, and exception handling through Codex Skills, SOPs, and supporting tools spanning four research stages and seven workflow-node types; adopted in live delivery and by colleagues.",
+          zh: "将研究校验规则做成可复用工具和 Skills 库，明确自动处理范围、例外判断与验收要求。工具已用于正式交付，并被同事采用。",
+          en: "Build reusable tools and a Skills library from research validation rules, defining the scope of automation, exception handling, and acceptance criteria. The tools are used in live delivery and have been adopted by colleagues.",
         },
       },
     ],
@@ -169,13 +198,13 @@ export const experiences = [
     period: { zh: "2024.05 — 2024.08", en: "May 2024 — Aug 2024" } satisfies Localized,
     company: { zh: "久谦咨询", en: "Meritco Services" } satisfies Localized,
     title: {
-      zh: "数据分析师（项目制 / 实习）",
+      zh: "数据分析实习生",
       en: "Data Analyst Intern",
     } satisfies Localized,
     meta: { zh: "北京", en: "Beijing, China" } satisfies Localized,
     summary: {
-      zh: "整合交易、SKU、用户与竞争证据，支持消费健康与宠物营养领域的产品机会评估、新品定位与 Go-to-Market 规划。",
-      en: "Integrated transaction, SKU, user, and competitive evidence to support product opportunity assessment, new-product positioning, and go-to-market planning in consumer health and pet nutrition.",
+      zh: "整合行业资料、竞品、电商数据和用户反馈，比较价格带、SKU 组合、产品卖点与渠道表现；输出分析表和项目备忘录，支持新品定位与产品升级讨论。",
+      en: "Integrated industry research, competitor evidence, e-commerce data, and user feedback to compare price bands, SKU portfolios, product claims, and channel performance. Produced analysis tables and project memos to support positioning and product-upgrade discussions.",
     } satisfies Localized,
     bullets: [],
   },
@@ -185,25 +214,25 @@ export const cases = [
   {
     index: "01",
     title: {
-      zh: "多市场品牌追踪与差异诊断",
-      en: "Multi-market Brand Tracking & Difference Diagnosis",
+      zh: "多市场品牌追踪与比较",
+      en: "Multi-market Brand Tracking & Comparison",
     } satisfies Localized,
     scope: { zh: "定量研究 · 7 个海外市场", en: "Quantitative · Seven markets" } satisfies Localized,
     role: {
-      zh: "深度参与 · 多市场分析与质量治理",
-      en: "Deep involvement · Multi-market analysis and quality governance",
+      zh: "深度参与 · 多市场分析与结果复核",
+      en: "Substantial contribution · Cross-market analysis and review",
     } satisfies Localized,
     problem: {
-      zh: "在多市场、多层级口径并存的条件下，识别趋势与差异背后的真实信号，并保证汇总结论能够被复核。",
-      en: "Separate genuine signals from definition and aggregation effects across markets while keeping consolidated conclusions reviewable.",
+      zh: "不同市场的品牌表现为什么不同？变化来自用户差异，还是指标定义和统计方式？",
+      en: "Why does brand performance differ across markets? Do changes reflect audience differences or the way metrics are defined and calculated?",
     } satisfies Localized,
     approach: {
-      zh: "围绕人群分层、跨市场比较与异常诊断设计分析路径，建立市场级与汇总口径的交叉验证机制。",
-      en: "Designed segmentation, cross-market comparison, and anomaly-diagnosis paths with cross-validation between market-level and consolidated definitions.",
+      zh: "按人群和市场拆分结果，进行交叉分析和趋势比较；核对指标定义，并将逐市场结果与整体汇总相互复核。",
+      en: "Break down results by audience and market, compare trends and cross-tabs, check metric definitions, and reconcile each market with the consolidated view.",
     } satisfies Localized,
     value: {
-      zh: "将复杂数据转化为可解释的品牌、人群与产品判断，并把质量检查从末端动作前置为分析机制。",
-      en: "Translated complex data into explainable brand, audience, and product decisions while moving quality control upstream into the analytical design.",
+      zh: "使品牌和用户差异建立在一致的比较标准上，减少口径问题对研究判断的干扰。",
+      en: "Provide a consistent basis for interpreting brand and audience differences, reducing the influence of mismatched definitions.",
     } satisfies Localized,
   },
   {
@@ -222,12 +251,12 @@ export const cases = [
       en: "Understand search needs, perceptions, and behavior paths across use contexts to inform product experience and strategic priorities.",
     } satisfies Localized,
     approach: {
-      zh: "从研究假设、任务与测量设计出发，统筹执行、数据验证与分析解释，连接用户行为和产品决策。",
-      en: "Connected hypotheses, task and measurement design, field execution, validation, and interpretation to bridge user behavior and product decisions.",
+      zh: "将使用情境转化为研究任务与问卷，协调执行，并结合行为反馈与问卷结果分析需求和体验差异。",
+      en: "Translate use contexts into research tasks and survey questions, coordinate fieldwork, and combine behavioral feedback with survey results to examine needs and experience differences.",
     } satisfies Localized,
     value: {
-      zh: "把分散的体验反馈组织为结构化的用户心智与机会框架，使洞察能够进入后续决策。",
-      en: "Organized fragmented experience signals into a structured mindset and opportunity framework that could travel into decision-making.",
+      zh: "把分散的反馈整理为可比较的使用需求和体验问题，为后续产品讨论提供依据。",
+      en: "Organize fragmented feedback into comparable needs and experience issues that inform subsequent product discussions.",
     } satisfies Localized,
   },
   {
@@ -250,8 +279,8 @@ export const cases = [
       en: "Designed segmentation and cross-analysis frameworks across behavior, preference, and context, with consistency checks around decision-critical findings.",
     } satisfies Localized,
     value: {
-      zh: "将数据结果转译为内容定位、目标人群与增长机会判断，而非停留在描述性统计。",
-      en: "Moved beyond descriptive statistics to inform content positioning, priority audiences, and opportunity assessment.",
+      zh: "呈现不同人群的内容偏好与消费差异，为目标人群选择和内容定位提供研究依据。",
+      en: "Explain differences in content preferences and consumption across audience groups to inform audience selection and content positioning.",
     } satisfies Localized,
   },
   {
@@ -289,8 +318,8 @@ export const workflow = [
       en: "Define the business question, scope, metrics, and exceptions",
     } satisfies Localized,
     ai: {
-      zh: "辅助框架展开、逻辑扫描与规范调用",
-      en: "Support framework expansion, logic scans, and standard retrieval",
+      zh: "整理研究资料、检查问卷逻辑并调用已有规则",
+      en: "Organize research material, check survey logic, and apply existing rules",
     } satisfies Localized,
   },
   {
@@ -313,16 +342,16 @@ export const workflow = [
       en: "Interpret business impact and decide correction, exception, or disclosure",
     } satisfies Localized,
     ai: {
-      zh: "执行计算、交叉验证、追溯与结构化留痕",
-      en: "Run calculations, cross-validation, traceability, and structured logs",
+      zh: "重新计算指标、比对结果并记录问题位置与依据",
+      en: "Recalculate metrics, compare results, and record issues with their supporting evidence",
     } satisfies Localized,
   },
   {
     number: "04",
     title: { zh: "交付审核", en: "Delivery Review" } satisfies Localized,
     human: {
-      zh: "形成洞察、吸收客户反馈并批准最终输出",
-      en: "Shape the insight, incorporate client feedback, and approve final delivery",
+      zh: "提炼研究发现、回应客户反馈并复核最终结果",
+      en: "Develop findings, address client feedback, and review final outputs",
     } satisfies Localized,
     ai: {
       zh: "检查表格、叙事、口径与版本一致性",
@@ -335,15 +364,15 @@ export const capabilities = [
   {
     title: { zh: "研究与洞察", en: "Research & Insights" } satisfies Localized,
     items: {
-      zh: "定量研究、定性研究、多市场研究、问卷与测量、抽样与配额、品牌 Tracking、用户画像",
-      en: "Quantitative Research, Qualitative Research, Multi-market Research, Survey & Measurement Design, Sampling & Quotas, Brand Tracking, Audience Profiling",
+      zh: "定量研究、定性研究、研究设计、品牌追踪、用户研究、消费者洞察",
+      en: "Quantitative Research, Qualitative Research, Research Design, Brand Tracking, User Research, Consumer Insights",
     } satisfies Localized,
   },
   {
     title: { zh: "分析与决策", en: "Analytics & Decisions" } satisfies Localized,
     items: {
-      zh: "指标体系、人群分层、交叉分析、趋势与差异诊断、数据质量治理、洞察提炼",
-      en: "Measurement Frameworks, Segmentation, Cross-tab Analysis, Trend & Difference Diagnosis, Data Quality Governance, Insight Synthesis",
+      zh: "Excel、SQL、R、Tableau；用户分层、交叉分析、趋势比较、跨市场分析",
+      en: "Excel, SQL, R, Tableau; Audience Segmentation, Cross-tab Analysis, Trend Comparison, Cross-market Analysis",
     } satisfies Localized,
   },
   {
@@ -354,10 +383,17 @@ export const capabilities = [
     } satisfies Localized,
   },
   {
-    title: { zh: "数据与 AI", en: "Data & AI" } satisfies Localized,
+    title: { zh: "数据库与数据产品", en: "Databases & Data Products" } satisfies Localized,
     items: {
-      zh: "Excel、SQL、R、Tableau、Codex、Prompt Engineering、AI Workflow Automation、Python / JavaScript 工作流设计与验证",
-      en: "Excel, SQL, R, Tableau, Codex, Prompt Engineering, AI Workflow Automation, Python / JavaScript Workflow Design & Validation",
+      zh: "SQLite 数据结构设计、指标定义与来源追溯、多维查询、交互原型、数据需求与验收标准",
+      en: "SQLite Data Modelling, Metric Definitions, Source Traceability, Multi-dimensional Queries, Interactive Prototyping, Data Requirements",
+    } satisfies Localized,
+  },
+  {
+    title: { zh: "AI 研究工作流", en: "AI Research Workflows" } satisfies Localized,
+    items: {
+      zh: "Codex、可复用 Skills 库、研究规则配置、工作流设计、异常判断与结果验证",
+      en: "Codex, Reusable Skills Libraries, Research Rule Configuration, Workflow Design, Exception Handling, Output Validation",
     } satisfies Localized,
   },
 ];
