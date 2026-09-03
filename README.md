@@ -33,6 +33,11 @@ pnpm run lint
 pnpm test
 ```
 
+Before publishing to both hosts, build GitHub Pages with its base path, run
+`pnpm run build` for Sites, then run `NEXT_PUBLIC_BASE_PATH=/rui-wang-resume pnpm run test:release`.
+This also checks that both language pages serve the bundled portrait directly
+without relying on a runtime image-optimization endpoint.
+
 ## Content maintenance
 
 - Website copy: `content/resume.ts`

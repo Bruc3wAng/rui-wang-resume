@@ -646,6 +646,7 @@ export function ResumeSite({ language }: { language: Language }) {
                 }
                 width={1023}
                 height={1144}
+                unoptimized
                 priority
               />
             </div>
