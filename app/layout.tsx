@@ -5,7 +5,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "王睿 Rui Wang — Market & User Research",
+    default: "王睿 — 市场研究与数据分析",
     template: "%s — Rui Wang",
   },
   description:
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
     alternateLocale: "en_US",
     url: `${siteUrl}/`,
     siteName: "Rui Wang — Research Portfolio",
-    title: "王睿 Rui Wang — Market & User Research",
+    title: "王睿 — 市场研究与数据分析",
     description:
       "Research Executive at Ipsos. Quantitative research, multi-market insights, AI-assisted workflows, and research-data products.",
     images: [
@@ -55,7 +55,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "王睿 Rui Wang — Market & User Research",
+    title: "王睿 — 市场研究与数据分析",
     description:
       "Research Executive at Ipsos. Quantitative research, analytics, and human-AI workflows.",
     images: [`${siteUrl}/social-preview.png`],

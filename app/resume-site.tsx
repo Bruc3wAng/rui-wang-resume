@@ -36,7 +36,7 @@ const copy = {
     heroFacts: [
       ["研究方法", "定量主导 · 定性补充"],
       ["研究范围", "海外用户 · 品牌 · 产品"],
-      ["多市场经验", "Tracking 覆盖 7 个海外市场"],
+      ["多市场经验", "海外研究覆盖 8 国 · 两项七国 Tracking"],
     ],
     introEyebrow: "HOW I WORK / 工作方式",
     introTitle: "先明确研究问题，再组织数据与分析。",
@@ -57,13 +57,13 @@ const copy = {
     researchMixValue: "定量为主 · 定性为辅",
     earlierExperience: "EARLIER EXPERIENCE",
     workEyebrow: "SELECTED WORK / 研究案例",
-    workTitle: "代表性研究场景与方法。",
+    workTitle: "代表性研究项目。",
     workIntro:
-      "从品牌表现到用户体验，围绕具体问题选择研究方法，并把分析结果用于产品与市场判断。",
+      "两项独立的七国追踪研究，以及美国搜索体验与内容消费研究。",
     role: "我的角色",
     challenge: "研究问题",
-    approach: "分析方法",
-    value: "决策价值",
+    approach: "关键工作",
+    value: "研究产出",
     selectCase: "切换研究案例",
     methodEyebrow: "HUMAN × AI / 研究方法",
     methodTitle: "把研究规则做成可复用的工具。",
@@ -133,7 +133,7 @@ const copy = {
     heroFacts: [
       ["Research mix", "Quantitative-led · Qualitative support"],
       ["Research scope", "International users · Brand · Product"],
-      ["Multi-market work", "Tracking across seven international markets"],
+      ["Multi-market work", "Eight countries · Two seven-country trackers"],
     ],
     introEyebrow: "HOW I WORK",
     introTitle:
@@ -163,13 +163,13 @@ const copy = {
     researchMixValue: "Quantitative-led · Qualitative support",
     earlierExperience: "EARLIER EXPERIENCE",
     workEyebrow: "SELECTED WORK",
-    workTitle: "Selected research contexts and methods.",
+    workTitle: "Selected research projects.",
     workIntro:
-      "From brand performance to user experience, I select methods around a specific question and use the findings to inform product and market decisions.",
+      "Two distinct seven-country tracking studies, alongside U.S. search-experience and content-consumption research.",
     role: "My role",
     challenge: "Research question",
-    approach: "Analytical approach",
-    value: "Decision value",
+    approach: "Key contributions",
+    value: "Research outputs",
     selectCase: "Select a research case",
     methodEyebrow: "HUMAN × AI · RESEARCH METHOD",
     methodTitle:
@@ -263,19 +263,21 @@ function GlobeIcon() {
 }
 
 function ResearchVisual({
-  index,
+  visual,
+  markets,
   language,
 }: {
-  index: string;
+  visual: string;
+  markets: string[];
   language: Language;
 }) {
-  if (index === "01") {
+  if (visual === "markets") {
     return (
       <div className="research-visual visual-markets" aria-hidden="true">
         <p>{language === "zh" ? "市场信号 → 可比口径" : "MARKET SIGNALS → COMPARABLE VIEW"}</p>
         <div className="market-orbit">
           <span className="market-core">TOTAL</span>
-          {["US", "UK", "DE", "JP", "KR", "ID", "BR"].map((market) => (
+          {markets.map((market) => (
             <span className="market-node" key={market}>
               {market}
             </span>
@@ -285,7 +287,7 @@ function ResearchVisual({
     );
   }
 
-  if (index === "02") {
+  if (visual === "journey") {
     const nodes =
       language === "zh"
         ? ["需求", "搜索", "体验", "心智"]
@@ -305,7 +307,7 @@ function ResearchVisual({
     );
   }
 
-  if (index === "03") {
+  if (visual === "segments") {
     return (
       <div className="research-visual visual-segments" aria-hidden="true">
         <p>{language === "zh" ? "人群 × 内容 × 行为" : "AUDIENCE × CONTENT × BEHAVIOR"}</p>
@@ -707,9 +709,8 @@ export function ResumeSite({ language }: { language: Language }) {
             {currentExperience.summary[language]}
           </p>
           <div className="role-grid">
-            {currentExperience.bullets.map((bullet, index) => (
+            {currentExperience.bullets.map((bullet) => (
               <div className="role-point" key={bullet.label.en}>
-                <span>0{index + 1}</span>
                 <h4>{bullet.label[language]}</h4>
                 <p>{bullet.text[language]}</p>
               </div>
@@ -730,32 +731,6 @@ export function ResumeSite({ language }: { language: Language }) {
           </div>
           <span>{earlierExperience.meta[language]}</span>
         </article>
-      </section>
-
-      <section className="about section-pad">
-        <p className="eyebrow">{t.introEyebrow}</p>
-        <div className="section-intro two-column-intro">
-          <h2>{t.introTitle}</h2>
-          <div>
-            <p className="lead">{t.introBody}</p>
-            <p className="supporting-copy">{t.introNote}</p>
-          </div>
-        </div>
-        <div className="research-chain">
-          <div className="chain-heading">
-            <span>{t.chainLabel}</span>
-            <span>01 → 05</span>
-          </div>
-          <ol>
-            {t.researchChain.map((stage, index) => (
-              <li key={stage}>
-                <span>0{index + 1}</span>
-                <strong>{stage}</strong>
-              </li>
-            ))}
-          </ol>
-          <p>{t.chainOwner}</p>
-        </div>
       </section>
 
       <section
@@ -805,7 +780,8 @@ export function ResumeSite({ language }: { language: Language }) {
               aria-live="polite"
             >
               <ResearchVisual
-                index={selectedCase.index}
+                visual={selectedCase.visual}
+                markets={selectedCase.markets}
                 language={language}
               />
               <div className="case-panel-heading">

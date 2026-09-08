@@ -4,23 +4,23 @@ export type Localized = Record<Language, string>;
 
 export const profile = {
   name: { zh: "王睿", en: "Rui Wang" } satisfies Localized,
-  namePair: { zh: "王睿 · Rui Wang", en: "Rui Wang · 王睿" } satisfies Localized,
+  namePair: { zh: "王睿", en: "Rui Wang" } satisfies Localized,
   role: {
     zh: "Ipsos Research Executive",
     en: "Research Executive at Ipsos",
   } satisfies Localized,
   headline: {
-    zh: "用定量研究与数据分析，回答产品、品牌与用户问题。",
-    en: "Research and data for product, brand, and audience decisions.",
+    zh: "海外用户与内容体验研究。",
+    en: "International user and content experience research.",
   } satisfies Localized,
   positioning: {
     zh: "定量研究｜数据分析｜多市场洞察｜AI 研究工作流",
     en: "Quantitative Research | Data Analytics | Multi-market Insights | AI Research Workflows",
   } satisfies Localized,
   summary: {
-    zh: "我在益普索从事定量研究，服务字节跳动与联想。工作覆盖多市场品牌追踪、海外用户研究与产品体验；同时搭建用于正式交付的 AI 研究工具，并将研究经验延伸至数据库设计与数据产品原型开发。",
-    en: "I am a Research Executive at Ipsos, serving ByteDance and Lenovo across multi-market brand tracking, international user research, and product experience. Alongside quantitative research, I build AI-assisted tools used in live delivery and develop research databases and data-product prototypes.",
-  } satisfies Localized,
+    "zh": "益普索 Research Executive，服务字节跳动与联想。研究覆盖8个海外国家，具备大型追踪研究、用户洞察与满意度因素分析经验；将研究方法转化为可复用的 AI 工具，并开展研究数据库与产品原型开发。",
+    "en": "Research Executive at Ipsos, serving ByteDance and Lenovo, with research experience across eight countries. Combine large-scale tracking, audience research, and satisfaction-factor analysis with reusable AI research tools and hands-on research-data product development."
+} satisfies Localized,
   location: { zh: "北京，中国", en: "Beijing, China" } satisfies Localized,
   email: "w274398243@hotmail.com",
   phone: {
@@ -38,8 +38,8 @@ export const projects = [
       en: "Personal research-product prototype",
     } satisfies Localized,
     title: {
-      zh: "市场研究全链路模型与数据平台",
-      en: "Market Research Model & Data Platform",
+      zh: "研究数据平台",
+      en: "Research Data Platform",
     } satisfies Localized,
     summary: {
       zh: "以消费品研究为场景，把分散的市场与商品资料组织成可查询、可比较的研究数据库，并实现网页交互。",
@@ -152,161 +152,251 @@ export const projects = [
 
 export const experiences = [
   {
-    period: { zh: "2026.03 — 至今", en: "Mar 2026 — Present" } satisfies Localized,
-    company: { zh: "益普索 Ipsos", en: "Ipsos" } satisfies Localized,
-    title: {
-      zh: "Research Executive（定量研究）",
-      en: "Research Executive",
-    } satisfies Localized,
-    meta: { zh: "北京 · 现场办公", en: "Beijing, China · On-site" } satisfies Localized,
-    summary: {
-      zh: "负责两项海外研究的核心环节，协调客户、供应商与内部团队推进研究设计、执行和交付；深度参与多市场品牌追踪、AI 产品海外用研、企业用户画像及海外实地研究。",
-      en: "Own core workstreams across two international studies, coordinating clients, vendors, and internal teams through design, fieldwork, and delivery. Contribute substantially to multi-market brand tracking, international AI product research, business-user profiling, and overseas field studies.",
-    } satisfies Localized,
-    bullets: [
+    "period": {
+      "zh": "2026.03 - 至今",
+      "en": "Mar 2026 - Present"
+    },
+    "company": {
+      "zh": "益普索 Ipsos",
+      "en": "Ipsos"
+    },
+    "title": {
+      "zh": "Research Executive",
+      "en": "Research Executive"
+    },
+    "meta": {
+      "zh": "北京 · 现场办公",
+      "en": "Beijing, China · On-site"
+    },
+    "summary": {
+      "zh": "服务字节跳动与联想，定量研究为主、定性研究为辅。海外研究经历覆盖美国、英国、德国、日本、韩国、印度尼西亚、巴西及沙特阿拉伯8国。",
+      "en": "Serve ByteDance and Lenovo through quantitative-led research with qualitative support. Project experience spans the US, UK, Germany, Japan, South Korea, Indonesia, Brazil, and Saudi Arabia."
+    },
+    "bullets": [
       {
-        label: { zh: "研究设计与洞察", en: "Research design & insights" },
-        text: {
-          zh: "将品牌认知、用户需求和产品体验问题转化为研究方案；结合定量数据、定性资料和案头研究，识别用户群体间的需求差异。",
-          en: "Turn questions about brand perceptions, user needs, and product experience into research designs. Combine quantitative data, qualitative findings, and desk research to identify differences between audience groups.",
+        "label": {
+          "zh": "多国内容生态追踪",
+          "en": "Multi-country content tracking"
         },
+        "text": {
+          "zh": "负责覆盖7国的内容生态与满意度追踪研究，统筹多平台研究的样本管理、跨国执行与分析交付；协调执行及数据团队，将复杂研究要求转化为一致的实施与分析标准。",
+          "en": "Lead execution and analytical delivery for a seven-country content-experience and satisfaction tracking study. Coordinate sampling, international fieldwork, and data teams, translating complex research requirements into consistent implementation and analysis standards."
+        }
       },
       {
-        label: { zh: "跨团队项目推进", en: "Research coordination" },
-        text: {
-          zh: "协调研究设计、执行与交付中的衔接问题，明确各方任务和判断标准，推动研究口径分歧、样本与数据问题得到解决。",
-          en: "Coordinate the handoffs between study design, execution, and delivery. Clarify responsibilities and research definitions, and work with teams to resolve sampling and data issues.",
+        "label": {
+          "zh": "满意度因素分析",
+          "en": "Satisfaction-factor analysis"
         },
+        "text": {
+          "zh": "完成相对权重分析及跨期对比，比较不同体验维度的重要性与变化；复核历史方法、样本范围和跨平台加权口径，为识别关键体验因素、解释满意度差异提供分析依据。",
+          "en": "Produce relative-weight analyses and wave-on-wave comparisons of experience dimensions. Review historical methods, sample scope, and cross-platform weighting to support interpretation of satisfaction differences and the identification of important experience factors."
+        }
       },
       {
-        label: { zh: "多市场数据分析", en: "Cross-market analysis" },
-        text: {
-          zh: "参与覆盖美、英、德、日、韩、印尼及巴西 7 个海外市场的追踪研究，开展用户分层、交叉分析和趋势比较，复核市场结果与整体汇总。",
-          en: "Analyze a tracking program across seven markets: the US, UK, Germany, Japan, South Korea, Indonesia, and Brazil. Use segmentation, cross-tab analysis, and trend comparison, reconciling market-level and consolidated results.",
+        "label": {
+          "zh": "搜索心智与行为研究",
+          "en": "Search awareness and behavior"
         },
+        "text": {
+          "zh": "深度参与独立的7国搜索心智追踪研究，围绕平台认知、搜索场景和使用习惯开展用户分层、交叉分析与趋势比较，建立跨市场、跨人群的一致比较依据。",
+          "en": "Contribute substantially to a separate seven-country search-awareness tracker. Analyze audience segments, cross-tabs, and trends in platform awareness, search contexts, and usage habits, maintaining comparable definitions across markets and audiences."
+        }
       },
       {
-        label: { zh: "AI 研究工作流", en: "AI-assisted research workflows" },
-        text: {
-          zh: "将研究校验规则做成可复用工具和 Skills 库，明确自动处理范围、例外判断与验收要求。工具已用于正式交付，并被同事采用。",
-          en: "Build reusable tools and a Skills library from research validation rules, defining the scope of automation, exception handling, and acceptance criteria. The tools are used in live delivery and have been adopted by colleagues.",
+        "label": {
+          "zh": "海外用户与内容洞察",
+          "en": "International audience research"
         },
+        "text": {
+          "zh": "主要负责美国搜索体验与内容消费研究，以任务操作、问卷与行为资料分析用户体验；比较短剧及网文用户的内容偏好、消费习惯与人群重合，支持目标用户和内容定位判断。",
+          "en": "Take primary responsibility for U.S. search-experience and content-consumption studies. Combine search tasks, surveys, and behavioral evidence, and analyze short-form drama and web-fiction audiences by preference, consumption habits, and overlap to support audience and content-positioning research."
+        }
       },
-    ],
+      {
+        "label": {
+          "zh": "品牌与产品研究",
+          "en": "Brand and product research"
+        },
+        "text": {
+          "zh": "深度参与品牌健康度追踪、企业用户画像、AI 产品海外用研与德国实地研究，结合案头研究及定量、定性资料，支持品牌表现、企业需求与产品体验分析。",
+          "en": "Contribute substantially to brand-health tracking, business-user profiling, overseas AI product research, and German fieldwork. Combine desk research with quantitative and qualitative evidence to examine brand performance, business needs, and product experience."
+        }
+      },
+      {
+        "label": {
+          "zh": "AI 研究方法与工具",
+          "en": "AI research tools and methods"
+        },
+        "text": {
+          "zh": "将问卷、样本、指标与分析交付中的研究规则转化为可复用工具和技能库，借助 Codex 实现批量处理、异常定位与结果复核；工具已用于正式交付并被同事采用，完成团队分享与使用推广。",
+          "en": "Turn research rules across questionnaires, samples, metrics, and analytical delivery into reusable tools and a skills library. Use Codex for batch processing, exception detection, and output checks; the tools are used in live delivery and adopted by colleagues, supported by internal training and sharing."
+        }
+      }
+    ]
   },
   {
-    period: { zh: "2024.05 — 2024.08", en: "May 2024 — Aug 2024" } satisfies Localized,
-    company: { zh: "久谦咨询", en: "Meritco Services" } satisfies Localized,
-    title: {
-      zh: "数据分析实习生",
-      en: "Data Analyst Intern",
-    } satisfies Localized,
-    meta: { zh: "北京", en: "Beijing, China" } satisfies Localized,
-    summary: {
-      zh: "整合行业资料、竞品、电商数据和用户反馈，比较价格带、SKU 组合、产品卖点与渠道表现；输出分析表和项目备忘录，支持新品定位与产品升级讨论。",
-      en: "Integrated industry research, competitor evidence, e-commerce data, and user feedback to compare price bands, SKU portfolios, product claims, and channel performance. Produced analysis tables and project memos to support positioning and product-upgrade discussions.",
-    } satisfies Localized,
-    bullets: [],
-  },
+    "period": {
+      "zh": "2024.05 - 2024.08",
+      "en": "May 2024 - Aug 2024"
+    },
+    "company": {
+      "zh": "久谦咨询",
+      "en": "Meritco Services"
+    },
+    "title": {
+      "zh": "数据分析实习生",
+      "en": "Data Analyst Intern"
+    },
+    "meta": {
+      "zh": "北京",
+      "en": "Beijing, China"
+    },
+    "summary": {
+      "zh": "整合行业、竞品、电商数据与用户反馈，比较价格带、SKU组合、产品卖点和渠道表现，支持新品定位与产品升级讨论。建立竞品分析框架，输出分析表、项目备忘录与汇报材料，支持项目组比较商品和渠道策略。",
+      "en": "Combined industry, competitor, e-commerce, and user evidence to compare price bands, SKU portfolios, product claims, and channel performance, supporting product positioning and upgrades. Built competitive-analysis frameworks and produced analysis tables, project memos, and presentations to support comparisons of product and channel strategies."
+    },
+    "bullets": []
+  }
 ];
 
 export const cases = [
   {
-    index: "01",
-    title: {
-      zh: "多市场品牌追踪与比较",
-      en: "Multi-market Brand Tracking & Comparison",
-    } satisfies Localized,
-    scope: { zh: "定量研究 · 7 个海外市场", en: "Quantitative · Seven markets" } satisfies Localized,
-    role: {
-      zh: "深度参与 · 多市场分析与结果复核",
-      en: "Substantial contribution · Cross-market analysis and review",
-    } satisfies Localized,
-    problem: {
-      zh: "不同市场的品牌表现为什么不同？变化来自用户差异，还是指标定义和统计方式？",
-      en: "Why does brand performance differ across markets? Do changes reflect audience differences or the way metrics are defined and calculated?",
-    } satisfies Localized,
-    approach: {
-      zh: "按人群和市场拆分结果，进行交叉分析和趋势比较；核对指标定义，并将逐市场结果与整体汇总相互复核。",
-      en: "Break down results by audience and market, compare trends and cross-tabs, check metric definitions, and reconcile each market with the consolidated view.",
-    } satisfies Localized,
-    value: {
-      zh: "使品牌和用户差异建立在一致的比较标准上，减少口径问题对研究判断的干扰。",
-      en: "Provide a consistent basis for interpreting brand and audience differences, reducing the influence of mismatched definitions.",
-    } satisfies Localized,
+    "index": "01",
+    "visual": "markets",
+    "markets": [
+      "US",
+      "UK",
+      "DE",
+      "JP",
+      "ID",
+      "BR",
+      "SA"
+    ],
+    "title": {
+      "zh": "七国内容生态与满意度追踪",
+      "en": "Seven-country Content Experience Tracker"
+    },
+    "scope": {
+      "zh": "Tracking · 7 个海外市场",
+      "en": "Tracking · Seven international markets"
+    },
+    "role": {
+      "zh": "研究统筹 · 跨国执行与分析交付",
+      "en": "Research coordination · International execution and analytical delivery"
+    },
+    "problem": {
+      "zh": "持续追踪内容体验与满意度，比较不同市场、平台和用户群体的表现。",
+      "en": "Track content experience and satisfaction over time, comparing markets, platforms, and audience groups."
+    },
+    "approach": {
+      "zh": "统筹多国执行、样本管理与分析交付；完成满意度相对权重分析和跨期对比，复核历史方法、用户分组及跨平台加权口径。",
+      "en": "Coordinate international fieldwork, sampling, and analytical delivery. Produce satisfaction relative-weight analyses and wave-on-wave comparisons, reviewing historical methods, audience definitions, and cross-platform weighting."
+    },
+    "value": {
+      "zh": "形成体验维度重要性与跨期变化的分析结果，为识别关键体验因素、解释平台与人群差异提供依据。",
+      "en": "Deliver comparisons of experience-dimension importance and changes over time, supporting analysis of important experience factors and differences between platforms and audiences."
+    }
   },
   {
-    index: "02",
-    title: {
-      zh: "国际搜索体验与用户心智研究",
-      en: "International Search Experience & User Mindset",
-    } satisfies Localized,
-    scope: { zh: "定量主导 · 产品与用户研究", en: "Quantitative-led · Product & user research" } satisfies Localized,
-    role: {
-      zh: "主要负责 · 项目统筹、执行与数据交付",
-      en: "Primary ownership · Coordination, execution, and data delivery",
-    } satisfies Localized,
-    problem: {
-      zh: "理解不同使用情境下的搜索需求、认知与行为路径，为产品体验与策略优先级提供证据。",
-      en: "Understand search needs, perceptions, and behavior paths across use contexts to inform product experience and strategic priorities.",
-    } satisfies Localized,
-    approach: {
-      zh: "将使用情境转化为研究任务与问卷，协调执行，并结合行为反馈与问卷结果分析需求和体验差异。",
-      en: "Translate use contexts into research tasks and survey questions, coordinate fieldwork, and combine behavioral feedback with survey results to examine needs and experience differences.",
-    } satisfies Localized,
-    value: {
-      zh: "把分散的反馈整理为可比较的使用需求和体验问题，为后续产品讨论提供依据。",
-      en: "Organize fragmented feedback into comparable needs and experience issues that inform subsequent product discussions.",
-    } satisfies Localized,
+    "index": "02",
+    "visual": "markets",
+    "markets": [
+      "US",
+      "UK",
+      "DE",
+      "JP",
+      "KR",
+      "ID",
+      "BR"
+    ],
+    "title": {
+      "zh": "七国搜索心智追踪",
+      "en": "Seven-country Search Awareness Tracker"
+    },
+    "scope": {
+      "zh": "Tracking · 7 个海外市场",
+      "en": "Tracking · Seven international markets"
+    },
+    "role": {
+      "zh": "深度参与 · 用户分析、趋势比较与结果复核",
+      "en": "Substantial contribution · Audience analysis, trends, and review"
+    },
+    "problem": {
+      "zh": "追踪用户的平台认知、搜索习惯与使用场景，比较不同市场和用户群体的差异。",
+      "en": "Track platform awareness, search habits, and usage contexts across markets and audience groups."
+    },
+    "approach": {
+      "zh": "开展用户分层、交叉分析与趋势比较，对齐指标定义和统计口径，复核逐国结果与整体汇总。",
+      "en": "Analyze segments, cross-tabs, and trends; align metric definitions and calculation rules, and reconcile country-level and consolidated results."
+    },
+    "value": {
+      "zh": "形成跨市场搜索认知与行为的比较依据，减少统计口径差异对趋势判断的干扰。",
+      "en": "Provide a comparable view of search perceptions and behavior, reducing inconsistencies in metric definitions that can distort trend interpretation."
+    }
   },
   {
-    index: "03",
-    title: {
-      zh: "美国内容消费与人群洞察",
-      en: "U.S. Content Consumption & Audience Insights",
-    } satisfies Localized,
-    scope: { zh: "定量研究 · 内容与人群策略", en: "Quantitative · Content & audience strategy" } satisfies Localized,
-    role: {
-      zh: "主要负责 · 研究执行、分析框架与交付协调",
-      en: "Primary ownership · Execution, analytical framing, and delivery",
-    } satisfies Localized,
-    problem: {
-      zh: "在内容类型、用户特征与消费行为之间建立可解释的联系，识别关键人群及其需求差异。",
-      en: "Build explainable links among content genres, audience characteristics, and consumption behavior to identify priority segments and unmet needs.",
-    } satisfies Localized,
-    approach: {
-      zh: "设计人群分层与交叉分析框架，结合行为、偏好和使用情境识别差异，并对关键结论进行一致性验证。",
-      en: "Designed segmentation and cross-analysis frameworks across behavior, preference, and context, with consistency checks around decision-critical findings.",
-    } satisfies Localized,
-    value: {
-      zh: "呈现不同人群的内容偏好与消费差异，为目标人群选择和内容定位提供研究依据。",
-      en: "Explain differences in content preferences and consumption across audience groups to inform audience selection and content positioning.",
-    } satisfies Localized,
+    "index": "03",
+    "visual": "journey",
+    "markets": [
+      "US"
+    ],
+    "title": {
+      "zh": "美国搜索体验研究",
+      "en": "U.S. Search Experience Research"
+    },
+    "scope": {
+      "zh": "任务研究与定量问卷 · 美国",
+      "en": "Task-based research and surveys · United States"
+    },
+    "role": {
+      "zh": "主要负责 · 研究执行与数据交付",
+      "en": "Primary responsibility · Execution and data delivery"
+    },
+    "problem": {
+      "zh": "通过实际搜索任务，理解用户的操作过程和主观体验。",
+      "en": "Understand users' actions and reported experiences through real search tasks."
+    },
+    "approach": {
+      "zh": "组织移动端搜索任务、问卷及录屏资料的采集与整理，协调执行和数据交付。",
+      "en": "Coordinate mobile search tasks, surveys, and screen-recording collection, organizing the evidence and data delivery."
+    },
+    "value": {
+      "zh": "将用户操作过程与问卷反馈结合，为分析搜索体验中的需求和问题提供依据。",
+      "en": "Connect observed task behavior with survey feedback to support analysis of search needs and experience issues."
+    }
   },
   {
-    index: "04",
-    title: {
-      zh: "AI 产品海外用研与欧洲实地研究",
-      en: "Overseas AI Product Research & European Fieldwork",
-    } satisfies Localized,
-    scope: { zh: "混合研究 · 跨文化执行", en: "Mixed methods · Cross-cultural execution" } satisfies Localized,
-    role: {
-      zh: "深度参与 · 定量 / 定性研究与跨文化执行",
-      en: "Deep involvement · Mixed-method and cross-cultural execution",
-    } satisfies Localized,
-    problem: {
-      zh: "在语言、文化与使用环境差异下理解产品认知、真实使用体验与潜在进入障碍。",
-      en: "Understand product perceptions, lived usage experience, and adoption barriers across language, culture, and context.",
-    } satisfies Localized,
-    approach: {
-      zh: "结合定量测量与定性观察，协调多方执行并统一口径，重点保留不同市场语境中的真实差异。",
-      en: "Combined quantitative measurement with qualitative observation, coordinating execution while preserving meaningful contextual differences.",
-    } satisfies Localized,
-    value: {
-      zh: "在保证跨市场可比性的同时避免过度标准化，为产品本地化与用户体验优化提供更具情境的证据。",
-      en: "Balanced comparability with contextual nuance to support localization and product-experience decisions.",
-    } satisfies Localized,
-  },
+    "index": "04",
+    "visual": "segments",
+    "markets": [
+      "US"
+    ],
+    "title": {
+      "zh": "美国内容消费研究",
+      "en": "U.S. Content Consumption Research"
+    },
+    "scope": {
+      "zh": "定量研究 · 美国",
+      "en": "Quantitative research · United States"
+    },
+    "role": {
+      "zh": "主要负责 · 研究执行、分析表与交付",
+      "en": "Primary responsibility · Execution, analysis tables, and delivery"
+    },
+    "problem": {
+      "zh": "比较不同内容类型的用户画像、消费习惯与人群重合关系。",
+      "en": "Compare audience profiles, consumption habits, and overlap across content genres."
+    },
+    "approach": {
+      "zh": "围绕内容偏好、使用习惯和用户特征组织分析表，协调样本、研究执行与数据交付。",
+      "en": "Structure analysis tables around content preferences, usage habits, and audience characteristics; coordinate sampling, execution, and delivery."
+    },
+    "value": {
+      "zh": "呈现不同内容类型的用户差异，为目标人群与内容定位讨论提供研究依据。",
+      "en": "Describe audience differences across content genres to support target-audience and content-positioning discussions."
+    }
+  }
 ];
 
 export const workflow = [
