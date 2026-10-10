@@ -39,7 +39,7 @@ const copy = {
     heroFacts: [
       ["研究方法", "定量主导 · 定性补充"],
       ["研究范围", "海外用户 · 品牌 · 产品"],
-      ["多市场经验", "多国研究经验 · 两项七国 Tracking"],
+      ["工作实践", "跨市场 Tracking · 满意度与体验研究"],
     ],
     introEyebrow: "HOW I WORK / 工作方式",
     introTitle: "先明确研究问题，再组织数据与分析。",
@@ -69,14 +69,14 @@ const copy = {
     value: "研究产出",
     selectCase: "切换研究案例",
     methodEyebrow: "HUMAN × AI / 研究方法",
-    methodTitle: "把研究规则做成可复用的工具。",
+    methodTitle: "AI 如何进入我的研究工作。",
     methodIntro:
-      "我用 Codex 将问卷、样本、数据与分析表之间的检查规则做成工具和 Skills 库。每次使用时，先明确适用范围，再处理例外并复核结果。相关工具已用于正式交付并被同事采用。",
+      "以满意度追踪为例，我确定分析方法和比较条件，用 Codex 批量完成相对权重、相关分析与结果复算，再核查因素排名、解释跨期差异。分析规则被整理为可重复运行的流程，连同方法 SOP 一起用于后续研究。",
     methodSignal: "正式项目使用 · 同事复用",
-    researcher: "研究员负责",
-    codex: "Codex 承担",
+    researcher: "我的工作",
+    codex: "我用 Codex 完成",
     methodFoot:
-      "随着项目推进，将验证过的规则和处理方式补充进工具库，让后续项目可以复用。",
+      "已将相关工具用于正式研究交付，整理操作手册并进行团队分享，供同事复用。",
     projectsEyebrow: "BUILT BY ME / 个人作品",
     projectsTitle: "把研究经验延伸为数据产品。",
     projectsIntro:
@@ -136,7 +136,7 @@ const copy = {
     heroFacts: [
       ["Research mix", "Quantitative-led · Qualitative support"],
       ["Research scope", "International users · Brand · Product"],
-      ["Multi-market work", "Multi-country research · Two seven-market trackers"],
+      ["In practice", "Cross-market tracking · Experience research"],
     ],
     introEyebrow: "HOW I WORK",
     introTitle:
@@ -176,15 +176,15 @@ const copy = {
     selectCase: "Select a research case",
     methodEyebrow: "HUMAN × AI · RESEARCH METHOD",
     methodTitle:
-      "Turn research rules into reusable tools.",
+      "How I use AI in research.",
     methodIntro:
-      "I use Codex to build tools and a Skills library from checking rules across questionnaires, samples, datasets, and analysis tables. Each use starts with a defined scope, followed by exception handling and output review. The tools are used in live delivery and have been adopted by colleagues.",
+      "For satisfaction tracking, I define the methods and comparison conditions, use Codex for batch relative weight and correlation analysis and independent recalculation, then review factor rankings and explain changes between waves. The analysis becomes a repeatable workflow, accompanied by a methods SOP for subsequent studies.",
     methodSignal:
       "Used in live projects · Adopted by colleagues",
-    researcher: "Researcher owns",
-    codex: "Codex handles",
+    researcher: "My contribution",
+    codex: "With Codex, I",
     methodFoot:
-      "As projects progress, tested rules and handling methods become part of the tool library for reuse in future work.",
+      "These tools are used in live research delivery. I also prepare operating guides and share the methods with colleagues for reuse.",
     projectsEyebrow: "BUILT BY ME",
     projectsTitle:
       "Extending research into data products.",
@@ -226,6 +226,13 @@ const copy = {
     backTop: "Back to top",
   },
 } as const;
+
+const marketNames: Record<string, { zh: string; en: string; flag: string }> = {
+  US: {zh: "美国", en: "United States", flag: "us"}, UK: {zh: "英国", en: "United Kingdom", flag: "gb"},
+  DE: {zh: "德国", en: "Germany", flag: "de"}, JP: {zh: "日本", en: "Japan", flag: "jp"},
+  ID: {zh: "印度尼西亚", en: "Indonesia", flag: "id"}, BR: {zh: "巴西", en: "Brazil", flag: "br"},
+  SA: {zh: "沙特阿拉伯", en: "Saudi Arabia", flag: "sa"}, KR: {zh: "韩国", en: "South Korea", flag: "kr"},
+};
 
 type HeaderTheme = "light" | "night" | "teal";
 type CopiedField = "email" | "phone" | null;
@@ -529,7 +536,7 @@ export function ResumeSite({ language }: { language: Language }) {
             <span className="status-dot" aria-hidden="true" />
             {profile.role[language]} · {profile.location[language]}
           </div>
-          <p className="hero-name">{profile.namePair[language]}</p>
+          <p className="hero-name">{profile.namePair[language]}{language === "zh" ? <span>RUI WANG</span> : null}<i aria-hidden="true">✳</i></p>
           <h1>{profile.headline[language]}</h1>
           <p className="hero-positioning">{profile.positioning[language]}</p>
           <p className="hero-summary">{profile.summary[language]}</p>
@@ -557,11 +564,17 @@ export function ResumeSite({ language }: { language: Language }) {
           </div>
           <p className="availability">{t.availability}</p>
           <div className="hero-market-field">
-        <div className="hero-orbit-note" aria-hidden="true">RESEARCH ACROSS MARKETS</div>
-        <div className="atlas-markets" aria-label={language === "zh" ? "按已展示案例的市场浏览" : "Browse markets in the selected studies"}>
-          {[...new Set(cases.flatMap(item => item.markets))].map(market => <button type="button" key={market} className={selectedCase.markets.includes(market) ? "active" : ""} title={language === "zh" ? `查看 ${market} 的相关研究案例` : `View a study covering ${market}`} onClick={() => { setActiveCase(cases.findIndex(item => item.markets.includes(market))); navigateTo("work"); }}>{market}</button>)}
-        </div>
-        <div className="atlas-caption"><strong>{language === "zh" ? "多国研究" : "Multi-market"}</strong><span>{language === "zh" ? "两项独立的七国追踪研究" : "TWO DISTINCT SEVEN-MARKET STUDIES"}</span></div>
+            <div className="hero-orbit-note">{language === "zh" ? "跨市场，理解不同的用户。" : "Different markets. Different perspectives."}</div>
+            <div className="atlas-guide" aria-hidden="true"><span>CONTENT</span><span>SEARCH</span><span>BRAND</span></div>
+            <div className="atlas-markets" aria-label={language === "zh" ? "项目涉及市场节选，点击查看案例" : "Selected project markets. Select a flag to explore a study."}>
+              {[...new Set(cases.flatMap(item => item.markets))].map(market => {
+                const place = marketNames[market];
+                return <button type="button" key={market} className={selectedCase.markets.includes(market) ? "active" : ""} aria-label={language === "zh" ? `${place.zh}：查看相关研究案例` : `${place.en}: view a related study`} title={place[language]} onClick={() => { setActiveCase(cases.findIndex(item => item.markets.includes(market))); navigateTo("work"); }}>
+                  <span className="flag-crop"><Image src={`${basePath}/images/flags/${place.flag}.svg`} alt="" width={64} height={48} unoptimized /></span><span className="market-code">{market}</span>
+                </button>;
+              })}
+            </div>
+            <div className="atlas-caption"><strong>{language === "zh" ? "项目涉及市场 · 节选" : "SELECTED PROJECT MARKETS"}</strong><span>{language === "zh" ? "从国旗进入相关研究案例 ↗" : "EXPLORE A STUDY THROUGH ITS MARKETS ↗"}</span></div>
           </div>
 
         </div>

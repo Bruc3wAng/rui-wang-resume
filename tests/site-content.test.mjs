@@ -17,7 +17,6 @@ test("exports the bilingual public profile", async () => {
   assert.match(en, /Lenovo/);
   assert.match(zh, /7 个海外市场/);
   assert.match(zh, /查看工作经历/);
-  assert.match(zh, /把研究经验延伸为数据产品/);
   assert.match(zh, /研究数据平台/);
   assert.match(en, /Research Data Platform/);
   assert.match(zh, /SQLite/);
@@ -34,13 +33,16 @@ test("exports the bilingual public profile", async () => {
   assert.match(zh, /data-header-theme="teal"/);
   assert.match(zh, /Research Executive/);
   assert.match(zh, /具备多国研究经验/);
-  assert.match(en, /multi-country research experience/);
+  assert.match(en, /multi-country research/);
   assert.match(zh, /七国内容生态与满意度追踪/);
   assert.match(zh, /七国搜索心智追踪/);
   assert.match(zh, /字节跳动与联想/);
   assert.match(zh, /相对权重分析/);
-  assert.match(zh, /跨市场研究，理解用户与产品/);
-  assert.match(zh, /跨市场分析报告与后续研究建议/);
+  assert.match(zh, /研究用户如何选择、使用与评价产品/);
+  assert.match(zh, /跨市场分析报告/);
+  assert.match(zh, /后续研究建议/);
+  assert.match(zh, /借助 Codex 完成相对权重分析/);
+  assert.match(zh, /批量计算、跨文件比对和自动定位问题/);
   assert.match(zh, /健康产品升级/);
   assert.match(zh, /宠物食品新品孵化/);
   assert.match(en, /Health product upgrades/);

@@ -16,43 +16,40 @@ float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(ha
 vec3 wave(vec2 p){vec3 v=vec3(0);float aspect=resolution.x/resolution.y;for(int i=0;i<12;i++){vec4 r=ripples[i];float age=time-r.z;if(age<0.||age>3.)continue;vec2 delta=(p-r.xy)*vec2(aspect,1.);float d=length(delta);float front=d-age*.24;float envelope=exp(-front*front*100.-age*1.55)*r.w;float sn=sin(front*90.);float derivative=(90.*cos(front*90.)-200.*front*sn)*envelope;v+=vec3(sn*envelope,normalize(delta+vec2(.00001))*vec2(aspect,1.)*derivative);}return v;}
 void main(){
  float aspect=resolution.x/resolution.y;
- vec3 ripple=wave(uv);float w=ripple.x;vec2 grad=ripple.yz;
- vec2 q=uv+grad*.00034;
+ vec3 ripple=wave(uv);vec2 q=uv+ripple.yz*.00020;
  float mobile=1.-step(.85,aspect);
- float cx=mix(.75,.58,mobile);float cy=mix(.55,.40,mobile);
- cx+=sin(chapter*1.2)*.055;vec2 origin=mix(heroCenter,vec2(cx,cy),smoothstep(.1,1.,chapter));
- vec2 p=(q-origin)*vec2(aspect,1.);
- p-=pointer*vec2(.012,.009);
- float phase=fract(chapter);float radius=mix(.32,.17,mobile);
- float r=length(p),a=atan(p.y,p.x);
- float swell=sin(a*3.+time*.14+chapter)*.006+sin(a*7.-time*.11)*.003;
- float edge=radius+swell;
- vec3 cold=vec3(.14,.57,.57),warm=vec3(.62,.45,.25),violet=vec3(.35,.38,.64);
- vec3 tint=mix(cold,warm,smoothstep(.4,1.4,chapter));tint=mix(tint,violet,smoothstep(2.3,4.,chapter));
- vec3 col=vec3(.012,.034,.049);
- float mist=noise(q*3.+time*.015)*.6+noise(q*7.-time*.013)*.25;
- col+=tint*.08*mist;
- col+=tint*.10*exp(-r*r*2.5);
- float surface=1.-smoothstep(.12,1.,chapter);
- float shell=exp(-abs(r-edge)*170.);
- float ring=exp(-abs(r-radius*1.29)*600.);
- col+=(tint*shell*.27+vec3(.63,.89,.82)*shell*.11+ring*tint*.18)*surface;
- if(r<edge&&surface>.001){
-  vec3 n=normalize(vec3(p/edge,sqrt(max(.001,1.-r*r/(edge*edge)))));
-  float fres=pow(1.-n.z,3.5);
-  vec3 light=normalize(vec3(-.6,.8,1.));
-  float spec=pow(max(0.,dot(reflect(-light,n),vec3(0,0,1))),42.);
-  float lat=asin(n.y)*7.,lon=atan(n.x,n.z)*10.+time*.07;
-  float grid=pow(1.-abs(sin(lat)),34.)+pow(1.-abs(sin(lon)),42.);
-  col+=tint*grid*.095*n.z*surface;
-  float bands=sin(n.x*7.+n.y*4.+sin(n.y*9.+time*.1)+chapter*2.);
-  col+=(tint*(.025+fres*.23)+vec3(.65,.80,.72)*spec*.45)*surface;
-  col+=mix(tint,violet,sin(a*2.+chapter)*.5+.5)*pow(max(0.,bands),18.)*.065*surface;
- }
- col+=tint*max(0.,w)*.12;
- col+=(hash(gl_FragCoord.xy)-.5)*.009;
- col*=1.-.30*length(uv-.5);
+ vec2 origin=mix(heroCenter,vec2(.80,.53),smoothstep(.1,1.,chapter));
+ vec2 p=(q-origin)*vec2(aspect,1.);p-=pointer*vec2(.009,.007);
+ float surface=1.-smoothstep(.12,.94,chapter);
+ vec3 paper=vec3(.974,.971,.948),blue=vec3(.11,.29,.67),orange=vec3(1.,.52,.23);
+ vec3 col=paper;
+ // Broad daylight washes carry colour through the reading surface.
+ col=mix(col,vec3(.88,.94,.98),.52*exp(-dot(p,p)*2.));
+ col=mix(col,vec3(1.,.91,.77),.36*exp(-dot(p-vec2(.26,-.22),p-vec2(.26,-.22))*9.));
+ float scale=mix(.225,.135,mobile);
+ vec2 v=p/scale;float rot=.32+sin(time*.15)*.12+pointer.x*.08;
+ v=mat2(cos(rot),-sin(rot),sin(rot),cos(rot))*v;
+ // A refractive ribbon, rather than the previous particle globe, opens the story.
+ float a=atan(v.y,v.x);float ringRadius=1.+.075*sin(a*3.+time*.25);
+ float r=length(v*vec2(.92,1.10));float width=.155+.06*sin(a*2.-time*.18);
+ float d=abs(r-ringRadius);float body=1.-smoothstep(width-.025,width+.025,d);
+ float lip=exp(-abs(d-width)*90.);float innerGlow=exp(-abs(r-(ringRadius-width*.85))*100.);
+ float hue=.5+.5*sin(a+time*.19+.8);
+ vec3 tint=mix(blue,orange,smoothstep(.22,.85,hue));
+ float curve=clamp((r-ringRadius)/width,-1.,1.);
+ vec3 glass=mix(tint,vec3(.92,.97,1.),pow(.5+.5*curve,2.)*.72);
+ glass=mix(glass,vec3(1.),pow(max(0.,sin(a*2.-time*.17+.7)),20.)*.82);
+ float shade=exp(-pow((r-ringRadius)/.32,2.));
+ col=mix(col,vec3(.52,.64,.76),shade*.08*surface);
+ col=mix(col,glass,body*.87*surface);
+ col=mix(col,vec3(1.,.995,.96),lip*.83*surface);
+ col=mix(col,tint,innerGlow*.50*surface);
+ float orbit=exp(-abs(length(v*vec2(.85,1.2))-1.55)*350.);
+ col=mix(col,blue,orbit*.12*surface);
+ float waveLight=clamp(ripple.x*.10,-.08,.08);col+=vec3(-.35,-.15,.1)*waveLight;
+ col+=(hash(gl_FragCoord.xy)-.5)*.004;
  color=vec4(col,1.);
+
 }`;
 const pointVertex = `#version 300 es
 precision highp float;
@@ -85,13 +82,13 @@ void main(){
  xy+=normalize(d+vec2(.0001))*pull*.026;
  gl_Position=vec4(xy*2.-1.,0.,1.);
  gl_PointSize=(1.1+seed.z*1.3)*zoom;
- brightness=(.36+max(0.,p.z)*.72)*(1.+pull*1.1);id=seed.z;
+ brightness=(.22+max(0.,p.z)*.42)*(1.+pull*.8)*smoothstep(.08,.85,chapter);id=seed.z;
 }`;
 const pointFragment=`#version 300 es
 precision highp float;
 in float brightness;in float id;out vec4 color;
 uniform float chapter;
-void main(){float d=length(gl_PointCoord-.5);if(d>.5)discard;vec3 c=mix(vec3(.43,.77,.71),vec3(.92,.76,.48),id*.65);c=mix(c,vec3(.64,.67,.94),smoothstep(2.5,4.,chapter)*.5);color=vec4(c,brightness*pow(1.-d*2.,.6));}`;
+void main(){float d=length(gl_PointCoord-.5);if(d>.5)discard;vec3 c=mix(vec3(.11,.31,.61),vec3(.88,.37,.16),id*.65);c=mix(c,vec3(.22,.42,.55),smoothstep(2.5,4.,chapter)*.5);color=vec4(c,brightness*pow(1.-d*2.,.6));}`;
 
 export function createResearchScene(canvas: HTMLCanvasElement) {
  const gl=canvas.getContext('webgl2',{alpha:false,antialias:false,powerPreference:'low-power'});
@@ -110,7 +107,7 @@ export function createResearchScene(canvas: HTMLCanvasElement) {
  return {draw(input:SceneInput){
  gl.viewport(0,0,canvas.width,canvas.height);gl.disable(gl.BLEND);gl.useProgram(bg);gl.bindBuffer(gl.ARRAY_BUFFER,quad);gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,2,gl.FLOAT,false,0,0);
  gl.uniform2f(b.resolution,canvas.width,canvas.height);gl.uniform2fv(b.pointer,input.pointer);gl.uniform2fv(b.heroCenter,input.heroCenter);gl.uniform1f(b.time,input.time);gl.uniform1f(b.chapter,input.chapter);gl.uniform1f(b.detail,input.detail);gl.uniform4fv(b['ripples[0]'],input.ripples);gl.drawArrays(gl.TRIANGLES,0,6);
- gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE);gl.useProgram(points);gl.bindBuffer(gl.ARRAY_BUFFER,particle);gl.vertexAttribPointer(0,3,gl.FLOAT,false,0,0);gl.uniform1f(u.time,input.time);gl.uniform1f(u.chapter,input.chapter);gl.uniform1f(u.detail,input.detail);gl.uniform1f(u.ratio,canvas.width/canvas.height);gl.uniform2fv(u.pointer,input.pointer);gl.uniform2fv(u.heroCenter,input.heroCenter);gl.drawArrays(gl.POINTS,0,count);
+ gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.useProgram(points);gl.bindBuffer(gl.ARRAY_BUFFER,particle);gl.vertexAttribPointer(0,3,gl.FLOAT,false,0,0);gl.uniform1f(u.time,input.time);gl.uniform1f(u.chapter,input.chapter);gl.uniform1f(u.detail,input.detail);gl.uniform1f(u.ratio,canvas.width/canvas.height);gl.uniform2fv(u.pointer,input.pointer);gl.uniform2fv(u.heroCenter,input.heroCenter);gl.drawArrays(gl.POINTS,0,count);
  },dispose(){gl.deleteBuffer(quad);gl.deleteBuffer(particle);gl.deleteProgram(bg);gl.deleteProgram(points);shaders.forEach(s=>gl.deleteShader(s));}};
  }catch(error){shaders.forEach(s=>gl.deleteShader(s));console.warn('Research scene uses the static fallback.',error);return null;}
 }

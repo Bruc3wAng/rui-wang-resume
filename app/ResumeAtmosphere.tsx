@@ -19,7 +19,7 @@ export default function ResumeAtmosphere({language,activeCase,activeWorkflow}:{l
   const ripples=new Array<number>(48).fill(0);for(let i=0;i<12;i++)ripples[i*4+2]=-100;
   function resize(){const dpr=Math.min(devicePixelRatio,innerWidth<700?1:1.35);el!.width=Math.round(innerWidth*dpr);el!.height=Math.round(innerHeight*dpr);scroll();schedule();}
   function scroll(){
-   const field=document.querySelector(".hero-market-field")?.getBoundingClientRect();if(field)heroCenter=[(field.left+field.width*.5)/innerWidth,1-(field.top+field.height*(innerWidth<700?.48:.42))/innerHeight];
+   const field=document.querySelector(".hero-market-field")?.getBoundingClientRect();if(field)heroCenter=[(field.left+field.width*.5)/innerWidth,1-(field.top+field.height*(innerWidth<700?.48:.43))/innerHeight];
    const anchors=sections.map(id=>{const e=document.getElementById(id);return e?e.getBoundingClientRect().top+scrollY:0;});
    const y=scrollY+80;let i=0;while(i<anchors.length-1&&y>=anchors[i+1])i++;
    const t=i<anchors.length-1?Math.min(1,Math.max(0,(y-anchors[i])/(anchors[i+1]-anchors[i]))):0;
@@ -48,7 +48,7 @@ export default function ResumeAtmosphere({language,activeCase,activeWorkflow}:{l
   }
   function schedule(){if(!frame&&!disposed)frame=requestAnimationFrame(draw);}
   const wake=()=>{last=0;schedule();};const leave=()=>shell.style.setProperty('--pointer-visible','0');
-  const lost=()=>{shell.dataset.scene='static';el!.hidden=true;};el.addEventListener('webglcontextlost',lost);
+  const lost=()=>{disposed=true;cancelAnimationFrame(frame);shell.dataset.scene='static';el!.hidden=true;};el.addEventListener('webglcontextlost',lost);
   const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting)entry.target.classList.add('is-revealed');}),{threshold:.12});
   document.querySelectorAll('.role-point,.earlier-role,.capability-card,.project-card').forEach(e=>observer.observe(e));
   addEventListener('scroll',scroll,{passive:true});addEventListener('resize',resize);addEventListener('pointermove',move,{passive:true});document.addEventListener('visibilitychange',wake);document.addEventListener('pointerleave',leave);

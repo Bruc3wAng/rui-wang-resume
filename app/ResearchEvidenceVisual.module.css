@@ -1,13 +1,15 @@
 .scene {
-  --evidence-ink: #e2ece7;
-  --evidence-muted: #b4c9cb;
-  --evidence-line: #99c4bc40;
+  --evidence-ink: var(--ink, #173349);
+  --evidence-muted: var(--ink-soft, #4f6474);
+  --evidence-line: var(--line, #17334929);
+  --evidence-accent: var(--teal, #286872);
+  --evidence-surface: var(--paper-light, #fffdf8);
   margin: 0 0 26px;
   padding: 24px 26px 20px;
   position: relative;
   isolation: isolate;
   border-block: 1px solid var(--evidence-line);
-  background: linear-gradient(115deg, #112a32ee, #0a2027ed);
+  background: color-mix(in srgb, var(--evidence-surface) 85%, transparent);
   font-family: Arial, "Microsoft YaHei", sans-serif;
   color: var(--evidence-ink);
   overflow: hidden;
@@ -18,8 +20,8 @@
   position: absolute;
   inset: 0;
   z-index: -1;
-  opacity: .15;
-  background-image: linear-gradient(#97c3b51c 1px, transparent 1px), linear-gradient(90deg, #97c3b51c 1px, transparent 1px);
+  opacity: .14;
+  background-image: linear-gradient(var(--evidence-line) 1px, transparent 1px), linear-gradient(90deg, var(--evidence-line) 1px, transparent 1px);
   background-size: 30px 30px;
   mask-image: linear-gradient(90deg, transparent, black, transparent);
 }
@@ -28,29 +30,29 @@
 .scene ul { list-style: none; padding: 0; margin: 0; }
 .markets { display: grid; grid-template-columns: repeat(var(--market-count), minmax(0, 1fr)); }
 .markets li { display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 0; }
-.markets abbr { font: 12px Arial, sans-serif; text-decoration: none; letter-spacing: .06em; color: #d8e9df; }
-.marketDot { width: 6px; height: 6px; border: 1px solid #c4d9b8; border-radius: 50%; background: #c4d9b822; box-shadow: 0 0 12px #a8cbaa25; }
+.markets abbr { font: 12px Arial, sans-serif; text-decoration: none; letter-spacing: .06em; color: var(--evidence-ink); }
+.marketDot { width: 6px; height: 6px; border: 1px solid var(--evidence-accent); border-radius: 50%; background: color-mix(in srgb, var(--evidence-accent) 16%, transparent); }
 .connector { display: block; width: 100%; height: 28px; overflow: visible; }
-.trace { fill: none; stroke: #98c6b865; stroke-width: 1; vector-effect: non-scaling-stroke; stroke-dasharray: 1; stroke-dashoffset: 0; animation: evidence-trace 850ms cubic-bezier(.22,.65,.3,1) both; animation-delay: calc(var(--trace-order, 0) * 45ms); }
-.baseline { border: 1px solid var(--evidence-line); padding: 13px 12px; text-align: center; background: #b7d4be09; }
+.trace { fill: none; stroke: var(--evidence-accent); stroke-opacity: .72; stroke-width: 1; vector-effect: non-scaling-stroke; stroke-dasharray: 1; stroke-dashoffset: 0; animation: evidence-trace 850ms cubic-bezier(.22,.65,.3,1) both; animation-delay: calc(var(--trace-order, 0) * 45ms); }
+.baseline { border: 1px solid var(--evidence-line); padding: 13px 12px; text-align: center; background: color-mix(in srgb, var(--evidence-accent) 4%, transparent); }
 .baseline strong { font-size: 15px; font-weight: 400; }
 .baseline ul { display: flex; justify-content: center; flex-wrap: wrap; gap: 6px 16px; margin-top: 9px; }
-.baseline li { font-size: 12px; line-height: 1.6; color: var(--evidence-muted); }
+.baseline li { font-size: 13px; line-height: 1.6; color: var(--evidence-muted); }
 .scene .methods { display: flex; flex-wrap: wrap; gap: 7px 15px; justify-content: center; margin-top: 14px; }
-.methods li { font-size: 12px; color: #b8cfc4; line-height: 1.6; }
-.methods li + li::before { content: "/"; display: inline-block; margin-right: 15px; color: #759a9b; }
+.methods li { font-size: 13px; color: var(--evidence-muted); line-height: 1.6; }
+.methods li + li::before { content: "/"; display: inline-block; margin-right: 15px; color: var(--evidence-muted); }
 .output { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px 20px; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--evidence-line); }
-.output > span { font-size: 11px; color: var(--evidence-muted); white-space: nowrap; }
-.output strong { font-size: 14px; line-height: 1.6; font-weight: 400; color: #d9e6cd; }
-.task { margin-inline: auto; width: fit-content; padding: 10px 28px; border: 1px solid #a7caba65; border-radius: 2px; font-size: 14px; background: #bfd4ba0b; }
+.output > span { font-size: 12px; color: var(--evidence-muted); white-space: nowrap; }
+.output strong { font-size: 15px; line-height: 1.6; font-weight: 400; color: var(--evidence-ink); }
+.task { margin-inline: auto; width: fit-content; padding: 10px 28px; border: 1px solid var(--evidence-line); border-radius: 2px; font-size: 14px; background: color-mix(in srgb, var(--evidence-accent) 4%, transparent); }
 .pair, .audiences { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
 .pair > div { text-align: center; border-block: 1px solid var(--evidence-line); padding: 13px 5px; }
 .pair strong, .audiences strong { font-size: 15px; font-weight: 400; line-height: 1.5; }
-.pair span { display: block; margin-top: 9px; font-size: 12px; color: var(--evidence-muted); line-height: 1.6; }
+.pair span { display: block; margin-top: 9px; font-size: 13px; color: var(--evidence-muted); line-height: 1.6; }
 .audiences { gap: 26px; }
-.audiences strong { display: block; padding: 18px 8px; text-align: center; border: 1px solid #a7caba65; border-radius: 2px; background: #bfd4ba0b; }
+.audiences strong { display: block; padding: 18px 8px; text-align: center; border: 1px solid var(--evidence-line); border-radius: 2px; background: color-mix(in srgb, var(--evidence-accent) 4%, transparent); }
 .scene .dimensions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-block: 1px solid var(--evidence-line); }
-.dimensions li { text-align: center; padding: 15px 8px; font-size: 13px; line-height: 1.5; color: #c1d4cf; }
+.dimensions li { text-align: center; padding: 15px 8px; font-size: 14px; line-height: 1.5; color: var(--evidence-ink); }
 .dimensions li + li { border-left: 1px solid var(--evidence-line); }
 [data-evidence-visual="journey"] .output, [data-evidence-visual="segments"] .output { margin-top: 0; }
 @keyframes evidence-trace { from { stroke-dashoffset: 1; opacity: .35; } to { stroke-dashoffset: 0; opacity: 1; } }
