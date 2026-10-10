@@ -2,32 +2,29 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import ResearchEvidenceVisual from "./ResearchEvidenceVisual";
+import { SelectedWork, AIPractice, CreativeWork } from "./ResumeChapters";
 import ResumeAtmosphere from "./ResumeAtmosphere";
 import "./narrative.css";
+import "./chapters.css";
 import resumeRelease from "../content/resume-release.json";
 import {
   capabilities,
-  cases,
+  selectedWork,
   education,
-  experiences,
   type Language,
   profile,
-  projects,
-  workflow,
 } from "../content/resume";
 
 const copy = {
   zh: {
     nav: [
-      ["经历", "experience"],
-      ["研究案例", "work"],
-      ["AI 方法", "method"],
+      ["重点工作", "work"],
+      ["AI 提效实践", "method"],
       ["个人作品", "projects"],
       ["能力", "capabilities"],
     ],
     availability: "北京 · 市场研究、用户洞察与数据分析",
-    viewWork: "查看工作经历",
+    viewWork: "查看重点工作",
     download: "下载中文简历",
     profileIndex: "PROFILE / 01",
     profileCurrent: "当前",
@@ -41,52 +38,6 @@ const copy = {
       ["研究范围", "海外用户 · 品牌 · 产品"],
       ["工作实践", "跨市场 Tracking · 满意度与体验研究"],
     ],
-    introEyebrow: "HOW I WORK / 工作方式",
-    introTitle: "先明确研究问题，再组织数据与分析。",
-    introBody:
-      "我会先明确客户需要作出什么判断，再确定研究问题、指标和分析方法。在执行过程中协调各方口径，分析时检查数据是否可比，最后把发现整理为有依据的判断与建议。",
-    introNote:
-      "近期也将这套思路用于数据产品：从研究需求出发设计数据库，保留信息来源，并让查询、比较和导出使用同一套定义。",
-    researchChain: ["业务问题", "研究设计", "多市场执行", "分析诊断", "决策支持"],
-    chainLabel: "一条完整的研究链路",
-    chainOwner: "每个阶段都明确：要回答什么、需要哪些证据、由谁作出判断。",
-    experienceEyebrow: "EXPERIENCE / 工作经历",
-    experienceTitle: "在益普索的研究经历。",
-    clientScope: "客户范围",
-    clientScopeValue: "字节跳动与联想",
-    researchScope: "研究主题",
-    researchScopeValue: "海外用户、品牌 Tracking、人群洞察与产品体验",
-    researchMix: "方法组合",
-    researchMixValue: "定量为主 · 定性为辅",
-    earlierExperience: "EARLIER EXPERIENCE",
-    workEyebrow: "SELECTED WORK / 研究案例",
-    workTitle: "代表性研究项目。",
-    workIntro:
-      "两项独立的七国追踪研究，以及美国搜索体验与内容消费研究。",
-    role: "我的角色",
-    challenge: "研究问题",
-    approach: "关键工作",
-    value: "研究产出",
-    selectCase: "切换研究案例",
-    methodEyebrow: "HUMAN × AI / 研究方法",
-    methodTitle: "AI 如何进入我的研究工作。",
-    methodIntro:
-      "以满意度追踪为例，我确定分析方法和比较条件，用 Codex 批量完成相对权重、相关分析与结果复算，再核查因素排名、解释跨期差异。分析规则被整理为可重复运行的流程，连同方法 SOP 一起用于后续研究。",
-    methodSignal: "正式项目使用 · 同事复用",
-    researcher: "我的工作",
-    codex: "我用 Codex 完成",
-    methodFoot:
-      "已将相关工具用于正式研究交付，整理操作手册并进行团队分享，供同事复用。",
-    projectsEyebrow: "BUILT BY ME / 个人作品",
-    projectsTitle: "把研究经验延伸为数据产品。",
-    projectsIntro:
-      "从研究数据库到网页交互，探索如何让资料更易查询、比较，并用于后续分析。",
-    moreProjects: "其他个人作品",
-    projectProblem: "解决的问题",
-    projectContribution: "我的工作",
-    projectOutcome: "当前产出",
-    viewLive: "在线体验",
-    viewSource: "查看源码",
     commandHint: "按 ⌘K / Ctrl K 快速浏览本站",
     capabilityEyebrow: "CAPABILITIES / 专业能力",
     capabilityTitle: "研究、分析与产品实现。",
@@ -116,15 +67,14 @@ const copy = {
   },
   en: {
     nav: [
-      ["Experience", "experience"],
       ["Selected work", "work"],
-      ["AI method", "method"],
+      ["AI practice", "method"],
       ["Projects", "projects"],
       ["Capabilities", "capabilities"],
     ],
     availability:
       "Beijing · Market research, user insights, and data analytics",
-    viewWork: "View experience",
+    viewWork: "Explore selected work",
     download: "Download Chinese résumé",
     profileIndex: "PROFILE / 01",
     profileCurrent: "Current",
@@ -138,64 +88,6 @@ const copy = {
       ["Research scope", "International users · Brand · Product"],
       ["In practice", "Cross-market tracking · Experience research"],
     ],
-    introEyebrow: "HOW I WORK",
-    introTitle:
-      "Start with the research question. Then organize the evidence.",
-    introBody:
-      "I start by understanding the decision a client needs to make, then define the research questions, measures, and analytical approach. I align teams during execution, check comparability during analysis, and turn findings into evidence-backed recommendations.",
-    introNote:
-      "I also apply this approach to data products: designing a database around research needs, preserving source information, and keeping retrieval, comparison, and exports consistent.",
-    researchChain: [
-      "Business question",
-      "Research design",
-      "Multi-market execution",
-      "Analytical diagnosis",
-      "Decision support",
-    ],
-    chainLabel: "One connected research chain",
-    chainOwner:
-      "At each stage: a clear question, the evidence needed, and responsibility for the judgment.",
-    experienceEyebrow: "EXPERIENCE",
-    experienceTitle: "Research experience at Ipsos.",
-    clientScope: "Client scope",
-    clientScopeValue: "ByteDance and Lenovo",
-    researchScope: "Research themes",
-    researchScopeValue:
-      "International users, brand tracking, audience insights, and product experience",
-    researchMix: "Research mix",
-    researchMixValue: "Quantitative-led · Qualitative support",
-    earlierExperience: "EARLIER EXPERIENCE",
-    workEyebrow: "SELECTED WORK",
-    workTitle: "Selected research projects.",
-    workIntro:
-      "Two distinct seven-country tracking studies, alongside U.S. search-experience and content-consumption research.",
-    role: "My role",
-    challenge: "Research question",
-    approach: "Key contributions",
-    value: "Research outputs",
-    selectCase: "Select a research case",
-    methodEyebrow: "HUMAN × AI · RESEARCH METHOD",
-    methodTitle:
-      "How I use AI in research.",
-    methodIntro:
-      "For satisfaction tracking, I define the methods and comparison conditions, use Codex for batch relative weight and correlation analysis and independent recalculation, then review factor rankings and explain changes between waves. The analysis becomes a repeatable workflow, accompanied by a methods SOP for subsequent studies.",
-    methodSignal:
-      "Used in live projects · Adopted by colleagues",
-    researcher: "My contribution",
-    codex: "With Codex, I",
-    methodFoot:
-      "These tools are used in live research delivery. I also prepare operating guides and share the methods with colleagues for reuse.",
-    projectsEyebrow: "BUILT BY ME",
-    projectsTitle:
-      "Extending research into data products.",
-    projectsIntro:
-      "From research databases to web interactions, I explore how information can become easier to retrieve, compare, and use in analysis.",
-    moreProjects: "Other personal projects",
-    projectProblem: "Problem",
-    projectContribution: "My contribution",
-    projectOutcome: "Current output",
-    viewLive: "View live",
-    viewSource: "View source",
     commandHint: "Press ⌘K / Ctrl K to navigate",
     capabilityEyebrow: "CAPABILITIES",
     capabilityTitle:
@@ -272,67 +164,6 @@ function GlobeIcon() {
   );
 }
 
-function ResearchDataMap({ language }: { language: Language }) {
-  const steps = language === "zh"
-    ? [
-        ["资料与定义", "市场资料 · 商品信息 · 来源与时间"],
-        ["研究数据库", "品类 · 渠道 · 商品 · 指标口径"],
-        ["查询与分析", "筛选 · 比较 · 明细 · 导出"],
-      ]
-    : [
-        ["Sources & definitions", "Market information · Products · Source dates"],
-        ["Research database", "Categories · Channels · Products · Metrics"],
-        ["Explore & analyze", "Filter · Compare · Inspect · Export"],
-      ];
-
-  return (
-    <div className="research-data-map">
-      <p className="mini-label">RESEARCH DATA</p>
-      <ol>
-        {steps.map(([title, detail], index) => (
-          <li key={title}>
-            <span aria-hidden="true">0{index + 1}</span>
-            <div><strong>{title}</strong><p>{detail}</p></div>
-            {index < steps.length - 1 ? <span className="data-step-arrow" aria-hidden="true">↓</span> : null}
-          </li>
-        ))}
-      </ol>
-    </div>
-  );
-}
-
-function ProjectCard({ project, language, featured = false }: {
-  project: (typeof projects)[number];
-  language: Language;
-  featured?: boolean;
-}) {
-  const t = copy[language];
-  return (
-    <article className={`project-card${featured ? " project-featured" : ""}`}>
-      {featured ? <ResearchDataMap language={language} /> : null}
-      <div className="project-content">
-        <div className="project-meta"><span>{project.index}</span><span>{project.type[language]}</span></div>
-        <h3>{project.title[language]}</h3>
-        <p className="project-summary">{project.summary[language]}</p>
-        <dl className="project-facts">
-          <div><dt>{t.projectProblem}</dt><dd>{project.problem[language]}</dd></div>
-          <div><dt>{t.projectContribution}</dt><dd>{project.contribution[language]}</dd></div>
-          <div><dt>{t.projectOutcome}</dt><dd>{project.outcome[language]}</dd></div>
-        </dl>
-        <ul className="project-tags" aria-label={language === "zh" ? "技术与方法" : "Technology and methods"}>
-          {project.tags.map((tag) => <li key={tag}>{tag}</li>)}
-        </ul>
-        {"liveUrl" in project && "sourceUrl" in project ? (
-          <div className="project-links">
-            <a className="button button-primary" href={project.liveUrl} target="_blank" rel="noreferrer">{t.viewLive}<Arrow /></a>
-            <a className="button button-ghost" href={project.sourceUrl} target="_blank" rel="noreferrer">{t.viewSource}<Arrow /></a>
-          </div>
-        ) : null}
-      </div>
-    </article>
-  );
-}
-
 export function ResumeSite({ language }: { language: Language }) {
   const [copiedField, setCopiedField] = useState<CopiedField>(null);
   const [commandOpen, setCommandOpen] = useState(false);
@@ -341,10 +172,7 @@ export function ResumeSite({ language }: { language: Language }) {
   const [headerTheme, setHeaderTheme] = useState<HeaderTheme>("light");
   const t = copy[language];
   const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
-  const currentExperience = experiences[0];
-  const earlierExperience = experiences[1];
-  const selectedCase = cases[activeCase];
-  const selectedWorkflow = workflow[activeWorkflow];
+  const selectedCase = selectedWork[activeCase];
 
   useEffect(() => {
     let animationFrame = 0;
@@ -549,7 +377,7 @@ export function ResumeSite({ language }: { language: Language }) {
             ))}
           </dl>
           <div className="hero-actions">
-            <a className="button button-primary" href="#experience">
+            <a className="button button-primary" href="#work">
               {t.viewWork}
               <Arrow />
             </a>
@@ -567,9 +395,9 @@ export function ResumeSite({ language }: { language: Language }) {
             <div className="hero-orbit-note">{language === "zh" ? "跨市场，理解不同的用户。" : "Different markets. Different perspectives."}</div>
             <div className="atlas-guide" aria-hidden="true"><span>CONTENT</span><span>SEARCH</span><span>BRAND</span></div>
             <div className="atlas-markets" aria-label={language === "zh" ? "项目涉及市场节选，点击查看案例" : "Selected project markets. Select a flag to explore a study."}>
-              {[...new Set(cases.flatMap(item => item.markets))].map(market => {
+              {[...new Set(selectedWork.flatMap(item => item.markets))].map(market => {
                 const place = marketNames[market];
-                return <button type="button" key={market} className={selectedCase.markets.includes(market) ? "active" : ""} aria-label={language === "zh" ? `${place.zh}：查看相关研究案例` : `${place.en}: view a related study`} title={place[language]} onClick={() => { setActiveCase(cases.findIndex(item => item.markets.includes(market))); navigateTo("work"); }}>
+                return <button type="button" key={market} className={selectedCase?.markets.includes(market) ? "active" : ""} aria-label={language === "zh" ? `${place.zh}：查看相关研究案例` : `${place.en}: view a related study`} title={place[language]} onClick={() => { setActiveCase(selectedWork.findIndex(item => item.markets.includes(market))); navigateTo("work"); }}>
                   <span className="flag-crop"><Image src={`${basePath}/images/flags/${place.flag}.svg`} alt="" width={64} height={48} unoptimized /></span><span className="market-code">{market}</span>
                 </button>;
               })}
@@ -622,255 +450,9 @@ export function ResumeSite({ language }: { language: Language }) {
         </aside>
       </section>
 
-      <section id="experience" className="experience-section section-pad">
-        <p className="eyebrow">{t.experienceEyebrow}</p>
-        <div className="section-heading-grid">
-          <h2 className="section-title">{t.experienceTitle}</h2>
-          <dl className="role-facts">
-            <div>
-              <dt>{t.clientScope}</dt>
-              <dd>{t.clientScopeValue}</dd>
-            </div>
-            <div>
-              <dt>{t.researchScope}</dt>
-              <dd>{t.researchScopeValue}</dd>
-            </div>
-            <div>
-              <dt>{t.researchMix}</dt>
-              <dd>{t.researchMixValue}</dd>
-            </div>
-          </dl>
-        </div>
-
-        <article className="featured-role">
-          <header className="featured-role-heading">
-            <div className="role-index">01</div>
-            <div>
-              <p>{currentExperience.period[language]}</p>
-              <h3>{currentExperience.company[language]}</h3>
-              <strong>{currentExperience.title[language]}</strong>
-            </div>
-            <span>{currentExperience.meta[language]}</span>
-          </header>
-          <p className="featured-role-summary">
-            {currentExperience.summary[language]}
-          </p>
-          <div className="role-grid">
-            {currentExperience.bullets.map((bullet) => (
-              <div className="role-point" key={bullet.label.en}>
-                <h4>{bullet.label[language]}</h4>
-                <p>{bullet.text[language]}</p>
-              </div>
-            ))}
-          </div>
-        </article>
-
-        <article className="earlier-role">
-          <div>
-            <span>{t.earlierExperience}</span>
-            <strong>02</strong>
-          </div>
-          <p>{earlierExperience.period[language]}</p>
-          <div>
-            <h3>{earlierExperience.company[language]}</h3>
-            <strong>{earlierExperience.title[language]}</strong>
-            <p>{earlierExperience.summary[language]}</p>
-            <div className="earlier-projects">{earlierExperience.bullets.map(bullet => <p key={bullet.label.en}><strong>{bullet.label[language]}</strong><span>{bullet.text[language]}</span></p>)}</div>
-          </div>
-          <span>{earlierExperience.meta[language]}</span>
-        </article>
-      </section>
-
-      <section
-        id="work"
-        className="work-section"
-        data-header-theme="night"
-      >
-        <div className="work-inner">
-          <p className="eyebrow eyebrow-light">{t.workEyebrow}</p>
-          <div className="work-heading">
-            <h2>{t.workTitle}</h2>
-            <div>
-              <p>{t.workIntro}</p>
-            </div>
-          </div>
-
-          <div className="case-showcase">
-            <div
-              className="case-tabs"
-              role="tablist"
-              aria-label={t.selectCase}
-            >
-              {cases.map((item, index) => (
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={activeCase === index}
-                  id={`case-tab-${index}`}
-                  tabIndex={activeCase === index ? 0 : -1}
-                  onKeyDown={event => {
-                    const next = event.key === "Home" ? 0 : event.key === "End" ? cases.length - 1 : ["ArrowRight", "ArrowDown"].includes(event.key) ? (index + 1) % cases.length : ["ArrowLeft", "ArrowUp"].includes(event.key) ? (index + cases.length - 1) % cases.length : -1;
-                    if (next < 0) return;
-                    event.preventDefault(); setActiveCase(next);
-                    event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>("button")[next]?.focus();
-                  }}
-                  aria-controls="case-panel"
-                  className={activeCase === index ? "active" : ""}
-                  key={item.index}
-                  onClick={() => setActiveCase(index)}
-                >
-                  <span>{item.index}</span>
-                  <span>
-                    <strong>{item.title[language]}</strong>
-                    <small>{item.scope[language]}</small>
-                  </span>
-                  <Arrow />
-                </button>
-              ))}
-            </div>
-
-            <article
-              id="case-panel"
-              aria-labelledby={`case-tab-${activeCase}`}
-              className="case-panel"
-              role="tabpanel"
-              aria-live="polite"
-            >
-              <ResearchEvidenceVisual
-                caseIndex={selectedCase.index}
-                visual={selectedCase.visual}
-                markets={selectedCase.markets}
-                language={language}
-              />
-              <div className="case-panel-heading">
-                <span>{selectedCase.index} / 04</span>
-                <div>
-                  <h3>{selectedCase.title[language]}</h3>
-                  <p>{selectedCase.scope[language]}</p>
-                </div>
-              </div>
-              <dl className="case-details">
-                <div className="case-role">
-                  <dt>{t.role}</dt>
-                  <dd>{selectedCase.role[language]}</dd>
-                </div>
-                <div>
-                  <dt>{t.challenge}</dt>
-                  <dd>{selectedCase.problem[language]}</dd>
-                </div>
-                <div>
-                  <dt>{t.approach}</dt>
-                  <dd>{selectedCase.approach[language]}</dd>
-                </div>
-                <div>
-                  <dt>{t.value}</dt>
-                  <dd>{selectedCase.value[language]}</dd>
-                </div>
-              </dl>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <section id="method" className="method-section section-pad">
-        <p className="eyebrow">{t.methodEyebrow}</p>
-        <div className="method-heading">
-          <h2>{t.methodTitle}</h2>
-          <div>
-            <p>{t.methodIntro}</p>
-            <span>{t.methodSignal}</span>
-          </div>
-        </div>
-
-        <div className="workflow-system">
-          <div
-            className="workflow-tabs"
-            role="tablist"
-            aria-label={
-              language === "zh" ? "选择研究阶段" : "Select a research stage"
-            }
-          >
-            {workflow.map((stage, index) => (
-              <button
-                type="button"
-                role="tab"
-                aria-selected={activeWorkflow === index}
-                  id={`workflow-tab-${index}`}
-                  tabIndex={activeWorkflow === index ? 0 : -1}
-                  onKeyDown={event => {
-                    const next = event.key === "Home" ? 0 : event.key === "End" ? workflow.length - 1 : ["ArrowRight", "ArrowDown"].includes(event.key) ? (index + 1) % workflow.length : ["ArrowLeft", "ArrowUp"].includes(event.key) ? (index + workflow.length - 1) % workflow.length : -1;
-                    if (next < 0) return;
-                    event.preventDefault(); setActiveWorkflow(next);
-                    event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>("button")[next]?.focus();
-                  }}
-                aria-controls="workflow-panel"
-                className={activeWorkflow === index ? "active" : ""}
-                onClick={() => setActiveWorkflow(index)}
-                key={stage.number}
-              >
-                <span>{stage.number}</span>
-                <strong>{stage.title[language]}</strong>
-              </button>
-            ))}
-          </div>
-          <div
-            id="workflow-panel"
-            aria-labelledby={`workflow-tab-${activeWorkflow}`}
-            className="workflow-panel"
-            role="tabpanel"
-            aria-live="polite"
-          >
-            <div className="workflow-panel-title">
-              <span>{selectedWorkflow.number}</span>
-              <h3>{selectedWorkflow.title[language]}</h3>
-            </div>
-            <div className="human-ai-pair">
-              <article>
-                <span className="role-tag role-tag-human">{t.researcher}</span>
-                <p>{selectedWorkflow.human[language]}</p>
-              </article>
-              <div className="collaboration-mark" aria-hidden="true">
-                <span>×</span>
-                <small>HUMAN / AI</small>
-              </div>
-              <article>
-                <span className="role-tag role-tag-ai">{t.codex}</span>
-                <p>{selectedWorkflow.ai[language]}</p>
-              </article>
-            </div>
-          </div>
-        </div>
-        <p className="method-footnote">{t.methodFoot}</p>
-      </section>
-
-      <section id="projects" className="projects-section section-pad">
-        <p className="eyebrow">{t.projectsEyebrow}</p>
-        <div className="projects-heading">
-          <h2>{t.projectsTitle}</h2>
-          <div>
-            <p>{t.projectsIntro}</p>
-            <button
-              type="button"
-              className="shortcut-hint"
-              onClick={() => setCommandOpen(true)}
-            >
-              <span aria-hidden="true">⌘K</span>
-              {t.commandHint}
-            </button>
-          </div>
-        </div>
-
-        <div className="project-list">
-          <ProjectCard project={projects[0]} language={language} featured />
-          <details className="other-projects">
-            <summary><span>{t.moreProjects}</span><span className="other-projects-count">{projects.length - 1}</span><Arrow /></summary>
-            <div className="secondary-project-list">
-              {projects.slice(1).map((project) => <ProjectCard key={project.index} project={project} language={language} />)}
-            </div>
-          </details>
-        </div>
-      </section>
-
+      <SelectedWork language={language} active={activeCase} onSelect={setActiveCase} />
+      <AIPractice language={language} active={activeWorkflow} onSelect={setActiveWorkflow} />
+      <CreativeWork language={language} />
 
       <section id="capabilities" className="capabilities-section section-pad">
         <p className="eyebrow">{t.capabilityEyebrow}</p>

@@ -18,8 +18,8 @@ export const profile = {
     en: "Market Research · User Insights · Data Analysis",
   } satisfies Localized,
   summary: {
-    "zh": "我在益普索从事市场与用户研究，服务字节跳动与联想。主要负责七国内容生态与满意度追踪的项目推进和分析交付，深度参与多国搜索与品牌研究；将统计分析、跨期比较和数据复核做成可复用的 AI 工作流，把更多精力放在方法判断、结果解释与研究建议上。",
-    "en": "I’m a Research Executive at Ipsos, working with ByteDance and Lenovo. I lead project coordination and analytical delivery for a seven-country content and satisfaction tracker, alongside multi-country search and brand research. I build reusable AI workflows for statistical analysis, wave comparisons, and data checks, making more room for methodological judgment and interpretation."
+    "zh": "在益普索服务字节跳动与联想，专注多国用户研究与品牌追踪。用统计分析解释用户行为，也用 AI 将重复的分析与核验做成可复用工具。",
+    "en": "At Ipsos, I work with ByteDance and Lenovo on multi-country user research and brand tracking. I use statistical analysis to understand user behavior and AI to build reusable tools for analysis and validation."
 } satisfies Localized,
   location: { zh: "北京，中国", en: "Beijing, China" } satisfies Localized,
   email: "w274398243@hotmail.com",
@@ -137,14 +137,14 @@ export const projects = [
       en: "A one-page résumé leaves little room to explain research decisions or demonstrate working prototypes.",
     } satisfies Localized,
     contribution: {
-      zh: "负责内容架构、双语表达、视觉与交互设计，借助 Codex 完成前端实现、测试和持续更新。",
-      en: "Shaped the content architecture, bilingual copy, visual design, and interactions, using Codex for front-end implementation, testing, and ongoing updates.",
+      zh: "设计中英双语内容与研究案例的呈现方式，借助 Codex 实现 WebGL 动效、滚动联动与交互，并根据实际浏览效果迭代。",
+      en: "Shape the bilingual content and research-case presentation, then use Codex to implement WebGL motion, scroll-linked transitions, and interactions, refining the result through browser review.",
     } satisfies Localized,
     outcome: {
       zh: "已上线中英双语主页，集中展示工作经历、研究案例、个人作品与简历下载。",
       en: "Published a bilingual site with work experience, research cases, personal projects, and a downloadable résumé.",
     } satisfies Localized,
-    tags: ["Next.js", "TypeScript", "Bilingual UX", "GitHub Pages"],
+    tags: ["Next.js", "WebGL", "Bilingual UX", "GitHub Pages"],
     liveUrl: "https://bruc3wang.github.io/rui-wang-resume/",
     sourceUrl: "https://github.com/Bruc3wAng/rui-wang-resume",
   },
@@ -169,68 +169,58 @@ export const experiences = [
       "en": "Beijing, China · On-site"
     },
     "summary": {
-      "zh": "服务字节跳动与联想，具备多国研究经验。以定量研究为主，结合定性资料，研究用户如何使用内容与搜索产品，以及品牌表现和产品需求。",
-      "en": "Serve ByteDance and Lenovo through multi-country research, combining quantitative analysis with qualitative evidence. Studies cover content and search experiences, brand performance, and product needs."
+      "zh": "服务字节跳动与联想，具备多国研究经验。以定量研究为主，结合定性资料，承担项目推进、分析判断与研究交付。",
+      "en": "Serve ByteDance and Lenovo through multi-country research. Combine quantitative and qualitative evidence, with responsibilities across study coordination, analysis, and delivery."
     },
     "bullets": [
       {
         "label": {
-          "zh": "多国内容生态追踪",
-          "en": "Multi-country content tracking"
+          "zh": "七国内容生态与满意度追踪",
+          "en": "Seven-country content and satisfaction tracking"
         },
         "text": {
-          "zh": "主要负责7国内容生态与满意度 Tracking，从跨国调研推进到分析交付承担核心工作；协调研究与数据团队，统一用户分组、样本和加权标准，解决不同市场、平台间的比较问题。",
-          "en": "Lead fieldwork coordination and analytical delivery for a seven-country content and satisfaction tracker. Work with research and data teams to align audience groups, sample definitions, and weighting across markets and platforms."
+          "zh": "主要负责7国内容生态与满意度追踪的项目推进和分析交付，比较不同市场、平台的用户体验；结合相对权重分析与跨期比较，识别与满意度关联更强的体验因素，形成研究报告与后续建议。",
+          "en": "Lead study coordination and analytical delivery for a seven-country content and satisfaction tracker. Compare experiences across markets and platforms, using relative weight analysis and wave comparisons to identify factors associated with satisfaction and develop research recommendations."
         }
       },
       {
         "label": {
-          "zh": "满意度与关键因素分析",
-          "en": "Satisfaction and relative importance"
+          "zh": "品牌健康度追踪",
+          "en": "Brand-health tracking"
         },
         "text": {
-          "zh": "确认统计方法与跨期比较条件，借助 Codex 完成相对权重分析、相关分析与结果复算；核查因素排名、样本与加权变化，完成跨市场分析报告、后续研究建议及可复用的方法 SOP。",
-          "en": "Define statistical methods and conditions for wave comparisons, using Codex for relative weight and correlation analyses and independent recalculation. Review factor rankings, sample definitions, and weights, then deliver a cross-market report, further-research recommendations, and a reusable analysis guide."
+          "zh": "深度参与多期品牌追踪，分析品牌认知、评价与形象变化；统一不同客群、期次和报告中的指标定义，完成数据与报告更新，支持品牌表现判断。",
+          "en": "Contribute to ongoing brand tracking, examining changes in awareness, brand evaluations, and image. Align metric definitions across audiences, waves, and reports, and update the data and reporting used to assess brand performance."
         }
       },
       {
         "label": {
-          "zh": "搜索心智与行为研究",
-          "en": "Search awareness and behavior"
+          "zh": "美国短剧与网文消费研究",
+          "en": "U.S. short-form drama and web-fiction research"
         },
         "text": {
-          "zh": "深度参与另一项7国搜索心智追踪，通过用户分层、交叉分析与趋势比较，分析平台认知、搜索场景和使用习惯在不同市场、人群中的差异。",
-          "en": "Contribute audience segmentation, cross-tabulation, and trend analysis to a separate seven-country search-awareness tracker, examining differences in platform awareness, search contexts, and usage habits by market and user group."
+          "zh": "独立负责美国短剧与网文消费研究，组织研究执行、用户分层和分析交付；比较内容偏好、消费习惯与人群重合，为目标用户和内容定位提供依据。",
+          "en": "Independently manage a U.S. study of short-form drama and web-fiction consumption, from fieldwork coordination to audience segmentation and analytical delivery. Compare preferences, habits, and audience overlap to inform audience and content positioning."
         }
       },
       {
         "label": {
-          "zh": "美国搜索与内容研究",
-          "en": "U.S. search and content research"
+          "zh": "七国搜索心智追踪",
+          "en": "Seven-country search-awareness tracking"
         },
         "text": {
-          "zh": "主要负责美国搜索体验与内容消费研究。将实际搜索任务与问卷反馈结合，分析用户需求与体验问题；比较短剧、网文用户的内容偏好、消费习惯及人群重合，为目标用户和内容定位提供分析结果。",
-          "en": "Lead core workstreams in U.S. search-experience and content-consumption studies. Combine search tasks with survey feedback to examine user needs and experience issues; compare short-form drama and web-fiction audiences by preferences, habits, and overlap."
+          "zh": "深度参与另一项7国搜索心智追踪，通过用户分层、交叉分析与趋势比较，解释平台认知、搜索场景和使用习惯在不同市场、人群中的差异。",
+          "en": "Contribute to a separate seven-country search-awareness tracker, using segmentation, cross-tabulation, and trend analysis to understand differences in platform awareness, search contexts, and habits across markets and audiences."
         }
       },
       {
         "label": {
-          "zh": "品牌与产品研究",
-          "en": "Brand and product research"
+          "zh": "定性与用户研究",
+          "en": "Qualitative and user research"
         },
         "text": {
-          "zh": "深度参与品牌健康度追踪、中小企业用户画像、AI 创作产品海外用研与德国实地研究，结合案头资料、问卷与访谈结果，分析品牌表现、购买需求和使用体验。",
-          "en": "Contribute to brand-health tracking, small-business user profiling, overseas research on AI creative tools, and field research in Germany. Combine desk research, survey data, and interview findings to examine brand performance, purchasing needs, and product experience."
-        }
-      },
-      {
-        "label": {
-          "zh": "AI 研究工作流",
-          "en": "AI research workflows"
-        },
-        "text": {
-          "zh": "将研究规则转化为 Codex 可执行的工具与 Skills 库，用批量计算、跨文件比对和自动定位问题替代反复手工处理；负责规则设定、异常判断与结果验收，工具已用于正式交付并被同事采用，配套完成操作手册和团队分享。",
-          "en": "Build reusable Codex tools and a skills library that replace repeated manual calculations and file-by-file checks with batch processing and issue detection. Define the rules, assess exceptions, and validate outputs. The tools are used in live project delivery and have been adopted by colleagues, supported by user guides and team sharing."
+          "zh": "深度参与德国实地用研及中小企业用户画像研究，结合访谈与定量资料理解使用场景、产品需求和采购决策，并协调跨语言研究执行。",
+          "en": "Contribute to field research in Germany and small-business user profiling. Combine interview and survey evidence to understand use cases, product needs, and purchasing decisions, alongside cross-language research coordination."
         }
       }
     ]
@@ -396,8 +386,8 @@ export const cases = [
       "en": "Quantitative research · United States"
     },
     "role": {
-      "zh": "主要负责 · 用户比较与分析交付",
-      "en": "Primary responsibility · Audience comparisons and delivery"
+      "zh": "独立负责 · 研究执行与分析交付",
+      "en": "Independent project responsibility · Fieldwork and analysis"
     },
     "problem": {
       "zh": "短剧和网文分别吸引哪些用户？他们的内容偏好、消费习惯和人群重合有哪些异同？",
@@ -501,6 +491,13 @@ export const capabilities = [
       en: "Codex, Reusable Skills Libraries, Research Rule Configuration, Workflow Design, Exception Handling, Output Validation",
     } satisfies Localized,
   },
+  {
+    title: { zh: "AI 辅助设计与创作", en: "AI-assisted Design & Creation" } satisfies Localized,
+    items: {
+      zh: "借助 Codex 与 AI 工具设计和实现交互网站、网页动效与动态短片；开展 Blender、Three.js 三维视觉及 AI 视频创作实践，负责创意方向、需求拆解与效果迭代。",
+      en: "Use Codex and AI tools to design and build interactive websites, web motion, and motion-graphics pieces. Explore 3D visuals with Blender and Three.js and AI video creation, guiding creative direction, requirements, and visual refinement.",
+    } satisfies Localized,
+  },
 ];
 
 export const education = {
@@ -519,3 +516,219 @@ export const education = {
     en: "Survey Sampling, Probability and Statistical Data Analysis, Econometrics, Data Analysis Methods",
   } satisfies Localized,
 };
+
+// A single work section replaces the repeated experience / case narrative.
+export const selectedWork = [
+  {
+    id: "content-tracking", index: "01",
+    title: experiences[0].bullets[0].label,
+    scope: { zh: "Tracking · 7 个海外市场", en: "Tracking · Seven international markets" } satisfies Localized,
+    role: { zh: "主要负责 · 项目推进与分析交付", en: "Primary responsibility · Coordination and analysis" } satisfies Localized,
+    summary: experiences[0].bullets[0].text,
+    markets: [...cases[0].markets],
+  },
+  {
+    id: "brand-tracking", index: "02",
+    title: experiences[0].bullets[1].label,
+    scope: { zh: "持续追踪 · 品牌表现", en: "Ongoing tracking · Brand performance" } satisfies Localized,
+    role: { zh: "深度参与 · 分析与报告交付", en: "Key contribution · Analysis and reporting" } satisfies Localized,
+    summary: experiences[0].bullets[1].text,
+    markets: [] as string[],
+  },
+  {
+    id: "us-content", index: "03",
+    title: experiences[0].bullets[2].label,
+    scope: { zh: "定量研究 · 美国", en: "Quantitative research · United States" } satisfies Localized,
+    role: { zh: "独立负责 · 研究执行与分析交付", en: "Independent project responsibility · Fieldwork and analysis" } satisfies Localized,
+    summary: experiences[0].bullets[2].text,
+    markets: ["US"],
+  },
+  {
+    id: "search-tracking", index: "04",
+    title: experiences[0].bullets[3].label,
+    scope: { zh: "Tracking · 7 个海外市场", en: "Tracking · Seven international markets" } satisfies Localized,
+    role: { zh: "深度参与 · 用户分层与趋势分析", en: "Key contribution · Audience and trend analysis" } satisfies Localized,
+    summary: experiences[0].bullets[3].text,
+    markets: [...cases[1].markets],
+  },
+  {
+    id: "qualitative", index: "05",
+    title: experiences[0].bullets[4].label,
+    scope: { zh: "实地研究 · 用户画像", en: "Field research · User profiling" } satisfies Localized,
+    role: { zh: "深度参与 · 定性与定量结合", en: "Key contribution · Mixed-method research" } satisfies Localized,
+    summary: experiences[0].bullets[4].text,
+    // Germany belongs to one study, not every study in this grouped entry.
+    markets: [] as string[],
+  },
+];
+
+export const aiPractice = [
+  {
+    id: "research-analysis",
+    title: { zh: "跨市场统计分析", en: "Cross-market statistical analysis" } satisfies Localized,
+    context: {
+      zh: "多市场追踪既要反复计算，也要判断不同方法、样本和期次能否比较。",
+      en: "Multi-market tracking calls for repeated calculations and careful judgment about whether methods, samples, and waves are comparable.",
+    } satisfies Localized,
+    decision: {
+      zh: "我确定分析方法和比较条件，判断排名差异是否来自方法或样本变化，并解释研究结果。",
+      en: "I choose the methods and comparison criteria, assess whether ranking differences reflect methodological or sample changes, and interpret the findings.",
+    } satisfies Localized,
+    execution: {
+      zh: "借助 Codex 批量完成相对权重与相关分析、独立复算及跨期对照，将分析规则写成可复跑脚本。",
+      en: "Use Codex to batch-run relative weight and correlation analyses, independent recalculations, and wave comparisons, with the rules captured in rerunnable scripts.",
+    } satisfies Localized,
+    output: {
+      zh: "已交付跨市场分析报告、跨期对照与方法 SOP。重复计算可沿用同一流程，减少逐次重做，把时间用于解释差异与提出建议。",
+      en: "Delivered a cross-market report, wave comparisons, and an analysis guide. Reusable calculations reduce repeated setup, leaving more time for interpretation and recommendations.",
+    } satisfies Localized,
+    inputLabels: [
+      { zh: "分市场数据", en: "Market data" },
+      { zh: "分析方法", en: "Methods" },
+      { zh: "比较条件", en: "Comparison criteria" },
+    ] satisfies Localized[],
+    outputLabels: [
+      { zh: "统计结果", en: "Statistical results" },
+      { zh: "研究报告", en: "Research report" },
+      { zh: "方法 SOP", en: "Analysis guide" },
+    ] satisfies Localized[],
+  },
+  {
+    id: "tracking-delivery",
+    title: { zh: "追踪研究的核验与更新", en: "Validation and updates for tracking studies" } satisfies Localized,
+    context: {
+      zh: "同一项研究要在数据表、平台和报告中保持一致，更新一期时还需保留正确的历史结果。",
+      en: "Tracking results need to stay consistent across data tables, platforms, and reports while preserving valid historical data.",
+    } satisfies Localized,
+    decision: {
+      zh: "我梳理指标、数据来源与报告位置的对应关系，明确样本范围和更新规则，判断例外与业务影响。",
+      en: "I map metrics to their sources and report locations, define sample scope and update rules, and assess exceptions and their implications.",
+    } satisfies Localized,
+    execution: {
+      zh: "将规则转为 Codex 辅助工具，批量比对文件、定位差异并按映射更新表格与图表；保留来源和检查记录。",
+      en: "Turn those rules into Codex-assisted tools for batch file comparisons, issue tracing, and mapped table and chart updates, with source and validation records.",
+    } satisfies Localized,
+    output: {
+      zh: "工具已用于正式交付并被同事采用。通过可复用 Skills、脚本与操作手册，把逐份查找和重复复制转为批量处理与重点复核。",
+      en: "Tools are used in formal project delivery and adopted by colleagues. Reusable skills, scripts, and guides replace file-by-file searches and repeated copying with batch processing and targeted review.",
+    } satisfies Localized,
+    inputLabels: [
+      { zh: "研究规则", en: "Research rules" },
+      { zh: "数据来源", en: "Source data" },
+      { zh: "报告模板", en: "Report templates" },
+    ] satisfies Localized[],
+    outputLabels: [
+      { zh: "差异定位", en: "Issue tracing" },
+      { zh: "交付更新", en: "Updated deliverables" },
+      { zh: "复用工具", en: "Reusable tools" },
+    ] satisfies Localized[],
+  },
+  {
+    id: "research-platform",
+    title: { zh: "研究数据平台", en: "Research Data Platform" } satisfies Localized,
+    context: {
+      zh: "个人研究产品原型：把分散的产品资料整理成可查询、可比较的数据库。",
+      en: "A personal research-product prototype that brings scattered product information into a searchable, comparable database.",
+    } satisfies Localized,
+    decision: {
+      zh: "我从研究问题出发，确定数据要求、产品分类、指标定义与来源记录，设计查询和比较方式。",
+      en: "I define data requirements, product categories, metrics, and source records around research questions, then design the queries and comparisons.",
+    } satisfies Localized,
+    execution: {
+      zh: "借助 Codex 实现 SQLite 数据结构、多维筛选、图表与明细联动及导出，将研究要求落成可操作原型。",
+      en: "Use Codex to implement the SQLite structure, filters, linked charts and detail views, and exports, turning research requirements into a working prototype.",
+    } satisfies Localized,
+    output: {
+      zh: "已实现产品查询与比较，减少在分散资料间反复查找；并完成数据来源、采购需求及产品可行性的初步评估。",
+      en: "The prototype supports product queries and comparisons without repeatedly searching separate sources. Initial assessments of data sources, procurement needs, and feasibility are also complete.",
+    } satisfies Localized,
+    inputLabels: [
+      { zh: "研究问题", en: "Research questions" },
+      { zh: "产品资料", en: "Product sources" },
+      { zh: "比较标准", en: "Comparison criteria" },
+    ] satisfies Localized[],
+    outputLabels: [
+      { zh: "研究数据库", en: "Research database" },
+      { zh: "交互查询", en: "Interactive queries" },
+      { zh: "可用原型", en: "Working prototype" },
+    ] satisfies Localized[],
+  },
+];
+
+export type CreativeItem = {
+  title: Localized;
+  description: Localized;
+  status: Localized;
+  liveUrl?: string;
+  sourceUrl?: string;
+};
+
+export const creativeCategories: {
+  id: "video" | "games" | "web";
+  title: Localized;
+  summary: Localized;
+  items: CreativeItem[];
+}[] = [
+  {
+    id: "video",
+    title: { zh: "AI 视频", en: "AI-assisted Video" },
+    summary: { zh: "从内容编排、视觉方向到代码动效，探索 AI 辅助的影像创作。", en: "Explore AI-assisted storytelling, visual direction, and coded motion." },
+    items: [
+      {
+        title: { zh: "个人介绍动态短片", en: "Motion-graphics Introduction" },
+        description: { zh: "将职业经历编排为动态叙事，借助 AI 编写绘制与音效代码，完成 20 秒短片导出。", en: "Shape professional experience into a motion narrative, using AI-assisted animation and sound code to export a 20-second piece." },
+        status: { zh: "已导出短片", en: "Exported film" },
+      },
+      {
+        title: { zh: "三维与 AI 视频探索", en: "3D and AI Video Experiments" },
+        description: { zh: "围绕场景、材质与镜头效果，借助 AI 开展 Blender、Three.js 及视频创作实验。", en: "Explore scenes, materials, and camera treatments through AI-assisted Blender, Three.js, and video experiments." },
+        status: { zh: "创作探索", en: "Creative exploration" },
+      },
+    ],
+  },
+  {
+    id: "games",
+    title: { zh: "游戏", en: "Games" },
+    summary: { zh: "把规则设计、用户体验与 AI 辅助开发结合，做出可以实际游玩的原型。", en: "Combine game rules, player experience, and AI-assisted development in playable prototypes." },
+    items: [
+      {
+        title: { zh: "山河策", en: "Shanhe Strategy" },
+        description: { zh: "围绕武将养成、配队战斗与策略争城设计玩法，借助 AI 实现可玩流程、存档与战报，持续迭代规则和视觉表现。", en: "Design character progression, team battles, and territorial strategy, using AI-assisted development to implement gameplay, saves, and battle reports while iterating on rules and visuals." },
+        status: { zh: "可玩原型 · 持续开发", en: "Playable prototype · In development" },
+      },
+    ],
+  },
+  {
+    id: "web",
+    title: { zh: "个人网站", en: "Web Projects" },
+    summary: { zh: "从具体需求出发，设计界面与交互，借助 AI 完成实现并持续打磨。", en: "Design interfaces and interactions around specific needs, then build and refine them with AI." },
+    items: [
+      {
+        title: projects[3].title,
+        description: projects[3].contribution,
+        status: { zh: "已上线", en: "Live" },
+        liveUrl: projects[3].liveUrl,
+        sourceUrl: projects[3].sourceUrl,
+      },
+      {
+        title: projects[1].title,
+        description: { zh: "设计照片筛选、修图方案对比与版本记录，形成影像处理交互原型。", en: "An interactive photo-workflow prototype for selection, edit comparisons, and version history." },
+        status: { zh: "交互原型", en: "Interactive prototype" },
+      },
+      {
+        title: projects[2].title,
+        description: { zh: "将口味、预算、距离和历史偏好转为筛选规则，设计餐厅选择与收藏体验。", en: "A restaurant-selection and saving experience built around taste, budget, distance, and preference history." },
+        status: { zh: "交互原型", en: "Interactive prototype" },
+      },
+    ],
+  },
+];
+
+export const sectionCopy = {
+  workTitle: { zh: "重点工作", en: "Selected Work" },
+  workIntro: { zh: "从多国追踪到专项用户研究，承担项目推进、分析判断与交付。", en: "Study coordination, analytical judgment, and delivery across tracking programs and focused user research." },
+  aiTitle: { zh: "AI 提效实践", en: "AI in Research Practice" },
+  aiIntro: { zh: "把研究规则转成可执行、可复用的工具，让重复工作更快完成，让分析结果更便于核对。", en: "Turn research rules into reusable tools to handle repetitive work efficiently and make results easier to verify." },
+  creativeTitle: { zh: "个人作品", en: "Personal Projects" },
+  creativeIntro: { zh: "在研究之外，把想法做成影像、游戏与交互网站。", en: "Beyond research, I turn ideas into moving images, games, and interactive websites." },
+} satisfies Record<string, Localized>;

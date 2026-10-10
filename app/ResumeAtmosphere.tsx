@@ -3,12 +3,12 @@ import {useEffect,useRef,useState} from 'react';
 import type {Language} from '../content/resume';
 import {createResearchScene} from './research-scene';
 
-const sections=['content','experience','work','method','projects','capabilities','contact'];
-const labels={zh:['研究视野','研究经历','研究案例','人机协作','工具与产品','专业能力','联系我'],en:['Perspective','Experience','Selected work','Human × AI','Tools & products','Capabilities','Contact']};
+const sections=['content','work','method','projects','capabilities','contact'];
+const labels={zh:['研究视野','重点工作','AI 提效实践','个人作品','专业能力','联系我'],en:['Perspective','Selected work','AI practice','Creative practice','Capabilities','Contact']};
 export default function ResumeAtmosphere({language,activeCase,activeWorkflow}:{language:Language;activeCase:number;activeWorkflow:number}){
  const canvas=useRef<HTMLCanvasElement>(null);const detail=useRef(0);const pausedRef=useRef(false);const redraw=useRef<()=>void>(()=>{});
  const [paused,setPaused]=useState(false);const [chapter,setChapter]=useState(0);
- useEffect(()=>{detail.current=activeCase+activeWorkflow*.8;redraw.current();},[activeCase,activeWorkflow]);
+ useEffect(()=>{detail.current=Math.max(0,activeCase)+activeWorkflow*.8;redraw.current();},[activeCase,activeWorkflow]);
  useEffect(()=>{const m=matchMedia('(prefers-reduced-motion: reduce)');const sync=()=>setPaused(m.matches);sync();m.addEventListener('change',sync);return()=>m.removeEventListener('change',sync);},[]);
  useEffect(()=>{pausedRef.current=paused;const shell=document.querySelector<HTMLElement>(".site-shell");if(shell)shell.dataset.motion=paused?"still":"flowing";redraw.current();},[paused]);
  useEffect(()=>{

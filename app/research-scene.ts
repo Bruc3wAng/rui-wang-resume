@@ -21,11 +21,11 @@ void main(){
  vec2 origin=mix(heroCenter,vec2(.80,.53),smoothstep(.1,1.,chapter));
  vec2 p=(q-origin)*vec2(aspect,1.);p-=pointer*vec2(.009,.007);
  float surface=1.-smoothstep(.12,.94,chapter);
- vec3 paper=vec3(.974,.971,.948),blue=vec3(.11,.29,.67),orange=vec3(1.,.52,.23);
+ vec3 paper=vec3(.905,.91,.875),blue=vec3(.11,.29,.67),orange=vec3(1.,.52,.23);
  vec3 col=paper;
  // Broad daylight washes carry colour through the reading surface.
- col=mix(col,vec3(.88,.94,.98),.52*exp(-dot(p,p)*2.));
- col=mix(col,vec3(1.,.91,.77),.36*exp(-dot(p-vec2(.26,-.22),p-vec2(.26,-.22))*9.));
+ col=mix(col,vec3(.72,.84,.89),.68*exp(-dot(p,p)*2.));
+ col=mix(col,vec3(.98,.85,.65),.40*exp(-dot(p-vec2(.26,-.22),p-vec2(.26,-.22))*9.));
  float scale=mix(.225,.135,mobile);
  vec2 v=p/scale;float rot=.32+sin(time*.15)*.12+pointer.x*.08;
  v=mat2(cos(rot),-sin(rot),sin(rot),cos(rot))*v;

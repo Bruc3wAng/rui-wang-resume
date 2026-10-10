@@ -16,38 +16,39 @@ test("exports the bilingual public profile", async () => {
   assert.match(en, /ByteDance/);
   assert.match(en, /Lenovo/);
   assert.match(zh, /7 个海外市场/);
-  assert.match(zh, /查看工作经历/);
+  assert.match(zh, /重点工作/);
   assert.match(zh, /研究数据平台/);
   assert.match(en, /Research Data Platform/);
   assert.match(zh, /SQLite/);
   assert.match(en, /source traceability/i);
   assert.match(zh, /光影工坊/);
-  assert.match(zh, /其他个人作品/);
-  assert.ok(
-    zh.indexOf("EXPERIENCE / 工作经历") <
-      zh.indexOf("SELECTED WORK / 研究案例"),
-  );
+  assert.match(zh, /个人作品/);
   assert.match(zh, /\+86 137 1880 1573/);
   assert.match(zh, /⌘K/);
-  assert.match(zh, /data-header-theme="night"/);
-  assert.match(zh, /data-header-theme="teal"/);
   assert.match(zh, /Research Executive/);
-  assert.match(zh, /具备多国研究经验/);
-  assert.match(en, /multi-country research/);
+  assert.match(zh, /专注多国用户研究与品牌追踪/);
+  assert.match(en, /multi-country user research and brand tracking/);
   assert.match(zh, /七国内容生态与满意度追踪/);
   assert.match(zh, /七国搜索心智追踪/);
   assert.match(zh, /字节跳动与联想/);
   assert.match(zh, /相对权重分析/);
   assert.match(zh, /研究用户如何选择、使用与评价产品/);
   assert.match(zh, /跨市场分析报告/);
-  assert.match(zh, /后续研究建议/);
-  assert.match(zh, /借助 Codex 完成相对权重分析/);
-  assert.match(zh, /批量计算、跨文件比对和自动定位问题/);
+  assert.match(zh, /品牌健康度追踪/);
+  assert.match(zh, /美国短剧与网文消费研究/);
+  assert.match(zh, /定性与用户研究/);
+  assert.match(zh, /AI 提效实践/);
   assert.match(zh, /健康产品升级/);
   assert.match(zh, /宠物食品新品孵化/);
   assert.match(en, /Health product upgrades/);
   assert.match(en, /Pet food product development/);
-  assert.match(en, /adopted by colleagues/);
+  assert.match(zh, /AI 辅助设计与创作/);
+  assert.match(en, /AI-assisted Design &amp; Creation/);
+  for (const html of [zh, en]) {
+    assert.match(html, /Blender/);
+    assert.match(html, /Three\.js/);
+    assert.match(html, /WebGL/);
+  }
   assert.doesNotMatch(zh, /海外研究覆盖\s*8\s*国|覆盖八国/);
   assert.doesNotMatch(en, /across eight countries|eight-country coverage/i);
   assert.doesNotMatch(zh, /HOW I WORK|本期|只负责/);
@@ -59,6 +60,22 @@ test("exports the bilingual public profile", async () => {
     assert.match(zh, /\/rui-wang-resume\/resume\/rui-wang-resume-zh\.pdf/);
     assert.match(zh, /\/rui-wang-resume\/images\/rui-wang-portrait\.jpg/);
   }
+});
+
+test("keeps creative practice secondary and the portfolio technology accurate", async () => {
+  const source = await readFile(new URL("content/resume.ts", root), "utf8");
+  assert.ok(source.indexOf('zh: "AI 研究工作流"') < source.indexOf('zh: "AI 辅助设计与创作"'));
+  assert.match(source, /借助 Codex 与 AI 工具设计和实现交互网站/);
+  assert.match(source, /Explore 3D visuals with Blender and Three\.js/);
+  assert.match(source, /tags: \["Next\.js", "WebGL", "Bilingual UX", "GitHub Pages"\]/);
+  assert.doesNotMatch(source, /精通\s*(Blender|Three\.js)|expert in (Blender|Three\.js)|独立完成商业级动画/i);
+  assert.match(source, /独立负责美国短剧与网文消费研究/);
+  assert.match(source, /正式交付并被同事采用/);
+  assert.match(source, /adopted by colleagues/);
+  assert.match(source, /可玩原型 · 持续开发/);
+  assert.match(source, /title: \{ zh: "AI 视频"/);
+  assert.match(source, /title: \{ zh: "游戏"/);
+  assert.match(source, /title: \{ zh: "个人网站"/);
 });
 
 test("keeps the two tracking studies and their verified market lists distinct", async () => {
@@ -78,8 +95,7 @@ test("keeps the two tracking studies and their verified market lists distinct", 
   assert.match(search.role.zh, /深度参与/);
   assert.deepEqual(experience.markets, ["US"]);
   assert.deepEqual(consumption.markets, ["US"]);
-  const ui = await readFile(new URL("app/resume-site.tsx", root), "utf8");
-  assert.match(ui, /markets=\{selectedCase.markets\}/);
+  assert.match(consumption.role.zh, /独立负责/);
 });
 
 test("publishes approved contact details without internal project codes", async () => {
@@ -104,13 +120,17 @@ test("keeps internal disclosure language out of the visitor experience", async (
   );
 });
 
-test("features the research prototype after work and keeps other products secondary", async () => {
+test("presents work and AI practice once before personal creative projects", async () => {
   for (const path of ["out/index.html", "out/en/index.html"]) {
     const html = await readFile(new URL(path, root), "utf8");
-    assert.ok(html.indexOf('id="experience"') < html.indexOf('id="projects"'));
-    assert.ok(html.indexOf('class="project-card project-featured"') < html.indexOf('class="other-projects"'));
-    assert.match(html, /<details class="other-projects">/);
-    assert.match(html, /class="research-data-map"/);
+    const work = html.indexOf('id="work"');
+    const method = html.indexOf('id="method"');
+    const projects = html.indexOf('id="projects"');
+    assert.ok(work >= 0 && method > work && projects > method);
+    assert.equal([...html.matchAll(/id="work"/g)].length, 1);
+    assert.equal([...html.matchAll(/id="method"/g)].length, 1);
+    assert.doesNotMatch(html, /class="case-panel(?: |")|class="workflow-system(?: |")/);
+    assert.match(html, /山河策|Shanhe Strategy/);
     assert.doesNotMatch(html, /class="preview-bar"|7 IMAGES|39 PLACES/);
   }
 });
@@ -128,12 +148,9 @@ test("download matches the current validated resume release", async () => {
   }
 });
 
-test("keeps the script font contract and responsive project layout", async () => {
+test("keeps the script font contract", async () => {
   const css = await readFile(new URL("app/globals.css", root), "utf8");
   assert.match(css, /--sans:\s*Arial,\s*"Microsoft YaHei",\s*sans-serif/);
-  assert.match(css, /\.project-card\.project-featured\s*\{[^}]*minmax\(0, 0\.8fr\)[^}]*minmax\(0, 1\.2fr\)/);
-  assert.match(css, /@media\s*\(max-width: 820px\)\s*\{\s*\.project-card\.project-featured\s*\{\s*grid-template-columns:\s*minmax\(0, 1fr\)/);
-  assert.match(css, /summary:focus-visible/);
 });
 
 test("ships the current Chinese resume and portrait", async () => {
@@ -153,16 +170,17 @@ test("keeps current research and download content synchronized in the Sites buil
   for (const path of ["dist/client/index.html", "dist/client/en/index.html"]) {
     const html = await readFile(new URL(path, root), "utf8");
     assert.match(html, /Research Executive/);
+    assert.match(html, /Blender/);
+    assert.match(html, /Three\.js/);
     assert.ok(html.includes(`rui-wang-resume-zh.pdf?v=${release.contentVersion}`));
     assert.ok(html.includes(release.downloadFileName));
     assert.doesNotMatch(html, /本期|current wave|脱敏|anonymized|HOW I WORK/);
-    assert.ok(html.indexOf('id="experience"') < html.indexOf('id="work"'));
+    assert.ok(html.indexOf('id="work"') >= 0);
+    assert.ok(html.indexOf('id="work"') < html.indexOf('id="method"'));
+    assert.ok(html.indexOf('id="method"') < html.indexOf('id="projects"'));
   }
   const pdf = await readFile(new URL("dist/client/resume/rui-wang-resume-zh.pdf", root));
   assert.equal(createHash("sha256").update(pdf).digest("hex"), release.pdfSha256);
-  const css = await readFile(new URL("app/globals.css", root), "utf8");
-  assert.match(css, /\.role-point\s*\{[^}]*190px minmax\(0, 1fr\)/);
-  assert.match(css, /\.role-point\s*\{[^}]*grid-template-columns: minmax\(0, 1fr\)/);
 });
 
 test("integrates motion into the resume without a separate visual gallery", async () => {
