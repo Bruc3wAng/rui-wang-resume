@@ -10,16 +10,16 @@ export const profile = {
     en: "Research Executive at Ipsos",
   } satisfies Localized,
   headline: {
-    zh: "海外用户与内容体验研究。",
-    en: "International user and content experience research.",
+    zh: "跨市场研究，理解用户与产品。",
+    en: "Cross-market research. Understanding people and products.",
   } satisfies Localized,
   positioning: {
     zh: "定量研究｜数据分析｜多市场洞察｜AI 研究工作流",
     en: "Quantitative Research | Data Analytics | Multi-market Insights | AI Research Workflows",
   } satisfies Localized,
   summary: {
-    "zh": "益普索 Research Executive，服务字节跳动与联想。研究覆盖8个海外国家，具备大型追踪研究、用户洞察与满意度因素分析经验；将研究方法转化为可复用的 AI 工具，并开展研究数据库与产品原型开发。",
-    "en": "Research Executive at Ipsos, serving ByteDance and Lenovo, with research experience across eight countries. Combine large-scale tracking, audience research, and satisfaction-factor analysis with reusable AI research tools and hands-on research-data product development."
+    "zh": "益普索 Research Executive，服务字节跳动与联想，具备多国研究经验。主要负责大型内容生态追踪，开展用户分层、满意度因素及趋势分析；设计可复用的 AI 研究工作流，并开发研究数据库与交互原型。",
+    "en": "Research Executive at Ipsos, serving ByteDance and Lenovo, with multi-country research experience. Lead delivery of a large-scale content-experience tracker, combining audience segmentation, satisfaction analysis, and trend comparisons. Design reusable AI research workflows and develop research databases and interactive prototypes."
 } satisfies Localized,
   location: { zh: "北京，中国", en: "Beijing, China" } satisfies Localized,
   email: "w274398243@hotmail.com",
@@ -42,20 +42,20 @@ export const projects = [
       en: "Research Data Platform",
     } satisfies Localized,
     summary: {
-      zh: "以消费品研究为场景，把分散的市场与商品资料组织成可查询、可比较的研究数据库，并实现网页交互。",
-      en: "A consumer-goods research prototype that organizes scattered market and product information into a queryable research database with an interactive web interface.",
+      zh: "围绕品类、价格与规格研究，将数据需求转化为可查询的研究数据库和网页原型。",
+      en: "A research database and web prototype for exploring consumer-goods categories, prices, and product specifications.",
     } satisfies Localized,
     problem: {
       zh: "不同来源的品类、时间和指标定义不一致，资料很难直接用于研究比较。",
       en: "Category, time, and metric definitions differ across sources, making research comparisons difficult.",
     } satisfies Localized,
     contribution: {
-      zh: "设计 SQLite 数据结构，统一品类、渠道、商品与时间维度，建立来源追溯和指标校验规则；借助 Codex 完成数据库与网页原型。",
-      en: "Designed a SQLite data structure with consistent category, channel, product, and time dimensions, source traceability, and metric validation. Used Codex to build the database and web prototype.",
+      zh: "定义研究所需的数据和比较标准，设计 SQLite 数据库及来源追溯规则；完成网页功能设计，使用 Codex 实现查询与比较交互。",
+      en: "Defined research data requirements and comparison criteria, designed a SQLite database with source traceability, and specified the web interface. Used Codex to implement the query and comparison interactions.",
     } satisfies Localized,
     outcome: {
-      zh: "实现多维筛选、图表与明细联动及结果导出；围绕品类比较、价格规格分析等需求，形成数据要求、验收标准和产品可行性评估方案。",
-      en: "Implemented multi-dimensional filters, linked charts and detail views, and result exports. Defined data requirements, acceptance criteria, and feasibility plans for category comparisons and price-pack analysis.",
+      zh: "原型支持多维筛选、商品比较、图表与明细联动及导出；结合数据来源与研究用途，形成数据采购和产品可行性评估方案。",
+      en: "The prototype supports filters, product comparisons, linked charts and detail views, and exports. Assessed data sources and research use cases to develop data-procurement and product-feasibility plans.",
     } satisfies Localized,
     tags: ["SQLite", "Data Modelling", "Research Design", "Codex"],
   },
@@ -169,8 +169,8 @@ export const experiences = [
       "en": "Beijing, China · On-site"
     },
     "summary": {
-      "zh": "服务字节跳动与联想，定量研究为主、定性研究为辅。海外研究经历覆盖美国、英国、德国、日本、韩国、印度尼西亚、巴西及沙特阿拉伯8国。",
-      "en": "Serve ByteDance and Lenovo through quantitative-led research with qualitative support. Project experience spans the US, UK, Germany, Japan, South Korea, Indonesia, Brazil, and Saudi Arabia."
+      "zh": "服务字节跳动与联想，定量研究为主，定性研究为辅。具备多国追踪与专项研究经验，研究主题涵盖内容体验、搜索行为、品牌表现与产品需求。",
+      "en": "Serve ByteDance and Lenovo through quantitative-led research with qualitative support. Multi-country tracking and focused studies span content experience, search behavior, brand performance, and product needs."
     },
     "bullets": [
       {
@@ -179,18 +179,18 @@ export const experiences = [
           "en": "Multi-country content tracking"
         },
         "text": {
-          "zh": "负责覆盖7国的内容生态与满意度追踪研究，统筹多平台研究的样本管理、跨国执行与分析交付；协调执行及数据团队，将复杂研究要求转化为一致的实施与分析标准。",
-          "en": "Lead execution and analytical delivery for a seven-country content-experience and satisfaction tracking study. Coordinate sampling, international fieldwork, and data teams, translating complex research requirements into consistent implementation and analysis standards."
+          "zh": "主要负责覆盖7国的内容生态与满意度追踪研究，统筹跨国执行、样本管理及分析交付；协调研究与数据团队，统一跨平台用户分组及加权口径，确保市场和平台间的比较标准一致。",
+          "en": "Lead execution and analytical delivery for a seven-country content-experience and satisfaction tracker. Coordinate international fieldwork, sampling, and research and data teams, aligning audience definitions and weighting for consistent comparisons across markets and platforms."
         }
       },
       {
         "label": {
-          "zh": "满意度因素分析",
-          "en": "Satisfaction-factor analysis"
+          "zh": "满意度与关键因素分析",
+          "en": "Satisfaction and relative importance"
         },
         "text": {
-          "zh": "完成相对权重分析及跨期对比，比较不同体验维度的重要性与变化；复核历史方法、样本范围和跨平台加权口径，为识别关键体验因素、解释满意度差异提供分析依据。",
-          "en": "Produce relative-weight analyses and wave-on-wave comparisons of experience dimensions. Review historical methods, sample scope, and cross-platform weighting to support interpretation of satisfaction differences and the identification of important experience factors."
+          "zh": "完成满意度相对权重分析、相关分析与跨期比较，评估关键体验因素；核验不同方法的排名差异及样本、加权口径，形成跨市场分析报告与后续研究建议。",
+          "en": "Conduct relative weight and correlation analyses to assess key aspects of user experience, alongside wave-on-wave comparisons. Review ranking differences across methods, sample definitions, and weighting, and produce a cross-market report with findings and recommendations for further research."
         }
       },
       {
@@ -199,18 +199,18 @@ export const experiences = [
           "en": "Search awareness and behavior"
         },
         "text": {
-          "zh": "深度参与独立的7国搜索心智追踪研究，围绕平台认知、搜索场景和使用习惯开展用户分层、交叉分析与趋势比较，建立跨市场、跨人群的一致比较依据。",
-          "en": "Contribute substantially to a separate seven-country search-awareness tracker. Analyze audience segments, cross-tabs, and trends in platform awareness, search contexts, and usage habits, maintaining comparable definitions across markets and audiences."
+          "zh": "深度参与7国搜索心智追踪，通过用户分层、交叉分析与趋势比较，研究平台认知、搜索场景和使用习惯，识别不同市场与人群的搜索行为差异。",
+          "en": "Conduct audience segmentation, cross-tabulation, and trend analysis as a key contributor to a separate seven-country search-awareness tracker, examining how platform awareness, search contexts, and usage habits vary by market and user group."
         }
       },
       {
         "label": {
-          "zh": "海外用户与内容洞察",
-          "en": "International audience research"
+          "zh": "美国搜索与内容研究",
+          "en": "U.S. search and content research"
         },
         "text": {
-          "zh": "主要负责美国搜索体验与内容消费研究，以任务操作、问卷与行为资料分析用户体验；比较短剧及网文用户的内容偏好、消费习惯与人群重合，支持目标用户和内容定位判断。",
-          "en": "Take primary responsibility for U.S. search-experience and content-consumption studies. Combine search tasks, surveys, and behavioral evidence, and analyze short-form drama and web-fiction audiences by preference, consumption habits, and overlap to support audience and content-positioning research."
+          "zh": "主要负责美国搜索体验与内容消费研究，结合搜索任务与问卷分析用户体验；比较短剧及网文用户的内容偏好、消费习惯与人群重合，支持目标用户和内容定位判断。",
+          "en": "Lead core workstreams in U.S. search-experience and content-consumption studies. Use search tasks and surveys to assess user experience, and compare short-form drama and web-fiction audiences by preferences, habits, and overlap to inform audience and content positioning."
         }
       },
       {
@@ -219,18 +219,18 @@ export const experiences = [
           "en": "Brand and product research"
         },
         "text": {
-          "zh": "深度参与品牌健康度追踪、企业用户画像、AI 产品海外用研与德国实地研究，结合案头研究及定量、定性资料，支持品牌表现、企业需求与产品体验分析。",
-          "en": "Contribute substantially to brand-health tracking, business-user profiling, overseas AI product research, and German fieldwork. Combine desk research with quantitative and qualitative evidence to examine brand performance, business needs, and product experience."
+          "zh": "深度参与品牌健康度追踪、中小企业用户画像、AI 创作产品海外用研与德国实地研究，结合案头资料及定量、定性研究，分析品牌表现、购买需求和产品使用体验。",
+          "en": "Contribute to brand-health tracking, small-business user profiling, overseas research on AI creative tools, and German field research. Combine desk research with quantitative and qualitative findings to examine brand performance, purchasing needs, and product experience."
         }
       },
       {
         "label": {
-          "zh": "AI 研究方法与工具",
-          "en": "AI research tools and methods"
+          "zh": "AI 研究工作流",
+          "en": "AI research workflows"
         },
         "text": {
-          "zh": "将问卷、样本、指标与分析交付中的研究规则转化为可复用工具和技能库，借助 Codex 实现批量处理、异常定位与结果复核；工具已用于正式交付并被同事采用，完成团队分享与使用推广。",
-          "en": "Turn research rules across questionnaires, samples, metrics, and analytical delivery into reusable tools and a skills library. Use Codex for batch processing, exception detection, and output checks; the tools are used in live delivery and adopted by colleagues, supported by internal training and sharing."
+          "zh": "设计问卷验证、数据分析与交付复核工作流，使用 Codex 开发可复用工具与技能库；编写操作手册、开展团队分享，工具已用于正式交付并被同事采用。",
+          "en": "Design AI workflows for questionnaire validation, data analysis, and delivery checks, developing reusable tools and a skills library with Codex. Document the workflows and share them with the team; the tools are used in live project delivery and have been adopted by colleagues."
         }
       }
     ]
@@ -253,10 +253,25 @@ export const experiences = [
       "en": "Beijing, China"
     },
     "summary": {
-      "zh": "整合行业、竞品、电商数据与用户反馈，比较价格带、SKU组合、产品卖点和渠道表现，支持新品定位与产品升级讨论。建立竞品分析框架，输出分析表、项目备忘录与汇报材料，支持项目组比较商品和渠道策略。",
-      "en": "Combined industry, competitor, e-commerce, and user evidence to compare price bands, SKU portfolios, product claims, and channel performance, supporting product positioning and upgrades. Built competitive-analysis frameworks and produced analysis tables, project memos, and presentations to support comparisons of product and channel strategies."
+      "zh": "参与健康产品升级与宠物食品新品孵化研究，结合电商、竞品与用户资料，支持产品组合、新品定位及上市准备。",
+      "en": "Supported health product upgrades and pet-food product development, combining e-commerce, competitor, and user research to inform product mix, positioning, and launch preparation."
     },
-    "bullets": []
+    "bullets": [
+      {
+        "label": { "zh": "健康产品升级", "en": "Health product upgrades" },
+        "text": {
+          "zh": "整合电商交易、竞品与用户研究资料，形成产品规格、组合及价格带的对比分析；结合购买需求分析产品卖点，为产品组合优化和升级方向提供依据。",
+          "en": "Combined e-commerce transaction data with competitor and user research to produce comparisons across pack sizes, bundles, and price tiers. Assessed product benefits against purchasing needs to inform product mix and upgrade recommendations."
+        }
+      },
+      {
+        "label": { "zh": "宠物食品新品孵化", "en": "Pet food product development" },
+        "text": {
+          "zh": "研究头部品牌的产品布局、主力单品与渠道策略，结合行业访谈形成竞争格局和典型品牌案例分析，提炼差异化卖点，为新品定位与上市准备提供依据。",
+          "en": "Produced competitive landscape and brand case analyses for pet-food product development, comparing leading brands' portfolios, flagship products, and channel strategies. Drew on industry interviews to identify differentiating product benefits and inform positioning and launch preparation."
+        }
+      }
+    ]
   }
 ];
 
@@ -290,12 +305,12 @@ export const cases = [
       "en": "Track content experience and satisfaction over time, comparing markets, platforms, and audience groups."
     },
     "approach": {
-      "zh": "统筹多国执行、样本管理与分析交付；完成满意度相对权重分析和跨期对比，复核历史方法、用户分组及跨平台加权口径。",
-      "en": "Coordinate international fieldwork, sampling, and analytical delivery. Produce satisfaction relative-weight analyses and wave-on-wave comparisons, reviewing historical methods, audience definitions, and cross-platform weighting."
+      "zh": "统筹跨国执行、样本管理与分析交付；完成满意度相对权重分析、相关分析与跨期比较，核验方法排名差异、用户分组及加权口径。",
+      "en": "Coordinate international fieldwork, sampling, and analytical delivery. Conduct relative weight, correlation, and wave-on-wave analyses, checking ranking differences across methods, audience definitions, and weighting."
     },
     "value": {
-      "zh": "形成体验维度重要性与跨期变化的分析结果，为识别关键体验因素、解释平台与人群差异提供依据。",
-      "en": "Deliver comparisons of experience-dimension importance and changes over time, supporting analysis of important experience factors and differences between platforms and audiences."
+      "zh": "形成跨市场分析报告，比较关键体验因素和跨期变化，提出后续研究建议；区分用户体验差异与方法、样本口径变化对结果的影响。",
+      "en": "Produce a cross-market report comparing key experience factors and changes over time, with recommendations for further research. Distinguish experience differences from effects of changing methods and sample definitions."
     }
   },
   {
@@ -461,8 +476,8 @@ export const capabilities = [
   {
     title: { zh: "分析与决策", en: "Analytics & Decisions" } satisfies Localized,
     items: {
-      zh: "Excel、SQL、R、Tableau；用户分层、交叉分析、趋势比较、跨市场分析",
-      en: "Excel, SQL, R, Tableau; Audience Segmentation, Cross-tab Analysis, Trend Comparison, Cross-market Analysis",
+      zh: "Excel、SQL、R；用户分层、交叉分析、相关与相对权重分析、跨期与跨市场比较",
+      en: "Excel, SQL, R; Audience Segmentation, Cross-tabs, Correlation & Relative Weight Analysis, Cross-wave & Cross-market Comparisons",
     } satisfies Localized,
   },
   {

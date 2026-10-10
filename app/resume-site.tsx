@@ -2,6 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import ResearchEvidenceVisual from "./ResearchEvidenceVisual";
+import ResumeAtmosphere from "./ResumeAtmosphere";
+import "./narrative.css";
 import resumeRelease from "../content/resume-release.json";
 import {
   capabilities,
@@ -36,7 +39,7 @@ const copy = {
     heroFacts: [
       ["研究方法", "定量主导 · 定性补充"],
       ["研究范围", "海外用户 · 品牌 · 产品"],
-      ["多市场经验", "海外研究覆盖 8 国 · 两项七国 Tracking"],
+      ["多市场经验", "多国研究经验 · 两项七国 Tracking"],
     ],
     introEyebrow: "HOW I WORK / 工作方式",
     introTitle: "先明确研究问题，再组织数据与分析。",
@@ -133,7 +136,7 @@ const copy = {
     heroFacts: [
       ["Research mix", "Quantitative-led · Qualitative support"],
       ["Research scope", "International users · Brand · Product"],
-      ["Multi-market work", "Eight countries · Two seven-country trackers"],
+      ["Multi-market work", "Multi-country research · Two seven-market trackers"],
     ],
     introEyebrow: "HOW I WORK",
     introTitle:
@@ -259,84 +262,6 @@ function GlobeIcon() {
       <circle cx="10" cy="10" r="7.25" />
       <path d="M2.9 10h14.2M10 2.75c2 2.05 3 4.47 3 7.25s-1 5.2-3 7.25c-2-2.05-3-4.47-3-7.25s1-5.2 3-7.25Z" />
     </svg>
-  );
-}
-
-function ResearchVisual({
-  visual,
-  markets,
-  language,
-}: {
-  visual: string;
-  markets: string[];
-  language: Language;
-}) {
-  if (visual === "markets") {
-    return (
-      <div className="research-visual visual-markets" aria-hidden="true">
-        <p>{language === "zh" ? "市场信号 → 可比口径" : "MARKET SIGNALS → COMPARABLE VIEW"}</p>
-        <div className="market-orbit">
-          <span className="market-core">TOTAL</span>
-          {markets.map((market) => (
-            <span className="market-node" key={market}>
-              {market}
-            </span>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (visual === "journey") {
-    const nodes =
-      language === "zh"
-        ? ["需求", "搜索", "体验", "心智"]
-        : ["NEED", "SEARCH", "EXPERIENCE", "MINDSET"];
-    return (
-      <div className="research-visual visual-journey" aria-hidden="true">
-        <p>{language === "zh" ? "用户路径" : "USER JOURNEY"}</p>
-        <div className="journey-line">
-          {nodes.map((node, nodeIndex) => (
-            <span key={node}>
-              <i>0{nodeIndex + 1}</i>
-              <b>{node}</b>
-            </span>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (visual === "segments") {
-    return (
-      <div className="research-visual visual-segments" aria-hidden="true">
-        <p>{language === "zh" ? "人群 × 内容 × 行为" : "AUDIENCE × CONTENT × BEHAVIOR"}</p>
-        <div className="segment-map">
-          <span className="segment-circle segment-a">A</span>
-          <span className="segment-circle segment-b">B</span>
-          <span className="segment-circle segment-c">C</span>
-          <div className="segment-bars">
-            <i />
-            <i />
-            <i />
-            <i />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="research-visual visual-context" aria-hidden="true">
-      <p>{language === "zh" ? "可比性 × 情境差异" : "COMPARABILITY × CONTEXT"}</p>
-      <div className="context-grid">
-        <span>01</span>
-        <span>02</span>
-        <span>03</span>
-        <span>04</span>
-        <strong>{language === "zh" ? "本地语境" : "LOCAL CONTEXT"}</strong>
-      </div>
-    </div>
   );
 }
 
@@ -529,6 +454,7 @@ export function ResumeSite({ language }: { language: Language }) {
       lang={language === "zh" ? "zh-CN" : "en"}
       className={`site-shell language-${language}`}
     >
+      <ResumeAtmosphere language={language} activeCase={activeCase} activeWorkflow={activeWorkflow} />
       <a className="skip-link" href="#content">
         {language === "zh" ? "跳至主要内容" : "Skip to main content"}
       </a>
@@ -630,6 +556,14 @@ export function ResumeSite({ language }: { language: Language }) {
             </a>
           </div>
           <p className="availability">{t.availability}</p>
+          <div className="hero-market-field">
+        <div className="hero-orbit-note" aria-hidden="true">RESEARCH ACROSS MARKETS</div>
+        <div className="atlas-markets" aria-label={language === "zh" ? "按已展示案例的市场浏览" : "Browse markets in the selected studies"}>
+          {[...new Set(cases.flatMap(item => item.markets))].map(market => <button type="button" key={market} className={selectedCase.markets.includes(market) ? "active" : ""} title={language === "zh" ? `查看 ${market} 的相关研究案例` : `View a study covering ${market}`} onClick={() => { setActiveCase(cases.findIndex(item => item.markets.includes(market))); navigateTo("work"); }}>{market}</button>)}
+        </div>
+        <div className="atlas-caption"><strong>{language === "zh" ? "多国研究" : "Multi-market"}</strong><span>{language === "zh" ? "两项独立的七国追踪研究" : "TWO DISTINCT SEVEN-MARKET STUDIES"}</span></div>
+          </div>
+
         </div>
 
         <aside className="profile-card" aria-label={t.profileCurrentValue}>
@@ -728,6 +662,7 @@ export function ResumeSite({ language }: { language: Language }) {
             <h3>{earlierExperience.company[language]}</h3>
             <strong>{earlierExperience.title[language]}</strong>
             <p>{earlierExperience.summary[language]}</p>
+            <div className="earlier-projects">{earlierExperience.bullets.map(bullet => <p key={bullet.label.en}><strong>{bullet.label[language]}</strong><span>{bullet.text[language]}</span></p>)}</div>
           </div>
           <span>{earlierExperience.meta[language]}</span>
         </article>
@@ -758,6 +693,14 @@ export function ResumeSite({ language }: { language: Language }) {
                   type="button"
                   role="tab"
                   aria-selected={activeCase === index}
+                  id={`case-tab-${index}`}
+                  tabIndex={activeCase === index ? 0 : -1}
+                  onKeyDown={event => {
+                    const next = event.key === "Home" ? 0 : event.key === "End" ? cases.length - 1 : ["ArrowRight", "ArrowDown"].includes(event.key) ? (index + 1) % cases.length : ["ArrowLeft", "ArrowUp"].includes(event.key) ? (index + cases.length - 1) % cases.length : -1;
+                    if (next < 0) return;
+                    event.preventDefault(); setActiveCase(next);
+                    event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>("button")[next]?.focus();
+                  }}
                   aria-controls="case-panel"
                   className={activeCase === index ? "active" : ""}
                   key={item.index}
@@ -775,11 +718,13 @@ export function ResumeSite({ language }: { language: Language }) {
 
             <article
               id="case-panel"
+              aria-labelledby={`case-tab-${activeCase}`}
               className="case-panel"
               role="tabpanel"
               aria-live="polite"
             >
-              <ResearchVisual
+              <ResearchEvidenceVisual
+                caseIndex={selectedCase.index}
                 visual={selectedCase.visual}
                 markets={selectedCase.markets}
                 language={language}
@@ -837,6 +782,14 @@ export function ResumeSite({ language }: { language: Language }) {
                 type="button"
                 role="tab"
                 aria-selected={activeWorkflow === index}
+                  id={`workflow-tab-${index}`}
+                  tabIndex={activeWorkflow === index ? 0 : -1}
+                  onKeyDown={event => {
+                    const next = event.key === "Home" ? 0 : event.key === "End" ? workflow.length - 1 : ["ArrowRight", "ArrowDown"].includes(event.key) ? (index + 1) % workflow.length : ["ArrowLeft", "ArrowUp"].includes(event.key) ? (index + workflow.length - 1) % workflow.length : -1;
+                    if (next < 0) return;
+                    event.preventDefault(); setActiveWorkflow(next);
+                    event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>("button")[next]?.focus();
+                  }}
                 aria-controls="workflow-panel"
                 className={activeWorkflow === index ? "active" : ""}
                 onClick={() => setActiveWorkflow(index)}
@@ -849,6 +802,7 @@ export function ResumeSite({ language }: { language: Language }) {
           </div>
           <div
             id="workflow-panel"
+            aria-labelledby={`workflow-tab-${activeWorkflow}`}
             className="workflow-panel"
             role="tabpanel"
             aria-live="polite"
@@ -903,6 +857,7 @@ export function ResumeSite({ language }: { language: Language }) {
           </details>
         </div>
       </section>
+
 
       <section id="capabilities" className="capabilities-section section-pad">
         <p className="eyebrow">{t.capabilityEyebrow}</p>

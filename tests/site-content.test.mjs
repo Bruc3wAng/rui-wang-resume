@@ -33,12 +33,21 @@ test("exports the bilingual public profile", async () => {
   assert.match(zh, /data-header-theme="night"/);
   assert.match(zh, /data-header-theme="teal"/);
   assert.match(zh, /Research Executive/);
-  assert.match(zh, /海外研究覆盖 8 国/);
+  assert.match(zh, /具备多国研究经验/);
+  assert.match(en, /multi-country research experience/);
   assert.match(zh, /七国内容生态与满意度追踪/);
   assert.match(zh, /七国搜索心智追踪/);
   assert.match(zh, /字节跳动与联想/);
   assert.match(zh, /相对权重分析/);
-  assert.match(zh, /class="hero-name">王睿<\/p>/);
+  assert.match(zh, /跨市场研究，理解用户与产品/);
+  assert.match(zh, /跨市场分析报告与后续研究建议/);
+  assert.match(zh, /健康产品升级/);
+  assert.match(zh, /宠物食品新品孵化/);
+  assert.match(en, /Health product upgrades/);
+  assert.match(en, /Pet food product development/);
+  assert.match(en, /adopted by colleagues/);
+  assert.doesNotMatch(zh, /海外研究覆盖\s*8\s*国|覆盖八国/);
+  assert.doesNotMatch(en, /across eight countries|eight-country coverage/i);
   assert.doesNotMatch(zh, /HOW I WORK|本期|只负责/);
   assert.doesNotMatch(en, /current wave/i);
   assert.doesNotMatch(zh, /联想等|数据研究分析|驻场|AI 方法资产化|研究问题建模/);
@@ -50,7 +59,7 @@ test("exports the bilingual public profile", async () => {
   }
 });
 
-test("keeps the two tracking studies and deduplicated country coverage distinct", async () => {
+test("keeps the two tracking studies and their verified market lists distinct", async () => {
   const source = await readFile(new URL("content/resume.ts", root), "utf8");
   const cases = JSON.parse(source.split("export const cases = ")[1].split(";\n\nexport const workflow")[0]);
   assert.equal(cases.length, 4);
@@ -61,6 +70,7 @@ test("keeps the two tracking studies and deduplicated country coverage distinct"
   assert.ok(!content.markets.includes("KR"));
   assert.ok(search.markets.includes("KR"));
   assert.ok(!search.markets.includes("SA"));
+  // These selected cases are a verified subset, not the total career coverage.
   assert.equal(new Set(cases.flatMap(item => item.markets)).size, 8);
   assert.match(content.role.zh, /研究统筹/);
   assert.match(search.role.zh, /深度参与/);
@@ -134,14 +144,14 @@ test("ships the current Chinese resume and portrait", async () => {
   ]);
 });
 
-test("keeps V12 research and download content synchronized in the Sites build", async (t) => {
+test("keeps current research and download content synchronized in the Sites build", async (t) => {
   // The GitHub workflow builds only out; release verification builds both targets.
   if (!process.env.NEXT_PUBLIC_BASE_PATH) return t.skip("Sites output is checked in local release verification");
   const release = JSON.parse(await readFile(new URL("content/resume-release.json", root), "utf8"));
   for (const path of ["dist/client/index.html", "dist/client/en/index.html"]) {
     const html = await readFile(new URL(path, root), "utf8");
     assert.match(html, /Research Executive/);
-    assert.match(html, /V12/);
+    assert.ok(html.includes(`rui-wang-resume-zh.pdf?v=${release.contentVersion}`));
     assert.ok(html.includes(release.downloadFileName));
     assert.doesNotMatch(html, /本期|current wave|脱敏|anonymized|HOW I WORK/);
     assert.ok(html.indexOf('id="experience"') < html.indexOf('id="work"'));
@@ -151,4 +161,13 @@ test("keeps V12 research and download content synchronized in the Sites build", 
   const css = await readFile(new URL("app/globals.css", root), "utf8");
   assert.match(css, /\.role-point\s*\{[^}]*190px minmax\(0, 1fr\)/);
   assert.match(css, /\.role-point\s*\{[^}]*grid-template-columns: minmax\(0, 1fr\)/);
+});
+
+test("integrates motion into the resume without a separate visual gallery", async () => {
+  const ui = await readFile(new URL("app/resume-site.tsx", root), "utf8");
+  assert.doesNotMatch(ui, /VisualGallery|visual-gallery|id=["']gallery["']/);
+  for (const path of ["out/index.html", "out/en/index.html"]) {
+    const html = await readFile(new URL(path, root), "utf8");
+    assert.doesNotMatch(html, /id="visual-gallery"|id="gallery"|独立画廊|VISUAL GALLERY/);
+  }
 });
