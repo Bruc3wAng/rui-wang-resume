@@ -304,7 +304,7 @@ export function ResumeSite({ language }: { language: Language }) {
             href="#top"
             aria-label={profile.namePair[language]}
           >
-            <span className="brand-mark">RW</span>
+            <span className="brand-mark brand-avatar"><Image src={`${basePath}/images/rui-wang-chibi.png`} alt="" width={1254} height={1254} unoptimized /></span>
             <span className="brand-name">{profile.namePair[language]}</span>
           </a>
           <nav

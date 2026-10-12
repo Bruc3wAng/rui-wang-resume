@@ -1,6 +1,7 @@
 "use client";
 
 import type { KeyboardEvent } from "react";
+import PracticeVisual from "./PracticeVisuals";
 import { aiPractice, creativeCategories, experiences, sectionCopy, selectedWork, type Language } from "../content/resume";
 
 type Selection = { language: Language; active: number; onSelect: (index: number) => void };
@@ -54,17 +55,6 @@ export function SelectedWork({ language, active, onSelect }: Selection) {
   </section>;
 }
 
-function PracticeFlow({ practice, language }: { practice: (typeof aiPractice)[number]; language: Language }) {
-  return <div className="practice-flow">
-    <div className="flow-labels flow-inputs"><span className="flow-caption">{language === "zh" ? "研究输入" : "RESEARCH INPUTS"}</span>{practice.inputLabels.map(label => <span key={label.en}>{label[language]}</span>)}</div>
-    <div className="flow-channel" aria-hidden="true"><svg viewBox="0 0 420 180" preserveAspectRatio="none">
-      <path className="flow-track" d="M0 30C110 30 100 90 210 90S310 30 420 30M0 90H420M0 150C110 150 100 90 210 90S310 150 420 150" />
-      <path className="flow-pulse" d="M0 30C110 30 100 90 210 90S310 30 420 30M0 90H420M0 150C110 150 100 90 210 90S310 150 420 150" />
-    </svg><span className="flow-engine"><i />Codex<i /></span></div>
-    <div className="flow-labels flow-outputs"><span className="flow-caption">{language === "zh" ? "分析产出" : "RESEARCH OUTPUTS"}</span>{practice.outputLabels.map(label => <span key={label.en}>{label[language]}</span>)}</div>
-  </div>;
-}
-
 export function AIPractice({ language, active, onSelect }: Selection) {
   const practice = aiPractice[active];
   return <section id="method" className="practice-chapter chapter-surface">
@@ -80,7 +70,7 @@ export function AIPractice({ language, active, onSelect }: Selection) {
         <article className="practice-panel" id="practice-panel" role="tabpanel" aria-labelledby={`practice-tab-${practice.id}`} tabIndex={0}>
           <div key={practice.id} className="practice-content">
             <p className="practice-context">{practice.context[language]}</p>
-            <PracticeFlow practice={practice} language={language} />
+            <PracticeVisual index={active} language={language} />
             <dl className="practice-story">
               <div><dt><span>01</span>{language === "zh" ? "我的判断" : "My judgment"}</dt><dd>{practice.decision[language]}</dd></div>
               <div><dt><span>02</span>{language === "zh" ? "AI 的实现" : "AI execution"}</dt><dd>{practice.execution[language]}</dd></div>
@@ -106,7 +96,7 @@ export function CreativeWork({ language }: { language: Language }) {
       <div className="creative-collection">
         {creativeCategories.map((category, index) => <details className={`creative-category creative-${category.id}`} key={category.id} open={category.id === "web"}>
           <summary><span className="creative-number">0{index + 1}</span><CreativeGlyph type={category.id} /><span className="creative-heading"><strong>{category.title[language]}</strong><span>{category.summary[language]}</span></span><span className="creative-expand" aria-hidden="true">↗</span></summary>
-          <div className="creative-items">{category.items.map(item => <article key={item.title.en}><header><h3>{item.title[language]}</h3><span>{item.status[language]}</span></header><p>{item.description[language]}</p><div className="creative-links">{"liveUrl" in item && item.liveUrl ? <a href={item.liveUrl} target="_blank" rel="noreferrer">{language === "zh" ? "在线体验" : "View live"}<span aria-hidden="true">↗</span></a> : null}{"sourceUrl" in item && item.sourceUrl ? <a href={item.sourceUrl} target="_blank" rel="noreferrer">{language === "zh" ? "查看源码" : "View source"}<span aria-hidden="true">↗</span></a> : null}</div></article>)}</div>
+          <div className="creative-items">{category.items.map(item => <article key={item.title.en}><header><h3>{item.title[language]}</h3><span>{item.status[language]}</span></header><p>{item.description[language]}</p><div className="creative-links">{"liveUrl" in item && item.liveUrl ? <a href={item.liveUrl.startsWith("/") ? `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}${language === "en" ? "/en" : ""}${item.liveUrl}` : item.liveUrl} target="_blank" rel="noreferrer">{language === "zh" ? "在线体验" : "View live"}<span aria-hidden="true">↗</span></a> : null}{"sourceUrl" in item && item.sourceUrl ? <a href={item.sourceUrl} target="_blank" rel="noreferrer">{language === "zh" ? "查看源码" : "View source"}<span aria-hidden="true">↗</span></a> : null}</div></article>)}</div>
         </details>)}
       </div>
     </div>

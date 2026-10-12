@@ -5,9 +5,11 @@ export const dynamic = "force-static";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
+    { url: `${siteUrl}/overseas/`, lastModified: new Date("2026-10-10"), changeFrequency: "monthly", priority: 0.8 },
+    { url: `${siteUrl}/en/overseas/`, lastModified: new Date("2026-10-10"), changeFrequency: "monthly", priority: 0.7 },
     {
       url: `${siteUrl}/`,
-      lastModified: new Date("2026-07-30"),
+      lastModified: new Date("2026-10-10"),
       changeFrequency: "monthly",
       priority: 1,
       alternates: {
@@ -19,7 +21,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     {
       url: `${siteUrl}/en/`,
-      lastModified: new Date("2026-07-30"),
+      lastModified: new Date("2026-10-10"),
       changeFrequency: "monthly",
       priority: 0.9,
       alternates: {

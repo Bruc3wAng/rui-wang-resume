@@ -175,52 +175,52 @@ export const experiences = [
     "bullets": [
       {
         "label": {
-          "zh": "七国内容生态与满意度追踪",
-          "en": "Seven-country content and satisfaction tracking"
+          "zh": "内容体验与满意度追踪",
+          "en": "Content experience and satisfaction tracking"
         },
         "text": {
-          "zh": "主要负责7国内容生态与满意度追踪的项目推进和分析交付，比较不同市场、平台的用户体验；结合相对权重分析与跨期比较，识别与满意度关联更强的体验因素，形成研究报告与后续建议。",
-          "en": "Lead study coordination and analytical delivery for a seven-country content and satisfaction tracker. Compare experiences across markets and platforms, using relative weight analysis and wave comparisons to identify factors associated with satisfaction and develop research recommendations."
+          "zh": "主要负责多国追踪研究的项目推进与分析交付，比较不同市场、平台的用户体验；结合相对权重分析与跨期比较，识别与满意度关联更强的体验因素，形成研究报告与后续建议。",
+          "en": "Lead study coordination and analytical delivery for a multi-country tracker. Compare experiences across markets and platforms, using relative weight analysis and wave comparisons to identify factors associated with satisfaction and develop research recommendations."
         }
       },
       {
         "label": {
-          "zh": "品牌健康度追踪",
-          "en": "Brand-health tracking"
+          "zh": "品牌表现追踪",
+          "en": "Brand performance tracking"
         },
         "text": {
-          "zh": "深度参与多期品牌追踪，分析品牌认知、评价与形象变化；统一不同客群、期次和报告中的指标定义，完成数据与报告更新，支持品牌表现判断。",
-          "en": "Contribute to ongoing brand tracking, examining changes in awareness, brand evaluations, and image. Align metric definitions across audiences, waves, and reports, and update the data and reporting used to assess brand performance."
+          "zh": "深度参与跨客群、多品类的长期品牌研究，负责多期数据与报告交付；梳理认知、评价与形象等指标及历史可比性，建立研究数据、监测平台和报告的对应关系，支持品牌趋势与竞争表现判断。",
+          "en": "Contribute to a long-running brand study across audience segments and product categories, with responsibility for data and reporting across waves. Align awareness, evaluation, and image measures and their historical comparisons; map research data to tracking platforms and reports to support assessment of brand trends and competitive performance."
         }
       },
       {
         "label": {
-          "zh": "美国短剧与网文消费研究",
-          "en": "U.S. short-form drama and web-fiction research"
+          "zh": "海外内容消费研究",
+          "en": "Content consumption research"
         },
         "text": {
-          "zh": "独立负责美国短剧与网文消费研究，组织研究执行、用户分层和分析交付；比较内容偏好、消费习惯与人群重合，为目标用户和内容定位提供依据。",
-          "en": "Independently manage a U.S. study of short-form drama and web-fiction consumption, from fieldwork coordination to audience segmentation and analytical delivery. Compare preferences, habits, and audience overlap to inform audience and content positioning."
+          "zh": "独立负责美国市场的内容消费研究，组织研究执行、用户分层和分析交付；比较内容偏好、消费习惯与人群重合，为目标用户和内容定位提供依据。",
+          "en": "Independently manage a U.S. content-consumption study, from fieldwork coordination to audience segmentation and analytical delivery. Compare preferences, habits, and audience overlap to inform audience and content positioning."
         }
       },
       {
         "label": {
-          "zh": "七国搜索心智追踪",
-          "en": "Seven-country search-awareness tracking"
+          "zh": "搜索行为与用户心智研究",
+          "en": "Search behavior and perceptions"
         },
         "text": {
-          "zh": "深度参与另一项7国搜索心智追踪，通过用户分层、交叉分析与趋势比较，解释平台认知、搜索场景和使用习惯在不同市场、人群中的差异。",
-          "en": "Contribute to a separate seven-country search-awareness tracker, using segmentation, cross-tabulation, and trend analysis to understand differences in platform awareness, search contexts, and habits across markets and audiences."
+          "zh": "深度参与多国搜索追踪，通过用户分层、交叉分析与趋势比较，解释平台认知、搜索场景和使用习惯在不同市场、人群中的差异。",
+          "en": "Contribute to a separate multi-country search tracker, using segmentation, cross-tabulation, and trend analysis to understand differences in platform awareness, search contexts, and habits across markets and audiences."
         }
       },
       {
         "label": {
-          "zh": "定性与用户研究",
-          "en": "Qualitative and user research"
+          "zh": "用户需求与决策研究",
+          "en": "User needs and decision research"
         },
         "text": {
-          "zh": "深度参与德国实地用研及中小企业用户画像研究，结合访谈与定量资料理解使用场景、产品需求和采购决策，并协调跨语言研究执行。",
-          "en": "Contribute to field research in Germany and small-business user profiling. Combine interview and survey evidence to understand use cases, product needs, and purchasing decisions, alongside cross-language research coordination."
+          "zh": "深度参与海外实地研究与企业用户画像研究，结合访谈与定量资料理解使用场景、产品需求和采购决策，并协调跨语言研究执行。",
+          "en": "Contribute to international field research and business-user profiling. Combine interview and survey evidence to understand use cases, product needs, and purchasing decisions, alongside cross-language research coordination."
         }
       }
     ]
@@ -279,12 +279,12 @@ export const cases = [
       "SA"
     ],
     "title": {
-      "zh": "七国内容生态与满意度追踪",
-      "en": "Seven-country Content Experience Tracker"
+      "zh": "内容体验与满意度追踪",
+      "en": "Content Experience and Satisfaction Tracking"
     },
     "scope": {
-      "zh": "Tracking · 7 个海外市场",
-      "en": "Tracking · Seven international markets"
+      "zh": "多国研究 · 持续追踪",
+      "en": "Multi-country research · Ongoing tracking"
     },
     "role": {
       "zh": "主要负责 · 研究统筹与分析交付",
@@ -295,8 +295,8 @@ export const cases = [
       "en": "How do audiences rate content across markets and platforms? Which aspects of the experience are most closely associated with satisfaction, and how do results change over time?"
     },
     "approach": {
-      "zh": "主要承担7国调研推进与分析交付，确认用户分组、加权和跨期比较条件；借助 Codex 批量完成相对权重与相关分析，再核查不同方法的因素排名和结果差异。",
-      "en": "Take primary responsibility for seven-country fieldwork coordination and analytical delivery. Define audience groups, weighting, and wave-comparison conditions; use Codex to batch-run relative weight and correlation analyses, then review factor rankings and differences between methods."
+      "zh": "主要承担多国调研推进与分析交付，确认用户分组、加权和跨期比较条件；借助 Codex 批量完成相对权重与相关分析，再核查不同方法的因素排名和结果差异。",
+      "en": "Take primary responsibility for multi-country fieldwork coordination and analytical delivery. Define audience groups, weighting, and wave-comparison conditions; use Codex to batch-run relative weight and correlation analyses, then review factor rankings and differences between methods."
     },
     "value": {
       "zh": "交付跨市场分析报告、跨期对照与分析方法 SOP。把重复计算和核验保留为可复跑流程，后续追踪可沿用，研究精力集中在解释差异与提出建议。",
@@ -316,12 +316,12 @@ export const cases = [
       "BR"
     ],
     "title": {
-      "zh": "七国搜索心智追踪",
-      "en": "Seven-country Search Awareness Tracker"
+      "zh": "搜索行为与用户心智研究",
+      "en": "Search Behavior and Perceptions"
     },
     "scope": {
-      "zh": "Tracking · 7 个海外市场",
-      "en": "Tracking · Seven international markets"
+      "zh": "多国研究 · 持续追踪",
+      "en": "Multi-country research · Ongoing tracking"
     },
     "role": {
       "zh": "深度参与 · 用户分层与趋势分析",
@@ -347,8 +347,8 @@ export const cases = [
       "US"
     ],
     "title": {
-      "zh": "美国搜索体验研究",
-      "en": "U.S. Search Experience Research"
+      "zh": "搜索体验研究",
+      "en": "Search Experience Research"
     },
     "scope": {
       "zh": "任务研究与定量问卷 · 美国",
@@ -378,8 +378,8 @@ export const cases = [
       "US"
     ],
     "title": {
-      "zh": "美国内容消费研究",
-      "en": "U.S. Content Consumption Research"
+      "zh": "海外内容消费研究",
+      "en": "Content Consumption Research"
     },
     "scope": {
       "zh": "定量研究 · 美国",
@@ -390,8 +390,8 @@ export const cases = [
       "en": "Independent project responsibility · Fieldwork and analysis"
     },
     "problem": {
-      "zh": "短剧和网文分别吸引哪些用户？他们的内容偏好、消费习惯和人群重合有哪些异同？",
-      "en": "Who consumes short-form drama and web fiction? How do their preferences and habits compare, and where do the audiences overlap?"
+      "zh": "不同内容形式分别吸引哪些用户？他们的内容偏好、消费习惯和人群重合有哪些异同？",
+      "en": "Who engages with different content formats? How do their preferences and habits compare, and where do the audiences overlap?"
     },
     "approach": {
       "zh": "协调样本与研究执行，按内容偏好、使用习惯和用户特征组织分析表，比较两类内容用户的差异与重合。",
@@ -522,7 +522,7 @@ export const selectedWork = [
   {
     id: "content-tracking", index: "01",
     title: experiences[0].bullets[0].label,
-    scope: { zh: "Tracking · 7 个海外市场", en: "Tracking · Seven international markets" } satisfies Localized,
+    scope: { zh: "多国研究 · 持续追踪", en: "Multi-country research · Ongoing tracking" } satisfies Localized,
     role: { zh: "主要负责 · 项目推进与分析交付", en: "Primary responsibility · Coordination and analysis" } satisfies Localized,
     summary: experiences[0].bullets[0].text,
     markets: [...cases[0].markets],
@@ -530,7 +530,7 @@ export const selectedWork = [
   {
     id: "brand-tracking", index: "02",
     title: experiences[0].bullets[1].label,
-    scope: { zh: "持续追踪 · 品牌表现", en: "Ongoing tracking · Brand performance" } satisfies Localized,
+    scope: { zh: "长期追踪 · 多客群与多品类", en: "Long-term tracking · Multiple audiences and categories" } satisfies Localized,
     role: { zh: "深度参与 · 分析与报告交付", en: "Key contribution · Analysis and reporting" } satisfies Localized,
     summary: experiences[0].bullets[1].text,
     markets: [] as string[],
@@ -546,7 +546,7 @@ export const selectedWork = [
   {
     id: "search-tracking", index: "04",
     title: experiences[0].bullets[3].label,
-    scope: { zh: "Tracking · 7 个海外市场", en: "Tracking · Seven international markets" } satisfies Localized,
+    scope: { zh: "多国研究 · 持续追踪", en: "Multi-country research · Ongoing tracking" } satisfies Localized,
     role: { zh: "深度参与 · 用户分层与趋势分析", en: "Key contribution · Audience and trend analysis" } satisfies Localized,
     summary: experiences[0].bullets[3].text,
     markets: [...cases[1].markets],
@@ -595,22 +595,22 @@ export const aiPractice = [
   },
   {
     id: "tracking-delivery",
-    title: { zh: "追踪研究的核验与更新", en: "Validation and updates for tracking studies" } satisfies Localized,
+    title: { zh: "多期研究与报告更新", en: "Multi-wave research and reporting" } satisfies Localized,
     context: {
-      zh: "同一项研究要在数据表、平台和报告中保持一致，更新一期时还需保留正确的历史结果。",
-      en: "Tracking results need to stay consistent across data tables, platforms, and reports while preserving valid historical data.",
+      zh: "长期品牌研究横跨多个客群、品类和期次，数据、监测平台与报告需要同步，历史结果也必须保留。",
+      en: "Long-running brand research spans audiences, categories, and waves. Data, tracking platforms, and reports must stay aligned while valid historical results are preserved.",
     } satisfies Localized,
     decision: {
-      zh: "我梳理指标、数据来源与报告位置的对应关系，明确样本范围和更新规则，判断例外与业务影响。",
-      en: "I map metrics to their sources and report locations, define sample scope and update rules, and assess exceptions and their implications.",
+      zh: "我梳理指标定义、比较样本与历史可比性，确定数据到报告的映射及更新范围，判断差异该修正还是保留。",
+      en: "I define metrics and comparison samples, assess historical comparability, and map data to reports. I decide which differences require correction and which reflect valid changes.",
     } satisfies Localized,
     execution: {
-      zh: "将规则转为 Codex 辅助工具，批量比对文件、定位差异并按映射更新表格与图表；保留来源和检查记录。",
-      en: "Turn those rules into Codex-assisted tools for batch file comparisons, issue tracing, and mapped table and chart updates, with source and validation records.",
+      zh: "借助 Codex 把规则写入程序，批量比对多期文件、定位差异，并按既定模板更新表格、图表和对应文字；保留来源与核验记录。",
+      en: "Use Codex to encode these rules, compare files across waves, trace differences, and update tables, charts, and related text within existing templates, retaining source and validation records.",
     } satisfies Localized,
     output: {
-      zh: "工具已用于正式交付并被同事采用。通过可复用 Skills、脚本与操作手册，把逐份查找和重复复制转为批量处理与重点复核。",
-      en: "Tools are used in formal project delivery and adopted by colleagues. Reusable skills, scripts, and guides replace file-by-file searches and repeated copying with batch processing and targeted review.",
+      zh: "已完成多期数据和报告的同步交付，将逐份查找、反复复制改为批量处理与重点复核，并形成可供后续项目复用的程序与检查方法。",
+      en: "Delivered aligned data and reports across waves, replacing file-by-file searches and repeated copying with batch processing and targeted review. The resulting tools and validation methods can be reused in subsequent projects.",
     } satisfies Localized,
     inputLabels: [
       { zh: "研究规则", en: "Research rules" },
@@ -618,9 +618,9 @@ export const aiPractice = [
       { zh: "报告模板", en: "Report templates" },
     ] satisfies Localized[],
     outputLabels: [
-      { zh: "差异定位", en: "Issue tracing" },
-      { zh: "交付更新", en: "Updated deliverables" },
-      { zh: "复用工具", en: "Reusable tools" },
+      { zh: "跨期对照", en: "Wave comparisons" },
+      { zh: "同步报告", en: "Aligned reports" },
+      { zh: "复用程序", en: "Reusable tools" },
     ] satisfies Localized[],
   },
   {
@@ -711,6 +711,12 @@ export const creativeCategories: {
         sourceUrl: projects[3].sourceUrl,
       },
       {
+        title: { zh: "全球发展数据查询", en: "Global Development Atlas" },
+        description: { zh: "将世界银行发展指标整理为交互查询页面，支持国家、指标与年份筛选、多国同年比较、年度趋势、来源查看和 CSV 导出，辅助海外市场背景研究。", en: "An interactive explorer of World Bank development indicators, with country, indicator, and year filters, cross-country comparisons, annual trends, source references, and CSV export for market research." },
+        status: { zh: "公开数据查询", en: "Public data explorer" },
+        liveUrl: "/overseas/",
+      },
+      {
         title: projects[1].title,
         description: { zh: "设计照片筛选、修图方案对比与版本记录，形成影像处理交互原型。", en: "An interactive photo-workflow prototype for selection, edit comparisons, and version history." },
         status: { zh: "交互原型", en: "Interactive prototype" },
@@ -728,7 +734,7 @@ export const sectionCopy = {
   workTitle: { zh: "重点工作", en: "Selected Work" },
   workIntro: { zh: "从多国追踪到专项用户研究，承担项目推进、分析判断与交付。", en: "Study coordination, analytical judgment, and delivery across tracking programs and focused user research." },
   aiTitle: { zh: "AI 提效实践", en: "AI in Research Practice" },
-  aiIntro: { zh: "把研究规则转成可执行、可复用的工具，让重复工作更快完成，让分析结果更便于核对。", en: "Turn research rules into reusable tools to handle repetitive work efficiently and make results easier to verify." },
+  aiIntro: { zh: "将研究规则写成可复用工具，完成批量分析、核验和报告更新；工具已用于正式交付并被同事采用。", en: "Turn research rules into reusable tools for batch analysis, validation, and report updates. Tools are used in formal project delivery and adopted by colleagues." },
   creativeTitle: { zh: "个人作品", en: "Personal Projects" },
   creativeIntro: { zh: "在研究之外，把想法做成影像、游戏与交互网站。", en: "Beyond research, I turn ideas into moving images, games, and interactive websites." },
 } satisfies Record<string, Localized>;

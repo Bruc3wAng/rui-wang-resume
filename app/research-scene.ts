@@ -21,11 +21,11 @@ void main(){
  vec2 origin=mix(heroCenter,vec2(.80,.53),smoothstep(.1,1.,chapter));
  vec2 p=(q-origin)*vec2(aspect,1.);p-=pointer*vec2(.009,.007);
  float surface=1.-smoothstep(.12,.94,chapter);
- vec3 paper=vec3(.905,.91,.875),blue=vec3(.11,.29,.67),orange=vec3(1.,.52,.23);
+ vec3 paper=vec3(.905,.91,.875),blue=vec3(.184,.275,.612),green=vec3(0.,.616,.612);
  vec3 col=paper;
  // Broad daylight washes carry colour through the reading surface.
  col=mix(col,vec3(.72,.84,.89),.68*exp(-dot(p,p)*2.));
- col=mix(col,vec3(.98,.85,.65),.40*exp(-dot(p-vec2(.26,-.22),p-vec2(.26,-.22))*9.));
+ col=mix(col,vec3(.70,.88,.78),.40*exp(-dot(p-vec2(.26,-.22),p-vec2(.26,-.22))*9.));
  float scale=mix(.225,.135,mobile);
  vec2 v=p/scale;float rot=.32+sin(time*.15)*.12+pointer.x*.08;
  v=mat2(cos(rot),-sin(rot),sin(rot),cos(rot))*v;
@@ -35,7 +35,7 @@ void main(){
  float d=abs(r-ringRadius);float body=1.-smoothstep(width-.025,width+.025,d);
  float lip=exp(-abs(d-width)*90.);float innerGlow=exp(-abs(r-(ringRadius-width*.85))*100.);
  float hue=.5+.5*sin(a+time*.19+.8);
- vec3 tint=mix(blue,orange,smoothstep(.22,.85,hue));
+ vec3 tint=mix(blue,green,smoothstep(.22,.85,hue));
  float curve=clamp((r-ringRadius)/width,-1.,1.);
  vec3 glass=mix(tint,vec3(.92,.97,1.),pow(.5+.5*curve,2.)*.72);
  glass=mix(glass,vec3(1.),pow(max(0.,sin(a*2.-time*.17+.7)),20.)*.82);
@@ -88,7 +88,7 @@ const pointFragment=`#version 300 es
 precision highp float;
 in float brightness;in float id;out vec4 color;
 uniform float chapter;
-void main(){float d=length(gl_PointCoord-.5);if(d>.5)discard;vec3 c=mix(vec3(.11,.31,.61),vec3(.88,.37,.16),id*.65);c=mix(c,vec3(.22,.42,.55),smoothstep(2.5,4.,chapter)*.5);color=vec4(c,brightness*pow(1.-d*2.,.6));}`;
+void main(){float d=length(gl_PointCoord-.5);if(d>.5)discard;vec3 c=mix(vec3(.11,.31,.61),vec3(0.,.616,.612),id*.65);c=mix(c,vec3(.22,.42,.55),smoothstep(2.5,4.,chapter)*.5);color=vec4(c,brightness*pow(1.-d*2.,.6));}`;
 
 export function createResearchScene(canvas: HTMLCanvasElement) {
  const gl=canvas.getContext('webgl2',{alpha:false,antialias:false,powerPreference:'low-power'});

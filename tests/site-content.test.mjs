@@ -15,7 +15,7 @@ test("exports the bilingual public profile", async () => {
   assert.match(en, /Research Executive/);
   assert.match(en, /ByteDance/);
   assert.match(en, /Lenovo/);
-  assert.match(zh, /7 个海外市场/);
+  assert.match(zh, /多国研究/);
   assert.match(zh, /重点工作/);
   assert.match(zh, /研究数据平台/);
   assert.match(en, /Research Data Platform/);
@@ -28,15 +28,16 @@ test("exports the bilingual public profile", async () => {
   assert.match(zh, /Research Executive/);
   assert.match(zh, /专注多国用户研究与品牌追踪/);
   assert.match(en, /multi-country user research and brand tracking/);
-  assert.match(zh, /七国内容生态与满意度追踪/);
-  assert.match(zh, /七国搜索心智追踪/);
+  assert.match(zh, /内容体验与满意度追踪/);
+  assert.match(zh, /搜索行为与用户心智研究/);
   assert.match(zh, /字节跳动与联想/);
   assert.match(zh, /相对权重分析/);
   assert.match(zh, /研究用户如何选择、使用与评价产品/);
   assert.match(zh, /跨市场分析报告/);
-  assert.match(zh, /品牌健康度追踪/);
-  assert.match(zh, /美国短剧与网文消费研究/);
-  assert.match(zh, /定性与用户研究/);
+  assert.match(zh, /品牌表现追踪/);
+  assert.match(zh, /跨客群、多品类/);
+  assert.match(zh, /海外内容消费研究/);
+  assert.match(zh, /用户需求与决策研究/);
   assert.match(zh, /AI 提效实践/);
   assert.match(zh, /健康产品升级/);
   assert.match(zh, /宠物食品新品孵化/);
@@ -51,6 +52,8 @@ test("exports the bilingual public profile", async () => {
   }
   assert.doesNotMatch(zh, /海外研究覆盖\s*8\s*国|覆盖八国/);
   assert.doesNotMatch(en, /across eight countries|eight-country coverage/i);
+  assert.doesNotMatch(zh, /[0-9七八]\s*个?\s*(?:国|海外市场)|短剧|网文|品牌健康度/);
+  assert.doesNotMatch(en, /seven.country|seven international|short.form drama|web.fiction|brand.health/i);
   assert.doesNotMatch(zh, /HOW I WORK|本期|只负责/);
   assert.doesNotMatch(en, /current wave/i);
   assert.doesNotMatch(zh, /联想等|数据研究分析|驻场|AI 方法资产化|研究问题建模/);
@@ -69,13 +72,30 @@ test("keeps creative practice secondary and the portfolio technology accurate", 
   assert.match(source, /Explore 3D visuals with Blender and Three\.js/);
   assert.match(source, /tags: \["Next\.js", "WebGL", "Bilingual UX", "GitHub Pages"\]/);
   assert.doesNotMatch(source, /精通\s*(Blender|Three\.js)|expert in (Blender|Three\.js)|独立完成商业级动画/i);
-  assert.match(source, /独立负责美国短剧与网文消费研究/);
+  assert.match(source, /独立负责美国市场的内容消费研究/);
   assert.match(source, /正式交付并被同事采用/);
   assert.match(source, /adopted by colleagues/);
   assert.match(source, /可玩原型 · 持续开发/);
   assert.match(source, /title: \{ zh: "AI 视频"/);
   assert.match(source, /title: \{ zh: "游戏"/);
   assert.match(source, /title: \{ zh: "个人网站"/);
+});
+
+test("keeps the public atlas separate from the research-data prototype", async () => {
+  const { creativeCategories, aiPractice, projects } = await import("../content/resume.ts");
+  const web = creativeCategories.find(item => item.id === "web");
+  const atlas = web.items.find(item => item.title.en === "Global Development Atlas");
+  assert.equal(atlas.title.zh, "全球发展数据查询");
+  assert.equal(atlas.liveUrl, "/overseas/");
+  assert.equal(atlas.status.zh, "公开数据查询");
+  assert.equal(atlas.status.en, "Public data explorer");
+  assert.match(atlas.description.zh, /国家、指标与年份筛选.*多国同年比较.*年度趋势.*来源查看.*CSV/);
+  assert.match(atlas.description.en, /World Bank.*filters.*comparisons.*trends.*source references.*CSV/);
+  assert.doesNotMatch(JSON.stringify(atlas), /SQLite|已上线|公司数据|隔离版|匿名|脱敏/);
+  assert.match(JSON.stringify(projects[0]), /SQLite/);
+  assert.match(aiPractice[2].context.zh, /个人研究产品原型/);
+  assert.doesNotMatch(JSON.stringify(aiPractice[2]), /WDI|World Bank|overseas\//);
+  for (const file of ["app/overseas/page.tsx", "app/en/overseas/page.tsx"]) await access(new URL(file, root));
 });
 
 test("keeps the two tracking studies and their verified market lists distinct", async () => {
