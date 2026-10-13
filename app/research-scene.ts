@@ -20,7 +20,7 @@ void main(){
  float mobile=1.-step(.85,aspect);
  vec2 origin=mix(heroCenter,vec2(.80,.53),smoothstep(.1,1.,chapter));
  vec2 p=(q-origin)*vec2(aspect,1.);p-=pointer*vec2(.009,.007);
- float surface=1.-smoothstep(.12,.94,chapter);
+ float surface=0.;
  vec3 paper=vec3(.905,.91,.875),blue=vec3(.184,.275,.612),green=vec3(0.,.616,.612);
  vec3 col=paper;
  // Broad daylight washes carry colour through the reading surface.

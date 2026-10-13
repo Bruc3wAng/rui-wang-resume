@@ -524,7 +524,10 @@ export const selectedWork = [
     title: experiences[0].bullets[0].label,
     scope: { zh: "多国研究 · 持续追踪", en: "Multi-country research · Ongoing tracking" } satisfies Localized,
     role: { zh: "主要负责 · 项目推进与分析交付", en: "Primary responsibility · Coordination and analysis" } satisfies Localized,
-    summary: experiences[0].bullets[0].text,
+    summary: {
+      zh: "主要负责多国内容体验追踪，统筹研究推进与分析交付。结合相对权重分析和跨期比较，识别与用户满意度关联更强的体验因素，形成跨市场分析报告与研究建议。",
+      en: "Take primary responsibility for coordinating and delivering a multi-country content-experience tracker. Use relative weight analysis and cross-wave comparisons to identify experience factors associated with user satisfaction, producing cross-market reports and research recommendations.",
+    } satisfies Localized,
     markets: [...cases[0].markets],
   },
   {
@@ -532,7 +535,10 @@ export const selectedWork = [
     title: experiences[0].bullets[1].label,
     scope: { zh: "长期追踪 · 多客群与多品类", en: "Long-term tracking · Multiple audiences and categories" } satisfies Localized,
     role: { zh: "深度参与 · 分析与报告交付", en: "Key contribution · Analysis and reporting" } satisfies Localized,
-    summary: experiences[0].bullets[1].text,
+    summary: {
+      zh: "深度参与跨客群、多品类的长期品牌追踪，负责多期数据整合与报告交付。厘清指标定义与历史比较条件，支持品牌认知、评价和形象的跨期分析，为判断品牌趋势与竞争表现提供依据。",
+      en: "Contribute to a long-running brand tracker spanning audience segments and product categories, with responsibility for data integration and reporting across waves. Align metric definitions and historical comparisons to support analysis of brand awareness, perceptions, and image, informing assessments of brand trends and competitive performance.",
+    } satisfies Localized,
     markets: [] as string[],
   },
   {

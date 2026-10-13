@@ -1,16 +1,22 @@
 "use client";
 
+import ProfileFoundation from "./ProfileFoundation";
+
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { SelectedWork, AIPractice, CreativeWork } from "./ResumeChapters";
+import { SelectedWork, CreativeWork } from "./ResumeChapters";
+import AIExhibit from "./AIExhibit";
 import ResumeAtmosphere from "./ResumeAtmosphere";
 import "./narrative.css";
 import "./chapters.css";
+import "./profile-refinement.css";
+import "./research-journey.css";
+import "./ai-instruments.css";
+import "./portfolio-upgrade.css";
 import resumeRelease from "../content/resume-release.json";
 import {
   capabilities,
   selectedWork,
-  education,
   type Language,
   profile,
 } from "../content/resume";
@@ -392,6 +398,7 @@ export function ResumeSite({ language }: { language: Language }) {
           </div>
           <p className="availability">{t.availability}</p>
           <div className="hero-market-field">
+            <div className="hero-globe" aria-hidden="true"><Image src={`${basePath}/images/research-globe.png`} alt="" width={1254} height={1254} unoptimized priority /></div>
             <div className="hero-orbit-note">{language === "zh" ? "跨市场，理解不同的用户。" : "Different markets. Different perspectives."}</div>
             <div className="atlas-guide" aria-hidden="true"><span>CONTENT</span><span>SEARCH</span><span>BRAND</span></div>
             <div className="atlas-markets" aria-label={language === "zh" ? "项目涉及市场节选，点击查看案例" : "Selected project markets. Select a flag to explore a study."}>
@@ -451,7 +458,7 @@ export function ResumeSite({ language }: { language: Language }) {
       </section>
 
       <SelectedWork language={language} active={activeCase} onSelect={setActiveCase} />
-      <AIPractice language={language} active={activeWorkflow} onSelect={setActiveWorkflow} />
+      <AIExhibit language={language} active={activeWorkflow} onSelect={setActiveWorkflow} />
       <CreativeWork language={language} />
 
       <section id="capabilities" className="capabilities-section section-pad">
@@ -470,23 +477,8 @@ export function ResumeSite({ language }: { language: Language }) {
           ))}
         </div>
 
-        <div className="education-grid">
-          <article>
-            <p className="mini-label">{t.education}</p>
-            <p className="education-time">{education.period}</p>
-            <h3>{education.institution[language]}</h3>
-            <p>{education.degree[language]}</p>
-            <strong>{education.focus[language]}</strong>
-            <span>{education.coursework[language]}</span>
-          </article>
-          <article className="language-card">
-            <p className="mini-label">{t.languages}</p>
-            <h3>{t.languageValue}</h3>
-            <div aria-hidden="true" className="language-monogram">
-              中<span>A</span>
-            </div>
-          </article>
-        </div>
+        <ProfileFoundation language={language} />
+
       </section>
 
       <section

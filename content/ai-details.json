@@ -1,0 +1,518 @@
+[
+  {
+    "stages": [
+      {
+        "title": {
+          "zh": "先判断，什么值得比较。",
+          "en": "Define what can be compared."
+        },
+        "points": [
+          {
+            "label": {
+              "zh": "比较范围",
+              "en": "Comparison scope"
+            },
+            "text": {
+              "zh": "确认市场、人群、指标定义与样本条件，界定横向和跨期比较的范围。",
+              "en": "Check markets, audiences, measure definitions, and sample criteria before defining cross-market and cross-wave comparisons."
+            }
+          },
+          {
+            "label": {
+              "zh": "方法选择",
+              "en": "Method selection"
+            },
+            "text": {
+              "zh": "对照相对权重与相关分析的排序，判断差异是否来自方法或样本变化。",
+              "en": "Compare rankings from relative weight and correlation analyses, and assess whether differences reflect the method or sample."
+            }
+          },
+          {
+            "label": {
+              "zh": "研究解释",
+              "en": "Interpretation"
+            },
+            "text": {
+              "zh": "把统计结果放回研究问题，解释与满意度关联的体验因素及后续研究方向。",
+              "en": "Relate the statistical findings to the research question, explaining experience factors associated with satisfaction and directions for further research."
+            }
+          }
+        ],
+        "visual": {
+          "zh": [
+            "比较条件",
+            "市场与人群",
+            "指标与样本",
+            "相对权重",
+            "相关分析",
+            "研究解释"
+          ],
+          "en": [
+            "COMPARISON CRITERIA",
+            "Markets & audiences",
+            "Measures & samples",
+            "Relative weights",
+            "Correlation",
+            "Interpretation"
+          ]
+        }
+      },
+      {
+        "title": {
+          "zh": "把分析方法写成可复跑的流程。",
+          "en": "Make the analysis repeatable."
+        },
+        "points": [
+          {
+            "label": {
+              "zh": "批量计算",
+              "en": "Batch analysis"
+            },
+            "text": {
+              "zh": "借助 Codex 按确定的方法完成分市场相对权重、相关分析与跨期对照。",
+              "en": "Use Codex to apply the chosen methods across markets, producing relative weights, correlations, and wave comparisons."
+            }
+          },
+          {
+            "label": {
+              "zh": "独立复核",
+              "en": "Independent checks"
+            },
+            "text": {
+              "zh": "通过独立复算和方法对照检查异常排名，再判断是否需要调整或补充解释。",
+              "en": "Check unexpected rankings with independent recalculation and method comparisons before deciding on corrections or further interpretation."
+            }
+          },
+          {
+            "label": {
+              "zh": "规则复用",
+              "en": "Reusable rules"
+            },
+            "text": {
+              "zh": "将分析规则和检查步骤保留在脚本中，后续沿用同一处理流程。",
+              "en": "Keep the analysis rules and validation steps in scripts that can be rerun for subsequent work."
+            }
+          }
+        ],
+        "visual": {
+          "zh": [
+            "分市场数据",
+            "可复跑脚本",
+            "相对权重",
+            "相关分析",
+            "独立复算",
+            "跨期对照"
+          ],
+          "en": [
+            "MARKET DATA",
+            "RERUNNABLE SCRIPTS",
+            "Relative weights",
+            "Correlation",
+            "Recalculation",
+            "Wave comparison"
+          ]
+        }
+      },
+      {
+        "title": {
+          "zh": "交付报告，也留下下一次能复用的方法。",
+          "en": "Deliver insight and a reusable method."
+        },
+        "points": [
+          {
+            "label": {
+              "zh": "研究报告",
+              "en": "Research report"
+            },
+            "text": {
+              "zh": "形成跨市场分析报告与研究建议，说明满意度关联因素及市场差异。",
+              "en": "Deliver a cross-market report and research recommendations, explaining satisfaction-related factors and market differences."
+            }
+          },
+          {
+            "label": {
+              "zh": "方法沉淀",
+              "en": "Analysis guide"
+            },
+            "text": {
+              "zh": "形成跨期对照与方法 SOP，让比较条件、计算方法和复核步骤能够沿用。",
+              "en": "Produce wave comparisons and an analysis guide so criteria, calculations, and checks can be reused."
+            }
+          },
+          {
+            "label": {
+              "zh": "工作价值",
+              "en": "Working impact"
+            },
+            "text": {
+              "zh": "减少逐次重建计算流程，把精力更多用于解释差异、检查结论与提出建议。",
+              "en": "Reduce repeated analytical setup, allowing more attention to interpreting differences, checking conclusions, and developing recommendations."
+            }
+          }
+        ],
+        "visual": {
+          "zh": [
+            "跨市场分析",
+            "研究报告",
+            "跨期对照",
+            "方法 SOP",
+            "研究建议",
+            "可复用脚本"
+          ],
+          "en": [
+            "CROSS-MARKET INSIGHT",
+            "RESEARCH REPORT",
+            "Wave comparisons",
+            "Analysis guide",
+            "Recommendations",
+            "Reusable scripts"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "stages": [
+      {
+        "title": {
+          "zh": "先厘清跨期比较与更新边界。",
+          "en": "Set the comparison and update boundaries."
+        },
+        "points": [
+          {
+            "label": {
+              "zh": "研究可比性",
+              "en": "Comparability"
+            },
+            "text": {
+              "zh": "梳理客群、品类、指标与历史定义，确认哪些差异可以直接比较。",
+              "en": "Review audiences, categories, measures, and historical definitions to establish valid comparisons."
+            }
+          },
+          {
+            "label": {
+              "zh": "数据到报告",
+              "en": "Data to report"
+            },
+            "text": {
+              "zh": "明确数据、监测平台、图表和对应文字的关系，确定本次更新范围。",
+              "en": "Map the relationships between data, the tracking platform, charts, and text, then define the update scope."
+            }
+          },
+          {
+            "label": {
+              "zh": "差异判断",
+              "en": "Judging differences"
+            },
+            "text": {
+              "zh": "判断差异应该修正、保留还是补充说明，避免把有效历史结果一并覆盖。",
+              "en": "Decide whether a difference requires correction, preservation, or explanation, while retaining valid historical results."
+            }
+          }
+        ],
+        "visual": {
+          "zh": [
+            "更新范围",
+            "客群与品类",
+            "指标与期次",
+            "数据来源",
+            "报告位置",
+            "历史可比性"
+          ],
+          "en": [
+            "UPDATE SCOPE",
+            "Audiences & categories",
+            "Measures & waves",
+            "Source data",
+            "Report locations",
+            "Comparability"
+          ]
+        }
+      },
+      {
+        "title": {
+          "zh": "让多期文件按同一套规则同步。",
+          "en": "Align recurring work through shared rules."
+        },
+        "points": [
+          {
+            "label": {
+              "zh": "定位差异",
+              "en": "Trace differences"
+            },
+            "text": {
+              "zh": "将研究规则写入程序，批量比对多期文件，把差异定位到对应内容。",
+              "en": "Encode research rules and compare files across waves, tracing differences to the relevant content."
+            }
+          },
+          {
+            "label": {
+              "zh": "同步更新",
+              "en": "Update together"
+            },
+            "text": {
+              "zh": "按既定模板更新表格、图表和对应文字，保持数据与报告的一致关系。",
+              "en": "Update tables, charts, and related text within existing templates, preserving the relationship between data and reports."
+            }
+          },
+          {
+            "label": {
+              "zh": "保留依据",
+              "en": "Retain evidence"
+            },
+            "text": {
+              "zh": "保留来源与核验记录，将批量处理和需要研究者判断的问题分开。",
+              "en": "Keep source and validation records, distinguishing batch operations from issues requiring researcher judgment."
+            }
+          }
+        ],
+        "visual": {
+          "zh": [
+            "多期文件",
+            "规则与映射",
+            "差异定位",
+            "表格更新",
+            "图表与文字",
+            "来源核验"
+          ],
+          "en": [
+            "MULTI-WAVE FILES",
+            "RULES & MAPPING",
+            "Trace differences",
+            "Update tables",
+            "Charts & text",
+            "Source checks"
+          ]
+        }
+      },
+      {
+        "title": {
+          "zh": "交付保持一致的数据、图表与判断。",
+          "en": "Deliver aligned data, charts, and interpretation."
+        },
+        "points": [
+          {
+            "label": {
+              "zh": "同步交付",
+              "en": "Aligned delivery"
+            },
+            "text": {
+              "zh": "完成多期数据与报告更新，支持品牌认知、评价和形象的持续追踪。",
+              "en": "Complete multi-wave data and report updates to support continued tracking of brand awareness, perceptions, and image."
+            }
+          },
+          {
+            "label": {
+              "zh": "方法复用",
+              "en": "Method reuse"
+            },
+            "text": {
+              "zh": "形成后续项目可复用的处理程序与检查方法，保留有效历史结果。",
+              "en": "Create reusable processing tools and validation methods while preserving valid historical results."
+            }
+          },
+          {
+            "label": {
+              "zh": "工作价值",
+              "en": "Working impact"
+            },
+            "text": {
+              "zh": "把逐份查找和重复复制改为批量处理与重点复核，减少重复操作。",
+              "en": "Replace file-by-file searching and repeated copying with batch processing and targeted review."
+            }
+          }
+        ],
+        "visual": {
+          "zh": [
+            "多期研究",
+            "同步报告",
+            "数据与图表",
+            "检查方法",
+            "历史结果",
+            "复用程序"
+          ],
+          "en": [
+            "MULTI-WAVE RESEARCH",
+            "ALIGNED REPORTS",
+            "Data & charts",
+            "Validation methods",
+            "Historical results",
+            "Reusable tools"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "stages": [
+      {
+        "title": {
+          "zh": "从研究问题，设计查询的结构。",
+          "en": "Shape the query around the research question."
+        },
+        "points": [
+          {
+            "label": {
+              "zh": "数据要求",
+              "en": "Data requirements"
+            },
+            "text": {
+              "zh": "确认产品资料与比较标准，明确研究需要回答的问题。",
+              "en": "Define the product sources and comparison criteria around the research question."
+            }
+          },
+          {
+            "label": {
+              "zh": "分类与指标",
+              "en": "Categories & measures"
+            },
+            "text": {
+              "zh": "梳理产品分类与指标定义，让后续查询沿用一致的含义。",
+              "en": "Organize product categories and measure definitions for consistent queries."
+            }
+          },
+          {
+            "label": {
+              "zh": "来源记录",
+              "en": "Source records"
+            },
+            "text": {
+              "zh": "把来源记录纳入数据结构，让资料能够回溯。",
+              "en": "Include source records in the data structure so information can be traced."
+            }
+          }
+        ],
+        "visual": {
+          "zh": [
+            "研究问题",
+            "产品分类",
+            "指标定义",
+            "比较标准",
+            "来源记录",
+            "查询设计"
+          ],
+          "en": [
+            "RESEARCH QUESTION",
+            "Product categories",
+            "Measures",
+            "Comparison criteria",
+            "Source records",
+            "Query design"
+          ]
+        }
+      },
+      {
+        "title": {
+          "zh": "把研究要求，落成可操作的原型。",
+          "en": "Turn research requirements into a working prototype."
+        },
+        "points": [
+          {
+            "label": {
+              "zh": "数据结构",
+              "en": "Data structure"
+            },
+            "text": {
+              "zh": "借助 Codex 实现 SQLite 数据结构，整理分散的产品资料。",
+              "en": "Use Codex to implement a SQLite structure for scattered product information."
+            }
+          },
+          {
+            "label": {
+              "zh": "查询与联动",
+              "en": "Queries & linked views"
+            },
+            "text": {
+              "zh": "实现多维筛选、图表与明细联动，支持产品查询与比较。",
+              "en": "Implement filters and linked charts and detail views to support product queries and comparisons."
+            }
+          },
+          {
+            "label": {
+              "zh": "导出",
+              "en": "Exports"
+            },
+            "text": {
+              "zh": "将查询与比较结果导出，衔接后续分析。",
+              "en": "Export query and comparison results for further analysis."
+            }
+          }
+        ],
+        "visual": {
+          "zh": [
+            "产品资料",
+            "SQLite 数据结构",
+            "多维筛选",
+            "图表联动",
+            "明细查询",
+            "结果导出"
+          ],
+          "en": [
+            "PRODUCT SOURCES",
+            "SQLITE STRUCTURE",
+            "Filters",
+            "Linked charts",
+            "Detail queries",
+            "Exports"
+          ]
+        }
+      },
+      {
+        "title": {
+          "zh": "让分散的资料，成为可查询的产品。",
+          "en": "Make scattered sources useful as a research product."
+        },
+        "points": [
+          {
+            "label": {
+              "zh": "可用原型",
+              "en": "Working prototype"
+            },
+            "text": {
+              "zh": "已实现产品查询与比较，减少在不同资料间反复查找。",
+              "en": "The prototype supports queries and comparisons without repeatedly searching separate sources."
+            }
+          },
+          {
+            "label": {
+              "zh": "可行性",
+              "en": "Feasibility"
+            },
+            "text": {
+              "zh": "完成数据来源、采购需求与产品可行性的初步评估。",
+              "en": "Initial assessments of data sources, procurement needs, and feasibility are complete."
+            }
+          },
+          {
+            "label": {
+              "zh": "研究实践",
+              "en": "Research practice"
+            },
+            "text": {
+              "zh": "将研究问题、数据结构与交互实现连成可操作的流程。",
+              "en": "Connect research questions, data structures, and interaction in an operational workflow."
+            }
+          }
+        ],
+        "visual": {
+          "zh": [
+            "研究产品",
+            "可用原型",
+            "产品查询",
+            "比较结果",
+            "来源记录",
+            "交互实践"
+          ],
+          "en": [
+            "RESEARCH PRODUCT",
+            "WORKING PROTOTYPE",
+            "Product queries",
+            "Comparisons",
+            "Source records",
+            "Interaction"
+          ]
+        }
+      }
+    ]
+  }
+]

@@ -34,6 +34,7 @@ export default function ResumeAtmosphere({language,activeCase,activeWorkflow}:{l
    pointer=[e.clientX/innerWidth*2-1,1-e.clientY/innerHeight*2];
    shell.style.setProperty('--pointer-x',`${e.clientX}px`);shell.style.setProperty('--pointer-y',`${e.clientY}px`);shell.style.setProperty('--pointer-visible','1');
    if(!pausedRef.current&&time-lastRipple>.045){const j=rippleIndex++%12*4;ripples[j]=e.clientX/innerWidth;ripples[j+1]=1-e.clientY/innerHeight;ripples[j+2]=time;ripples[j+3]=e.pointerType==='touch'?.65:.48;lastRipple=time;}
+   const globe=document.querySelector<HTMLElement>('.hero-globe');if(globe&&!pausedRef.current){globe.style.setProperty('--hero-lean-x',String(pointer[0]));globe.style.setProperty('--hero-lean-y',String(pointer[1]));}
    const hero=document.querySelector<HTMLElement>('.profile-card');if(hero&&!pausedRef.current)hero.style.transform=`perspective(900px) rotateY(${pointer[0]*5}deg) rotateX(${-pointer[1]*4}deg)`;schedule();
   }
   function draw(now:number){
