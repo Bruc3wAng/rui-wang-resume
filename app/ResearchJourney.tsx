@@ -14,6 +14,9 @@ export default function ResearchJourney({ language, onSelect }: { language: Lang
   const beats = useRef<(HTMLElement | null)[]>([]);
   const [chapter, setChapter] = useState(0);
   const [dimension, setDimension] = useState(0);
+  const [detail, setDetail] = useState(-1);
+  const dialog = useRef<HTMLDialogElement>(null);
+  useEffect(() => { if (detail >= 0) dialog.current?.showModal(); }, [detail]);
   const selected = useRef(0);
   const select = useRef(onSelect);
   useEffect(() => { select.current = onSelect; }, [onSelect]);
@@ -51,6 +54,7 @@ export default function ResearchJourney({ language, onSelect }: { language: Lang
         <p className="research-role">{item.role[language]}</p>
         <p className="research-summary">{item.summary[language]}</p>
         <div className="research-methods">{(index === 0 ? (zh ? ["相对权重分析", "跨市场比较", "持续追踪"] : ["Relative weight analysis", "Cross-market comparison", "Ongoing tracking"]) : (zh ? ["多期数据整合", "指标可比性", "研究报告"] : ["Multi-wave integration", "Metric comparability", "Research reporting"])).map((text, i) => <span key={text}><i>0{i + 1}</i>{text}</span>)}</div>
+        <button type="button" className="research-more" onClick={() => setDetail(index)}>{zh ? "查看研究重点" : "Explore the research"}<span aria-hidden="true">＋</span></button>
       </article>)}
     </div>
     <div className="research-stage-sticky">
@@ -79,5 +83,15 @@ export default function ResearchJourney({ language, onSelect }: { language: Lang
       </div>
       <nav className="research-jump" aria-label={zh ? "重点项目" : "Featured research"}>{[zh ? "内容体验" : "Content experience", zh ? "品牌追踪" : "Brand tracking"].map((label,i)=><button type="button" key={label} aria-current={chapter===i ? "step" : undefined} onClick={()=>go(i)}><span>0{i+1}</span>{label}<i aria-hidden="true">↗</i></button>)}</nav>
     </div>
+    <dialog ref={dialog} className="research-insight-dialog" aria-labelledby="research-insight-title" onClose={() => setDetail(-1)} onClick={e => { if (e.target === e.currentTarget) { const b=e.currentTarget.getBoundingClientRect(); if(e.clientX<b.left || e.clientX>b.right || e.clientY<b.top || e.clientY>b.bottom)e.currentTarget.close(); } }}>
+      {detail >= 0 && <div className="research-insight-content">
+        <button type="button" className="insight-close" onClick={() => dialog.current?.close()} aria-label={zh ? "关闭研究重点" : "Close research detail"}>×</button>
+        <p className="insight-eyebrow">RESEARCH / 0{detail+1}</p>
+        <h3 id="research-insight-title">{selectedWork[detail].title[language]}</h3>
+        <p className="insight-question">{(detail===0 ? (zh ? "哪些体验因素，与用户满意度关联更强？" : "Which experience factors are more closely associated with satisfaction?") : (zh ? "如何在不同客群、品类和期次之间，持续判断品牌表现？" : "How can brand performance be tracked across audiences, categories, and waves?"))}</p>
+        <dl><div><dt>{zh ? "我的职责" : "My responsibility"}</dt><dd>{selectedWork[detail].role[language]}</dd></div><div><dt>{zh ? "分析重点" : "Analytical focus"}</dt><dd>{detail===0 ? (zh ? "比较市场和平台的用户体验；用相对权重分析与跨期比较，解释满意度关联因素。" : "Compare experiences across markets and platforms, using relative weight analysis and wave comparisons to interpret factors associated with satisfaction.") : (zh ? "厘清指标定义与历史比较条件，整合多期数据，分析品牌认知、评价和形象。" : "Align measure definitions and historical comparisons, integrate wave data, and analyze brand awareness, perceptions, and image.")}</dd></div><div><dt>{zh ? "研究交付" : "Research delivery"}</dt><dd>{detail===0 ? (zh ? "跨市场分析报告、研究建议与后续分析方向。" : "Cross-market analysis, research recommendations, and directions for further analysis.") : (zh ? "多期数据整合与品牌追踪报告，支持品牌趋势和竞争表现判断。" : "Integrated wave data and brand-tracking reports to support assessments of brand trends and competitive performance.")}</dd></div></dl>
+        <a className="insight-next" href="#method" onClick={() => dialog.current?.close()}>{zh ? "继续看 AI 如何进入研究流程" : "Explore how AI supports the research workflow"}<span aria-hidden="true">↗</span></a>
+      </div>}
+    </dialog>
   </div>;
 }

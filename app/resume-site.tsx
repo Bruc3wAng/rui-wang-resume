@@ -13,6 +13,7 @@ import "./profile-refinement.css";
 import "./research-journey.css";
 import "./ai-instruments.css";
 import "./portfolio-upgrade.css";
+import "./product-story.css";
 import resumeRelease from "../content/resume-release.json";
 import {
   capabilities,
