@@ -311,5 +311,10 @@ html:has(.portfolio-v17[data-motion="still"]) { scroll-behavior: auto; }
   .pf-contact { min-height: calc(100svh - 64px); }
   .pf-market-controls { flex-wrap: wrap; max-width: 220px; gap: 8px; }
   .pf-market-controls button { flex: 0 0 44px; height: 51px; }
+  .pf-output-volume { width: 31%; }
+  .pf-output-volume h4 { font-size: 13px; word-break: keep-all; overflow-wrap: normal; }
+  .volume-1 { left: 34.5%; }
+  .volume-2 { left: 69%; }
+  .language-en .pf-output-volume h4 { font-size: 11px; word-break: normal; }
 }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; }.portfolio-v17 *, .portfolio-v17 *::before,.portfolio-v17 *::after { animation: none !important; transition-duration: .01ms !important; } }
