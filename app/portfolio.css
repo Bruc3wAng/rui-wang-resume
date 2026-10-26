@@ -317,4 +317,9 @@ html:has(.portfolio-v17[data-motion="still"]) { scroll-behavior: auto; }
   .volume-2 { left: 69%; }
   .language-en .pf-output-volume h4 { font-size: 11px; word-break: normal; }
 }
+@media (max-width: 359px) {
+  .pf-output-volume { padding-inline: 5px; }
+  .pf-output-volume h4 { font-size: 12px; }
+  .language-en .pf-output-volume h4 { font-size: 10.5px; }
+}
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; }.portfolio-v17 *, .portfolio-v17 *::before,.portfolio-v17 *::after { animation: none !important; transition-duration: .01ms !important; } }
