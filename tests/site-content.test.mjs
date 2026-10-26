@@ -204,10 +204,28 @@ test("keeps current research and download content synchronized in the Sites buil
 });
 
 test("integrates motion into the resume without a separate visual gallery", async () => {
-  const ui = await readFile(new URL("app/resume-site.tsx", root), "utf8");
+  const ui = await readFile(new URL("app/Portfolio.tsx", root), "utf8");
   assert.doesNotMatch(ui, /VisualGallery|visual-gallery|id=["']gallery["']/);
   for (const path of ["out/index.html", "out/en/index.html"]) {
     const html = await readFile(new URL(path, root), "utf8");
     assert.doesNotMatch(html, /id="visual-gallery"|id="gallery"|独立画廊|VISUAL GALLERY/);
+  }
+});
+
+test("ships complete research panels and valid tab relationships", async () => {
+  for (const path of ["out/index.html", "out/en/index.html"]) {
+    const html = await readFile(new URL(path, root), "utf8");
+    assert.match(html, /portfolio-v17/);
+    for (let i = 0; i < 5; i++) {
+      assert.ok(html.includes(`id="pf-work-panel-${i}"`));
+      assert.ok(html.includes(`aria-controls="pf-work-panel-${i}"`));
+    }
+    const ids = [...html.matchAll(/\sid="([^"]+)"/g)].map(m => m[1]);
+    assert.equal(new Set(ids).size, ids.length, "No duplicated element IDs");
+    for (const [,target] of html.matchAll(/aria-controls="([^"]+)"/g)) {
+      assert.ok(ids.includes(target), `Missing tab target: ${target}`);
+    }
+    assert.match(html, /class="pf-command"/);
+    assert.match(html, /aria-label="(?:打开快速访问|Open quick access)"/);
   }
 });

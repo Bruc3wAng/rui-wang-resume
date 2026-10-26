@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ResumeSite } from "./resume-site";
+import { Portfolio } from "./Portfolio";
 
 export const metadata: Metadata = {
   title: "王睿 — 市场研究与数据分析",
@@ -48,7 +48,7 @@ export default function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema) }}
       />
-      <ResumeSite language="zh" />
+      <Portfolio language="zh" />
     </>
   );
 }

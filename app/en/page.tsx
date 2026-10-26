@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { siteUrl } from "../../content/site";
-import { ResumeSite } from "../resume-site";
+import { Portfolio } from "../Portfolio";
 
 export const metadata: Metadata = {
   title: { absolute: "Rui Wang — Market & User Research" },
@@ -24,5 +24,5 @@ export const metadata: Metadata = {
 };
 
 export default function EnglishProfile() {
-  return <ResumeSite language="en" />;
+  return <Portfolio language="en" />;
 }

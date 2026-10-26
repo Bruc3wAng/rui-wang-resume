@@ -20,8 +20,9 @@ for (const [build, prefix] of [
         `${build}/${page}: portrait must use the bundled image`,
       );
       assert.doesNotMatch(portrait, /\/_vinext\/image|\/_next\/image/);
-      assert.match(portrait, /width="1023"/);
-      assert.match(portrait, /height="1144"/);
+      // The source portrait stays unchanged; its display footprint is deliberately small.
+      assert.match(portrait, /width="48"/);
+      assert.match(portrait, /height="54"/);
     }
   });
 }
