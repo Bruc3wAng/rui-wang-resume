@@ -115,6 +115,29 @@ test("links each language to the available public Atlas on both hosting targets"
   }
 });
 
+test("declares the correct content language and updates the document on locale navigation", async () => {
+  for (const component of ["app/Portfolio.tsx", "app/OverseasAtlas.tsx"]) {
+    const source = await readFile(new URL(component, root), "utf8");
+    assert.match(source, /document\.documentElement\.lang\s*=\s*language\s*===\s*"zh"\s*\?\s*"zh-CN"\s*:\s*"en"/);
+  }
+  const targets = process.env.NEXT_PUBLIC_BASE_PATH ? ["out", "dist/client"] : ["out"];
+  for (const target of targets) {
+    for (const locale of ["", "en/"]) {
+      for (const page of ["", "overseas/"]) {
+        const html = await readFile(new URL(`${target}/${locale}${page}index.html`, root), "utf8");
+        const contentRoot = html.match(/<(?:main|div)\b[^>]*class="[^"]*\b(?:portfolio-v17|market-atlas)\b[^"]*"[^>]*>/)?.[0];
+        assert.ok(contentRoot, `${target}/${locale}${page} has a language-scoped content root`);
+        assert.match(contentRoot, new RegExp(`\\blang="${locale ? "en" : "zh-CN"}"`));
+        if (page) {
+          const assetBase = target === "out" ? html.match(/src="([^"]*)\/_next\/static\//)?.[1] : "";
+          assert.notEqual(assetBase, undefined);
+          assert.ok(html.includes(`href="${assetBase}/${locale}#projects"`), "Atlas returns to the matching portfolio language");
+        }
+      }
+    }
+  }
+});
+
 test("keeps the two tracking studies and their verified market lists distinct", async () => {
   const source = await readFile(new URL("content/resume.ts", root), "utf8");
   const cases = JSON.parse(source.split("export const cases = ")[1].split(";\n\nexport const workflow")[0]);
