@@ -98,6 +98,23 @@ test("keeps the public atlas separate from the research-data prototype", async (
   for (const file of ["app/overseas/page.tsx", "app/en/overseas/page.tsx"]) await access(new URL(file, root));
 });
 
+test("links each language to the available public Atlas on both hosting targets", async () => {
+  const canonical = "https://bruc3wang.github.io/rui-wang-resume";
+  for (const locale of ["", "en/"]) {
+    const exported = await readFile(new URL(`out/${locale}index.html`, root), "utf8");
+    const assetBase = exported.match(/src="([^"]*)\/_next\/static\//)?.[1];
+    assert.notEqual(assetBase, undefined, "The static export must identify its asset prefix");
+    const suffix = `${locale ? "/en" : ""}/overseas/`;
+    const link = exported.match(/<a\b[^>]*class="pf-atlas-feature"[^>]*href="([^"]+)"/);
+    assert.equal(link?.[1], `${assetBase || canonical}${suffix}`);
+    if (process.env.NEXT_PUBLIC_BASE_PATH) {
+      const sites = await readFile(new URL(`dist/client/${locale}index.html`, root), "utf8");
+      const sitesLink = sites.match(/<a\b[^>]*class="pf-atlas-feature"[^>]*href="([^"]+)"/);
+      assert.equal(sitesLink?.[1], `${canonical}${suffix}`);
+    }
+  }
+});
+
 test("keeps the two tracking studies and their verified market lists distinct", async () => {
   const source = await readFile(new URL("content/resume.ts", root), "utf8");
   const cases = JSON.parse(source.split("export const cases = ")[1].split(";\n\nexport const workflow")[0]);
