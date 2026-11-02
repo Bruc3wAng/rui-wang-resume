@@ -710,10 +710,10 @@ export const creativeCategories: {
     summary: { zh: "从具体需求出发，设计界面与交互，借助 AI 完成实现并持续打磨。", en: "Design interfaces and interactions around specific needs, then build and refine them with AI." },
     items: [
       {
-        title: projects[3].title,
-        description: projects[3].contribution,
+        title: { zh: "中英双语个人履历", en: "Bilingual Résumé Collection" },
+        description: { zh: "从研究、分析与研究运营视角浏览职业经历，在线阅读或下载一页中文简历，并查看英文职业档案。", en: "Explore experience through research, analytics and research-operations perspectives; read or download the one-page Chinese résumé and view the English profile." },
         status: { zh: "已上线", en: "Live" },
-        liveUrl: projects[3].liveUrl,
+        liveUrl: "/projects/resume/",
         sourceUrl: projects[3].sourceUrl,
       },
       {
@@ -724,13 +724,15 @@ export const creativeCategories: {
       },
       {
         title: projects[1].title,
-        description: { zh: "设计照片筛选、修图方案对比与版本记录，形成影像处理交互原型。", en: "An interactive photo-workflow prototype for selection, edit comparisons, and version history." },
+        description: { zh: "用风格选择、光色微调和可拖动的前后对比，完成一张图像的调整与导出；图片在浏览器本地处理。", en: "Choose a look, adjust light and color, compare before and after, and export the result. Images are processed locally in the browser." },
         status: { zh: "交互原型", en: "Interactive prototype" },
+        liveUrl: "/projects/photo-workbench/",
       },
       {
         title: projects[2].title,
-        description: { zh: "将口味、预算、距离和历史偏好转为筛选规则，设计餐厅选择与收藏体验。", en: "A restaurant-selection and saving experience built around taste, budget, distance, and preference history." },
+        description: { zh: "按城区、菜系与双人预算筛选餐厅，收藏心仪选择、查看点菜方向，并生成一张晚餐便签。", en: "Filter restaurants by area, cuisine and budget for two; save a shortlist, explore menu ideas and create an evening note." },
         status: { zh: "交互原型", en: "Interactive prototype" },
+        liveUrl: "/projects/dinner-notes/",
       },
     ],
   },

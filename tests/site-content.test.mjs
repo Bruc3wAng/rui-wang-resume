@@ -279,8 +279,10 @@ test("adds explorable research folios and a synchronized workflow route", async 
       assert.ok(html.includes(`aria-controls="pf-folio-page-${i}"`));
     }
     assert.match(html, /class="pf-folio-page"[^>]*aria-hidden="true"[^>]*inert/);
-    assert.match(html, /class="pf-stage-route"[^>]*role="group"/);
-    assert.match(html, /class="pf-project-mark mark-web"/);
+    assert.match(html, /class="rlab-route"[^>]*role="group"/);
+    assert.match(html, /class="pf-web-preview preview-0"/);
+    assert.match(html, /class="pf-web-preview preview-1"/);
+    assert.match(html, /class="pf-web-preview preview-2"/);
     assert.match(html, /class="pf-project-mark mark-video"/);
     assert.match(html, /class="pf-project-mark mark-games"/);
     assert.doesNotMatch(html, /翻开脱敏|领导|策略大师|100%|节省\d+%/);
@@ -298,4 +300,77 @@ test("preserves motion controls and avoids waking the paused hero on pointer mov
   assert.match(css, /data-motion="still"/);
   assert.match(ui, /function choosePractice\(index: number\) \{ setPractice\(index\); setStage\(0\); \}/);
   assert.match(ui, /onKeyDown=\{e => tabs\(e, i, 3, choosePractice\)\}/);
+});
+
+test("renders a genuinely rotatable globe with a China-centered default", async () => {
+  const source=await readFile(new URL("app/InteractiveGlobe.tsx",root),"utf8");
+  assert.match(source,/const current=\[105,30\], target=\[105,30\]/);
+  assert.match(source,/getContext\("webgl2"/);
+  assert.match(source,/texImage2D/);
+  assert.match(source,/setPointerCapture/);
+  assert.match(source,/ArrowLeft.*ArrowRight.*ArrowUp.*ArrowDown.*Home/);
+  assert.match(source,/choose\("US",-98,37\)/);
+  assert.doesNotMatch(source,/research-globe\.png|torus|ringGeometry/);
+  assert.match(source,/pow\(natural/);
+  assert.match(source,/item\.markets\.includes\(selected\)/);
+  for(const locale of ["","en/"]){const html=await readFile(new URL(`out/${locale}index.html`,root),"utf8");assert.match(html,/data-view="CN"/);assert.match(html,/class="rg-globe-canvas"/);assert.match(html,/lenovo-horizontal.png/);assert.match(html,/uoft-signature.webp/);assert.match(html,/Exhibition-sector acquisition research|展会企业并购前期研究/);}
+});
+
+test("projects geographic nodes correctly and keeps connections on the globe", async () => {
+  const {worldPoint,projectPoint,globeMesh,networkMesh,researchMarkets}=await import("../app/globe-geometry.ts");
+  for(const market of researchMarkets){
+    const p=worldPoint(market.lon,market.lat);
+    assert.ok(Math.abs(Math.hypot(...p)-1)<1e-10);
+    const center=projectPoint(market.lon,market.lat,market.lon,market.lat,1.2);
+    assert.ok(Math.abs(center.x-.5)<1e-10&&Math.abs(center.y-.5)<1e-10&&center.visible);
+  }
+  assert.equal(projectPoint(-75,-30,105,30,1).visible,false);
+  const globe=globeMesh(),network=networkMesh();
+  assert.equal(globe.length%8,0);assert.equal(network.data.length/8,network.lines+network.points);
+  assert.equal(network.points,9);assert.ok(network.data.every(Number.isFinite));
+  for(let i=0;i<network.data.length;i+=8){const r=Math.hypot(...network.data.slice(i,i+3));assert.ok(r>1&&r<1.12);}
+});
+
+test("research examples compute different findings from changed criteria", async () => {
+  const {compareConditions,planUpdates,queryLibrary}=await import("../app/research-lab.ts");
+  assert.equal(compareConditions([true,true,true]).filter(c=>!c.aligned).length,0);
+  const changed=compareConditions([false,true,false]);
+  assert.deepEqual(changed.filter(c=>!c.aligned).map(c=>c.key),["method","measure"]);
+  assert.match(changed[0].actionZh,/重算/);
+  assert.equal(planUpdates([false,false,false]).length,0);
+  assert.deepEqual(planUpdates([true,false,false]).map(x=>x.zh),["数据期次","趋势图","跨期比较"]);
+  assert.equal(planUpdates([true,true,true]).length,9);
+  assert.equal(queryLibrary("all").length,4);
+  assert.equal(queryLibrary("health").length,2);
+  assert.ok(queryLibrary("pet").every(r=>r.category==="pet"));
+  assert.equal(queryLibrary("unknown").length,0);
+});
+
+test("ships six bilingual product routes without importing personal-home state", async () => {
+  const targets=process.env.NEXT_PUBLIC_BASE_PATH?["out","dist/client"]:["out"];
+  for(const target of targets)for(const locale of ["","en/"])for(const slug of ["resume","photo-workbench","dinner-notes"]){
+    const html=await readFile(new URL(`${target}/${locale}projects/${slug}/index.html`,root),"utf8");
+    assert.match(html,new RegExp(`lang="${locale?"en":"zh-CN"}"`));
+    assert.doesNotMatch(html,/LITTLE_HOME|our-home\/|\/Users\/|anniversaries|partnerName|memories|private-photos/i);
+    assert.match(html,/Back to portfolio|返回作品集/);
+    assert.match(html,/projects\/(?:resume|photo-workbench|dinner-notes)\//);
+  }
+  const source=await readFile(new URL("app/ProjectExhibit.tsx",root),"utf8");
+  assert.doesNotMatch(source,/fetch\(|XMLHttpRequest|localStorage|indexedDB|our-home|photo-workbench\/data|current\/inputs/);
+  assert.match(source,/URL\.createObjectURL\(f\)/);
+  assert.match(source,/toBlob/);
+  assert.match(source,/clipPath/);
+});
+
+test("restaurant exhibit uses a strict public-business allowlist", async () => {
+  const {dinnerPlaces,internshipProjects}=await import("../content/portfolio-exhibits.ts");
+  const allowed=["id","name","district","area","cuisine","cuisineEn","budget","dishes","source","sourceName"].sort();
+  assert.equal(dinnerPlaces.length,6);
+  for(const item of dinnerPlaces){assert.deepEqual(Object.keys(item).sort(),allowed);assert.ok(item.source.startsWith("https://"));assert.ok(item.budget[0]>0&&item.budget[1]>=item.budget[0]);}
+  assert.equal(internshipProjects.length,3);
+  assert.match(internshipProjects[2].contribution.zh,/重合、独占及新增展商/);
+  assert.doesNotMatch(JSON.stringify(internshipProjects),/估值|交易执行|完成并购|financial due diligence|deal execution/);
+  const {creativeCategories}=await import("../content/resume.ts");
+  const web=creativeCategories.find(c=>c.id==="web").items;
+  assert.deepEqual(web.filter(i=>i.liveUrl?.startsWith("/projects/")).map(i=>i.liveUrl),["/projects/resume/","/projects/photo-workbench/","/projects/dinner-notes/"]);
 });

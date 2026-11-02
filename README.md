@@ -10,6 +10,9 @@ A bilingual professional profile for Rui Wang (王睿), Research Executive at Ip
 - Personal product cases demonstrating product thinking and implementation
 - Featured research-data prototype; other personal projects remain expandable secondary content
 - Responsive layouts for desktop, tablet, and mobile
+- Rotatable satellite-textured globe, China/U.S. focal views, and market-linked research entries
+- Working comparison checks, update-scope planning, and example-library queries
+- Standalone bilingual résumé, browser-local photo editor, and restaurant-selection exhibits
 
 ## Local development
 
@@ -48,6 +51,14 @@ without relying on a runtime image-optimization endpoint.
 
 The verified master résumé data remains in the parent project’s `resume-library/resume_master.json`. New facts should be verified there before the bilingual public copy is updated.
 
-Current website prose is an editorial adaptation of the V15 résumé facts (2026-10-10), emphasizing project responsibility, analytical judgment, and concrete AI-assisted delivery. The PDF remains the validated V15 document; website wording need not be verbatim. The private résumé library records the reviewed source hashes and evidence. Maintain client wording as ByteDance and Lenovo only. Describe overall research experience as multi-country; the two separate seven-country tracking studies retain their own verified market lists, which are not a complete career total. Preserve the two distinct Meritco internship projects and the latest research-method, reporting, and AI-tool-adoption evidence. Personal research prototypes must stay separate from employment achievements and must not imply commercial validation. Keep evidence, internal project files, and the private résumé library outside this repository.
+Current website prose is an editorial adaptation of the verified V17 résumé facts, emphasizing project responsibility, analytical judgment, and concrete AI-assisted delivery. The PDF remains the validated V17 document; website wording need not be verbatim. The private résumé library records the reviewed source hashes and evidence. Maintain client wording as ByteDance and Lenovo only. Describe overall research experience as multi-country; the two separate tracking studies retain their own verified market lists, which are not a complete career total. The website expands the two product-research internships with verified exhibition-sector pre-acquisition commercial research; it does not claim valuation, deal execution or acquisition completion. Personal research prototypes stay separate from employment achievements and do not imply commercial validation. Keep evidence, internal project files, and the private résumé library outside this repository.
 
 When updating the résumé download, copy the validated PDF, update its filename/version/hash in `content/resume-release.json`, then build and run the content tests. The tests check the exported PDF byte-for-byte against the release record. Public disclosure rules belong in maintenance notes and tests, not visitor copy.
+
+## Image credits
+
+- Earth surface: [NASA Blue Marble surface texture](https://eoimages.gsfc.nasa.gov/images/imagerecords/57000/57752/land_shallow_topo_2048.jpg).
+- Clouds: [NASA Blue Marble cloud composite](https://eoimages.gsfc.nasa.gov/images/imagerecords/57000/57747/cloud_combined_2048.jpg), used as a visual texture, not current weather.
+- Lenovo: [official horizontal logo asset](https://media.lenovobrandworld.fiestic.com/2021/01/08011220/03_Logo_01Overview_6B_v-07.png).
+- University of Toronto: [official signature resource](https://www.utm.utoronto.ca/communications/brand-resources/utm-signature-usage-guidelines).
+- The photo-editor demonstration uses an original code-native still-life illustration. Visitor-selected photographs remain browser-local.
