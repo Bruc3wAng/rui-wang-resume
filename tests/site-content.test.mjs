@@ -269,3 +269,33 @@ test("ships complete research panels and valid tab relationships", async () => {
     assert.match(html, /aria-label="(?:打开快速访问|Open quick access)"/);
   }
 });
+
+test("adds explorable research folios and a synchronized workflow route", async () => {
+  for (const path of ["out/index.html", "out/en/index.html"]) {
+    const html = await readFile(new URL(path, root), "utf8");
+    assert.equal([...html.matchAll(/class="pf-folio-toggle"/g)].length, 5);
+    for (let i = 0; i < 5; i++) {
+      assert.ok(html.includes(`id="pf-folio-page-${i}"`));
+      assert.ok(html.includes(`aria-controls="pf-folio-page-${i}"`));
+    }
+    assert.match(html, /class="pf-folio-page"[^>]*aria-hidden="true"[^>]*inert/);
+    assert.match(html, /class="pf-stage-route"[^>]*role="group"/);
+    assert.match(html, /class="pf-project-mark mark-web"/);
+    assert.match(html, /class="pf-project-mark mark-video"/);
+    assert.match(html, /class="pf-project-mark mark-games"/);
+    assert.doesNotMatch(html, /翻开脱敏|领导|策略大师|100%|节省\d+%/);
+  }
+});
+
+test("preserves motion controls and avoids waking the paused hero on pointer movement", async () => {
+  const [light, css, ui] = await Promise.all([
+    readFile(new URL("app/PortfolioLight.tsx", root), "utf8"),
+    readFile(new URL("app/portfolio.css", root), "utf8"),
+    readFile(new URL("app/Portfolio.tsx", root), "utf8"),
+  ]);
+  assert.match(light, /if \(pause\.current \|\| e\.pointerType === "touch"\) return/);
+  assert.match(css, /prefers-reduced-motion:\s*reduce/);
+  assert.match(css, /data-motion="still"/);
+  assert.match(ui, /function choosePractice\(index: number\) \{ setPractice\(index\); setStage\(0\); \}/);
+  assert.match(ui, /onKeyDown=\{e => tabs\(e, i, 3, choosePractice\)\}/);
+});

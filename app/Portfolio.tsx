@@ -70,12 +70,20 @@ function tilt(e: PointerEvent<HTMLElement>, paused: boolean) {
 function resetTilt(e: PointerEvent<HTMLElement>) { e.currentTarget.style.setProperty("--rx", "0deg"); e.currentTarget.style.setProperty("--ry", "0deg"); }
 
 function ResearchObject({ active, language }: { active: number; language: Language }) {
+  const [open, setOpen] = useState(false);
   const note = workNotes[active];
-  return <div className={`pf-research-object object-${active}`}>
+  const pageId = `pf-folio-page-${active}`;
+  return <div className={`pf-research-object object-${active}`} data-open={open}>
     <div className="pf-object-orbit" aria-hidden="true" />
     <div className="pf-report-sheet sheet-back" aria-hidden="true" />
     <div className="pf-report-sheet sheet-middle" aria-hidden="true" />
-    <div className="pf-report-cover">
+    <div className="pf-folio-page" id={pageId} aria-hidden={!open} inert={!open}>
+      <span className="pf-folio-kicker">{selectedWork[active].index} / RESEARCH</span>
+      <h4>{local(language, "研究交付", "Research outputs")}</h4>
+      <ol>{note.outputs[language].map((output, i) => <li key={output}><span>0{i + 1}</span>{output}</li>)}</ol>
+      <p>{note.nodes[language][3]}</p>
+    </div>
+    <div className="pf-report-cover" aria-hidden={open}>
       <div className="pf-report-top"><span>RESEARCH / {selectedWork[active].index}</span><span>RUI WANG</span></div>
       <h4>{selectedWork[active].title[language]}</h4>
       <div className="pf-report-map">
@@ -86,6 +94,7 @@ function ResearchObject({ active, language }: { active: number; language: Langua
       <div className="pf-report-bottom"><span>{local(language, "分析与研究交付", "ANALYSIS & RESEARCH DELIVERY")}</span><span>↗</span></div>
     </div>
     <div className="pf-object-shadow" aria-hidden="true" />
+    <button className="pf-folio-toggle" type="button" aria-expanded={open} aria-controls={pageId} onClick={() => setOpen(v => !v)}><span>{local(language, open ? "合上研究档案" : "翻开研究档案", open ? "Close research folio" : "Open research folio")}</span><span aria-hidden="true">{open ? "−" : "＋"}</span></button>
   </div>;
 }
 
@@ -109,13 +118,14 @@ function Work({ language, active, setActive, paused }: { language: Language; act
   </section>;
 }
 
-function AIObject({ practice, stage, language }: { practice: number; stage: number; language: Language }) {
+function AIObject({ practice, stage, language, onStageChange }: { practice: number; stage: number; language: Language; onStageChange: (n: number) => void }) {
   const words = details[practice].stages[stage].visual[language];
   const output = aiPractice[practice].outputLabels;
   return <div className={`pf-ai-object ai-stage-${stage}`}>
     <div className="pf-ai-platform" aria-hidden="true"/>
     {stage === 0 ? <div className="pf-rule-glass"><div className="pf-object-label">RESEARCH JUDGMENT</div><span className="pf-rule-index">01</span><h4>{local(language, "先确定研究规则", "Define the research rules")}</h4><div className="pf-rule-lines">{words.slice(1, 5).map((w, i) => <div key={w}><span>0{i + 1}</span><strong>{w}</strong><i aria-hidden="true">✓</i></div>)}</div><p>{words[5]}</p></div> : stage === 1 ? <div className="pf-ai-engine"><div className="pf-engine-head"><span>RESEARCH × AI</span><i aria-hidden="true"/></div><div className="pf-processor"><span>{local(language, "批量执行", "BATCH EXECUTION")}</span><strong>Codex</strong></div><div className="pf-engine-track">{words.slice(2, 6).map((w, i) => <div key={w}><span>0{i + 1}</span><strong>{w}</strong><i aria-hidden="true"/></div>)}</div><div className="pf-engine-out"><span>{local(language, "研究员复核", "RESEARCHER REVIEW")}</span><span>↗</span></div></div> : <div className="pf-output-library">{output.map((v, i) => <div key={v.en} className={`pf-output-volume volume-${i}`}><span>{["RESEARCH", "COMPARISON", "REUSABLE"][i]}</span><h4>{v[language]}</h4><div className="pf-volume-lines" aria-hidden="true"><i/><i/><i/></div><span className="pf-volume-footer">RUI WANG <i aria-hidden="true">↗</i></span></div>)}</div>}
     <div className="pf-ai-object-caption">{[local(language, "方法与比较条件", "METHODS & COMPARISON CRITERIA"), local(language, "执行、复算与差异定位", "EXECUTION, RECALCULATION & CHECKS"), local(language, "交付与复用", "DELIVERY & REUSE")][stage]}</div>
+    <div className="pf-stage-route" role="group" aria-label={local(language, "切换研究工作阶段", "Choose workflow stage")} style={{ "--stage": stage } as CSSProperties}>{[local(language, "判断", "Judgment"), local(language, "执行", "Execution"), local(language, "交付", "Delivery")].map((label, i) => <button type="button" key={i} aria-pressed={stage === i} onClick={() => onStageChange(i)}><span className="pf-route-dot" aria-hidden="true"/><span>{label}</span></button>)}</div>
   </div>;
 }
 
@@ -123,18 +133,23 @@ function AIPractice({ language, paused }: { language: Language; paused: boolean 
   const [practice, setPractice] = useState(0), [stage, setStage] = useState(0);
   const item = aiPractice[practice], detail = details[practice].stages[stage];
   const labels = [local(language, "我的判断", "My judgment"), local(language, "Codex 执行", "Codex execution"), local(language, "交付与复用", "Delivery & reuse")];
+  function choosePractice(index: number) { setPractice(index); setStage(0); }
   return <section className="pf-ai pf-section" id="method" data-tone="night"><div className="pf-wrap">
     <div className="pf-section-head"><div><p className="pf-eyebrow">02 / RESEARCH × AI</p><h2>{local(language, "AI 提效实践", "AI in research practice")}</h2></div><p>{local(language, "把研究规则写进工具，让分析、核验与报告更新能够复用。", "Reusable tools for analysis, validation, and reporting, built around research rules.")}</p></div>
-    <div className="pf-ai-tabs" role="tablist" aria-label={local(language, "选择AI实践", "Choose an AI practice")}>{aiPractice.map((p, i) => <button key={p.id} role="tab" id={`pf-ai-tab-${i}`} aria-controls="pf-ai-panel" aria-selected={practice === i} tabIndex={practice === i ? 0 : -1} onClick={() => { setPractice(i); setStage(0); }} onKeyDown={e => tabs(e, i, 3, setPractice)}><span>0{i + 1}</span>{p.title[language]}</button>)}</div>
+    <div className="pf-ai-tabs" role="tablist" aria-label={local(language, "选择AI实践", "Choose an AI practice")}>{aiPractice.map((p, i) => <button key={p.id} role="tab" id={`pf-ai-tab-${i}`} aria-controls="pf-ai-panel" aria-selected={practice === i} tabIndex={practice === i ? 0 : -1} onClick={() => choosePractice(i)} onKeyDown={e => tabs(e, i, 3, choosePractice)}><span>0{i + 1}</span>{p.title[language]}</button>)}</div>
     <article id="pf-ai-panel" role="tabpanel" aria-labelledby={`pf-ai-tab-${practice}`} className="pf-ai-panel">
       <div className="pf-ai-text"><p className="pf-ai-context">{item.context[language]}</p><div className="pf-stage-tabs" role="tablist" aria-label={local(language, "研究工作阶段", "Research workflow stage")}>{labels.map((label, i) => <button type="button" role="tab" key={label} id={`pf-stage-tab-${i}`} aria-controls="pf-stage-panel" aria-selected={stage === i} tabIndex={stage === i ? 0 : -1} onClick={() => setStage(i)} onKeyDown={e => tabs(e, i, 3, setStage)}><span>0{i + 1}</span>{label}</button>)}</div>
         <div id="pf-stage-panel" role="tabpanel" aria-labelledby={`pf-stage-tab-${stage}`} className="pf-stage-content" key={`${practice}-${stage}`}><h3>{detail.title[language]}</h3><p>{item[(["decision", "execution", "output"] as const)[stage]][language]}</p><dl>{detail.points.map(p => <div key={p.label.en}><dt>{p.label[language]}</dt><dd>{p.text[language]}</dd></div>)}</dl></div>
         <div className="pf-stage-footer"><span>{local(language, "研究规则 → 批量处理 → 重点复核", "RESEARCH RULES → BATCH EXECUTION → TARGETED REVIEW")}</span><button type="button" onClick={() => { setStage((stage + 1) % 3); document.getElementById(`pf-stage-tab-${(stage + 1) % 3}`)?.focus(); }} aria-label={local(language, "查看下一个阶段", "View the next stage")}><Arrow/></button></div>
       </div>
-      <div className="pf-ai-visual" onPointerMove={e => tilt(e, paused)} onPointerLeave={resetTilt}><AIObject practice={practice} stage={stage} language={language}/></div>
+      <div className="pf-ai-visual" onPointerMove={e => tilt(e, paused)} onPointerLeave={resetTilt}><AIObject practice={practice} stage={stage} language={language} onStageChange={setStage}/></div>
     </article>
     <p className="pf-adoption"><i aria-hidden="true"/>{local(language, "研究工具已用于正式交付并被同事采用；配套手册与团队分享支持持续复用。", "Research tools are used in formal delivery and adopted by colleagues, supported by guides and team sharing.")}</p>
   </div></section>;
+}
+
+function ProjectMark({ kind, index }: { kind: string; index: number }) {
+  return <div className={`pf-project-mark mark-${kind}`} aria-hidden="true"><span className="pf-mark-index">0{index + 1}</span>{kind === "video" ? <div className="pf-mark-film"><i/><i/><i/></div> : kind === "games" ? <svg className="pf-mark-land" viewBox="0 0 160 100" fill="none"><path d="m12 57 46-30 48 4 43 27-47 29-49-3z"/><path d="m12 48 46-30 48 4 43 27-47 29-49-3z"/><path d="m58 18 2 37 42 23m-42-23 46-33"/><path d="m37 47 23-14 24 3 19 12-24 15-23-2z"/></svg> : <div className="pf-mark-browser"><span><i/><i/><i/></span><div><b/><i/><i/><i/></div></div>}<span className="pf-mark-type">{kind === "video" ? "MOTION" : kind === "games" ? "PLAY" : "INTERFACE"}</span></div>;
 }
 
 function Projects({ language }: { language: Language }) {
@@ -142,7 +157,7 @@ function Projects({ language }: { language: Language }) {
   return <section className="pf-projects pf-section" id="projects" data-tone="light"><div className="pf-wrap"><div className="pf-section-head"><div><p className="pf-eyebrow">03 / PERSONAL PROJECTS</p><h2>{local(language, "把想法做成可以体验的作品。", "Ideas made tangible.")}</h2></div><p>{local(language, "研究之外，继续探索数据、交互与视觉表达。", "Exploring data, interaction, and visual expression beyond research.")}</p></div>
     <a className="pf-atlas-feature" href={`${atlasBase}${language === "en" ? "/en" : ""}/overseas/`}><div className="pf-atlas-copy"><p className="pf-eyebrow">GLOBAL DEVELOPMENT ATLAS</p><h3>{local(language, "全球发展数据查询", "Global Development Atlas")}</h3><p>{local(language, "围绕国家、指标与年份探索世界银行公开数据，进行多国同年比较、年度趋势、来源查看与 CSV 导出。", "Explore World Bank public data with country, indicator, and year filters, same-year comparisons, trends, source references, and CSV exports.")}</p><span className="pf-text-link">{local(language, "进入数据网站", "Explore the data website")}<Arrow/></span></div><div className="pf-atlas-art" aria-hidden="true"><div className="pf-atlas-rings"><i/><i/><i/></div><span className="pf-atlas-word">WORLD<br/>IN VIEW.</span><div className="pf-atlas-coordinates"><span>COUNTRY</span><span>INDICATOR</span><span>YEAR</span></div><span className="pf-atlas-corner">↗</span></div></a>
     <div className="pf-creative-heading"><h3>{local(language, "个人作品", "More personal projects")}</h3><div role="tablist" aria-label={local(language, "作品类型", "Project categories")}>{creativeCategories.map((c, i) => <button role="tab" key={c.id} id={`pf-project-tab-${c.id}`} aria-controls={`pf-project-panel-${c.id}`} aria-selected={c.id === category} tabIndex={c.id === category ? 0 : -1} onClick={() => setCategory(c.id)} onKeyDown={e => tabs(e, i, creativeCategories.length, n => setCategory(creativeCategories[n].id))}>{c.title[language]}</button>)}</div></div>
-    {creativeCategories.map(c => <div key={c.id} id={`pf-project-panel-${c.id}`} role="tabpanel" hidden={c.id !== category} aria-labelledby={`pf-project-tab-${c.id}`} className="pf-project-list">{c.items.filter(i => i.title.en !== "Global Development Atlas").map((item, i) => <article key={item.title.en}><span className="pf-project-index">0{i + 1}</span><div><h4>{item.title[language]}</h4><p>{item.description[language]}</p></div><div className="pf-project-meta"><span>{item.status[language]}</span>{item.liveUrl && <a href={item.liveUrl.startsWith("/") ? `${base}${language === "en" ? "/en" : ""}${item.liveUrl}` : item.liveUrl} target="_blank" rel="noreferrer">{local(language, "在线体验", "View live")} ↗</a>}{item.sourceUrl && <a href={item.sourceUrl} target="_blank" rel="noreferrer">GitHub ↗</a>}</div></article>)}</div>)}
+    {creativeCategories.map(c => <div key={c.id} id={`pf-project-panel-${c.id}`} role="tabpanel" hidden={c.id !== category} aria-labelledby={`pf-project-tab-${c.id}`} className={`pf-project-list collection-${c.id}`}>{c.items.filter(i => i.title.en !== "Global Development Atlas").map((item, i) => <article key={item.title.en} style={{ "--project-order": i } as CSSProperties}><ProjectMark kind={c.id} index={i}/><div><h4>{item.title[language]}</h4><p>{item.description[language]}</p></div><div className="pf-project-meta"><span>{item.status[language]}</span>{item.liveUrl && <a href={item.liveUrl.startsWith("/") ? `${base}${language === "en" ? "/en" : ""}${item.liveUrl}` : item.liveUrl} target="_blank" rel="noreferrer">{local(language, "在线体验", "View live")} ↗</a>}{item.sourceUrl && <a href={item.sourceUrl} target="_blank" rel="noreferrer">GitHub ↗</a>}</div></article>)}</div>)}
     <p className="pf-creative-note">{local(language, "AI 辅助设计与创作：交互网站、网页动效与视频；Blender / Three.js 三维视觉探索。本站以 React 与原生 WebGL 实现。", "AI-assisted Design & Creation: interactive websites, motion, and video; 3D exploration with Blender and Three.js. This site uses React and native WebGL.")}</p>
   </div></section>;
 }

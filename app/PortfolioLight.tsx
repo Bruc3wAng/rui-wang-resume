@@ -63,7 +63,7 @@ export default function PortfolioLight({ paused }: { paused: boolean }) {
       if (!pause.current) frame = requestAnimationFrame(draw);
     }
     function wake() { if (!frame && alive) { last = 0; frame = requestAnimationFrame(draw); } }
-    function move(e: PointerEvent) { const r = el!.getBoundingClientRect(); target[0] = (e.clientX - r.left) / r.width - .5; target[1] = .5 - (e.clientY - r.top) / r.height; wake(); }
+    function move(e: PointerEvent) { if (pause.current || e.pointerType === "touch") return; const r = el!.getBoundingClientRect(); target[0] = (e.clientX - r.left) / r.width - .5; target[1] = .5 - (e.clientY - r.top) / r.height; wake(); }
     function lost(e: Event) { e.preventDefault(); alive = false; cancelAnimationFrame(frame); el!.style.opacity = "0"; }
     function visibilityChange() { cancelAnimationFrame(frame); frame = 0; last = 0; if (!document.hidden) wake(); }
     redraw.current = () => { cancelAnimationFrame(frame); frame = 0; wake(); };
