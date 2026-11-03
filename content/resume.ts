@@ -711,7 +711,7 @@ export const creativeCategories: {
     items: [
       {
         title: { zh: "中英双语个人履历", en: "Bilingual Résumé Collection" },
-        description: { zh: "从研究、分析与研究运营视角浏览职业经历，在线阅读或下载一页中文简历，并查看英文职业档案。", en: "Explore experience through research, analytics and research-operations perspectives; read or download the one-page Chinese résumé and view the English profile." },
+        description: { zh: "从研究、分析与研究运营视角浏览职业经历，在线阅读或下载一页中英文简历。", en: "Explore experience through research, analytics and research-operations perspectives, and read or download one-page Chinese and English résumés." },
         status: { zh: "已上线", en: "Live" },
         liveUrl: "/projects/resume/",
         sourceUrl: projects[3].sourceUrl,

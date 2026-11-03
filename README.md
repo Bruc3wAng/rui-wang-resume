@@ -45,6 +45,8 @@ without relying on a runtime image-optimization endpoint.
 
 - Website copy: `content/resume.ts`
 - Chinese résumé download: `public/resume/rui-wang-resume-zh.pdf`
+- English résumé download: `public/resume/rui-wang-resume-en.pdf`
+- Résumé pages default to the current interface language and offer a Chinese/English document switch. The reader uses lossless page previews rendered from the released PDFs, with zoom, direct PDF access and downloads; it does not require an embedded PDF plug-in. Regenerate previews with `RUI_PDFTOPPM=/path/to/pdftoppm node scripts/build_resume_previews.mjs` and record the returned source-PDF/image hashes in `content/resume-release.json`.
 - Résumé release and file checksum: `content/resume-release.json`
 - Portrait: `public/images/rui-wang-portrait.jpg`
 - Localized share copy: `content/social-cards.ts`; image paths and hashes: `content/social-images.json`
@@ -55,7 +57,7 @@ The verified master résumé data remains in the parent project’s `resume-libr
 
 Current website prose is an editorial adaptation of the verified V17 résumé facts, emphasizing project responsibility, analytical judgment, and concrete AI-assisted delivery. The PDF remains the validated V17 document; website wording need not be verbatim. The private résumé library records the reviewed source hashes and evidence. Maintain client wording as ByteDance and Lenovo only. Describe overall research experience as multi-country; the two separate tracking studies retain their own verified market lists, which are not a complete career total. The website expands the two product-research internships with verified exhibition-sector pre-acquisition commercial research; it does not claim valuation, deal execution or acquisition completion. Personal research prototypes stay separate from employment achievements and do not imply commercial validation. Keep evidence, internal project files, and the private résumé library outside this repository.
 
-When updating the résumé download, copy the validated PDF, update its filename/version/hash in `content/resume-release.json`, then build and run the content tests. The tests check the exported PDF byte-for-byte against the release record. Public disclosure rules belong in maintenance notes and tests, not visitor copy.
+When updating a résumé download, copy the validated PDF, update its filename/version/hash and source-bound preview in `content/resume-release.json`, then build and run the content tests. Chinese and English PDFs share the verified V17 facts; English wording is adapted for English-language applications. Tests check both exported PDFs and preview assets byte-for-byte against the release record. Public disclosure rules belong in maintenance notes and tests, not visitor copy.
 
 ## Image credits
 

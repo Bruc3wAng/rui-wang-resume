@@ -4,7 +4,8 @@ import { useEffect, useRef, useState, type ChangeEvent, type PointerEvent } from
 import Image from "next/image";
 import ShareLocale from "./ShareLocale";
 import { profile, experiences, education, type Language } from "../content/resume";
-import release from "../content/resume-release.json";
+import { resumeDocuments, resumeHref, resumePreviewHref } from "../content/resume-documents";
+import "./resume-downloads.css";
 import { dinnerPlaces, type DinnerPlace } from "../content/portfolio-exhibits";
 import "./project-exhibits.css";
 
@@ -20,17 +21,55 @@ export default function ProjectExhibit({kind,language}:{kind:Kind;language:Langu
   return <main className={`exhibit exhibit-${kind}`} lang={language==="zh"?"zh-CN":"en"}>
     <ShareLocale language={language}/>
     <header className="exhibit-header"><a href={`${base}${language==="en"?"/en":""}/#projects`} className="exhibit-back">← {l("返回作品集","Back to portfolio")}</a><span>{title[kind][language]}</span><a className="exhibit-language" href={`${base}${language==="zh"?"/en":""}/projects/${slugs[kind]}/`}>{language==="zh"?"EN":"中文"}</a></header>
-    {kind==="resume"?<ResumeCollection language={language}/>:kind==="photo"?<PhotoWorkbench language={language}/>:<DinnerNotes language={language}/>}
+    {kind==="resume"?<ResumeCollection key={language} language={language}/>:kind==="photo"?<PhotoWorkbench language={language}/>:<DinnerNotes language={language}/>}
     <footer className="exhibit-footer"><a href={`${base}${language==="en"?"/en":""}/#projects`}>RUI WANG / SELECTED PROJECTS</a><span>{l("设计与 AI 辅助实现","DESIGN & AI-ASSISTED DEVELOPMENT")}</span></footer>
   </main>;
 }
 
 function ResumeCollection({language}:{language:Language}){
-  const [focus,setFocus]=useState(0),[reading,setReading]=useState(false);
+  const [focus,setFocus]=useState(0),[reading,setReading]=useState(false),[documentLanguage,setDocumentLanguage]=useState<Language>(language),[zoomed,setZoomed]=useState(false),[previewError,setPreviewError]=useState(false);
+  const reader=useRef<HTMLElement>(null);
+  useEffect(()=>{if(reading){reader.current?.focus({preventScroll:true});reader.current?.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth",block:"start"});}},[reading,documentLanguage]);
+  function chooseDocument(value:Language){setDocumentLanguage(value);setZoomed(false);setPreviewError(false);}
   const l=(zh:string,en:string)=>language==="zh"?zh:en;
   const tracks=[{zh:"市场研究",en:"Market research"},{zh:"数据分析",en:"Data analysis"},{zh:"研究运营",en:"Research operations"}];
   const focusCopy=[{zh:"从研究问题、比较条件到结果解释，理解不同市场中用户如何选择和评价产品。",en:"Define research questions and comparison criteria, then interpret how people choose and experience products across markets."},{zh:"用相对权重、相关分析、用户分层和跨期比较解释差异，让数据与研究问题对应。",en:"Use relative weights, correlation, segmentation and wave comparisons to connect observed differences with research questions."},{zh:"协调多市场执行与交付，将研究规则写入可复用工具，让批量处理与重点复核有序衔接。",en:"Coordinate multi-market execution and delivery, embedding research rules in reusable tools that connect batch processing with targeted review."}];
-  return <div className="resume-collection exhibit-wrap"><div className="resume-collection-intro"><p className="exhibit-kicker">CAREER / RESEARCH / PRACTICE</p><h1>{profile.name[language]}<span>{language==="zh"?"RUI WANG":"王睿"}</span></h1><p className="resume-collection-role">Ipsos · Research Executive</p><p>{profile.summary[language]}</p></div><div className="resume-collection-grid"><section className="resume-perspective"><h2>{l("从不同工作视角，认识我的经历。","Different perspectives on the work.")}</h2><div className="resume-focus" role="group" aria-label={l("职业方向","Career perspective")}>{tracks.map((t,i)=><button type="button" key={t.en} aria-pressed={focus===i} onClick={()=>setFocus(i)}>{t[language]}</button>)}</div><p className="resume-focus-copy" key={focus}>{focusCopy[focus][language]}</p><ol className="resume-mini-timeline">{experiences.map(e=><li key={e.company.en}><span>{e.period[language]}</span><h3>{e.company[language]}</h3><p>{e.title[language]}</p></li>)}<li><span>{education.period}</span><h3>{education.institution[language]}</h3><p>{education.focus[language]}</p></li></ol></section><section className="resume-document-shelf"><div className="resume-sheet-preview"><div><span>RÉSUMÉ</span><span>01 / A4</span></div><h2>{l("市场研究与数据分析","Market research & analytics.")}</h2><p>{l("多国用户研究、品牌追踪与 AI 研究工作流。","Multi-country research, brand tracking and AI workflows.")}</p><ol><li>Ipsos / Research Executive</li><li>Meritco / Research & Analysis</li><li>University of Toronto</li></ol><span className="resume-sheet-signature">{profile.name[language]}</span></div><a className="exhibit-primary" href={`${base}/resume/rui-wang-resume-zh.pdf?v=${release.contentVersion}`} download={release.downloadFileName}>{l("下载中文简历 PDF","Download Chinese résumé PDF")}<span>↓</span></a><button type="button" className="exhibit-text-button" aria-expanded={reading} onClick={()=>setReading(v=>!v)}>{reading?l("收起阅读","Close reader"):l("在线阅读中文简历","Read the Chinese résumé")} {reading?"−":"＋"}</button><a className="exhibit-text-button" href={`${base}/en/#work`}>{l("查看英文职业经历","Explore the English profile")} ↗</a></section></div>{reading&&<section className="resume-pdf-reader"><h2>{l("中文简历","Chinese résumé")}</h2><iframe title={l("王睿中文简历 PDF","Rui Wang Chinese résumé PDF")} src={`${base}/resume/rui-wang-resume-zh.pdf?v=${release.contentVersion}#toolbar=1`} loading="lazy"/></section>}</div>;
+  const document=resumeDocuments[documentLanguage],pdf=resumeHref(documentLanguage,base);
+  return <div className="resume-collection exhibit-wrap">
+    <div className="resume-collection-intro">
+      <p className="exhibit-kicker">CAREER / RESEARCH / PRACTICE</p>
+      <h1>{profile.name[language]}<span>{language==="zh"?"RUI WANG":"王睿"}</span></h1>
+      <p className="resume-collection-role">Ipsos · Research Executive</p><p>{profile.summary[language]}</p>
+    </div>
+    <div className="resume-collection-grid">
+      <section className="resume-perspective">
+        <h2>{l("从不同工作视角，认识我的经历。","Different perspectives on the work.")}</h2>
+        <div className="resume-focus" role="group" aria-label={l("职业方向","Career perspective")}>{tracks.map((t,i)=><button type="button" key={t.en} aria-pressed={focus===i} onClick={()=>setFocus(i)}>{t[language]}</button>)}</div>
+        <p className="resume-focus-copy" key={focus}>{focusCopy[focus][language]}</p>
+        <ol className="resume-mini-timeline">{experiences.map(e=><li key={e.company.en}><span>{e.period[language]}</span><h3>{e.company[language]}</h3><p>{e.title[language]}</p></li>)}<li><span>{education.period}</span><h3>{education.institution[language]}</h3><p>{education.focus[language]}</p></li></ol>
+      </section>
+      <section className="resume-document-shelf" data-document-language={documentLanguage}>
+        <div className="resume-sheet-preview">
+          <div><span>RÉSUMÉ</span><span>01 / A4</span></div>
+          <h2>{l("市场研究与数据分析","Market research & analytics.")}</h2>
+          <p>{l("多国用户研究、品牌追踪与 AI 研究工作流。","Multi-country research, brand tracking and AI workflows.")}</p>
+          <ol><li>Ipsos / Research Executive</li><li>Meritco / Research & Analysis</li><li>University of Toronto</li></ol>
+          <span className="resume-sheet-signature">{profile.name[language]}</span>
+        </div>
+        <div className="resume-document-languages" role="group" aria-label={l("简历语言","Résumé language")}>
+          <button type="button" aria-pressed={documentLanguage==="zh"} onClick={()=>chooseDocument("zh")}>中文</button>
+          <button type="button" aria-pressed={documentLanguage==="en"} onClick={()=>chooseDocument("en")}>English</button>
+        </div>
+        <a className="exhibit-primary" href={pdf} download={document.fileName}>{l("下载"+document.title.zh+" PDF","Download "+document.title.en+" PDF")}<span aria-hidden="true">↓</span></a>
+        <button type="button" className="exhibit-text-button" aria-expanded={reading} aria-controls="resume-pdf-reader" onClick={()=>setReading(v=>!v)}>{reading?l("收起阅读","Close reader"):l("在线阅读"+document.title.zh,"Read the "+document.title.en)} {reading?"−":"＋"}</button>
+        <a className="exhibit-text-button" href={base+"/en/#work"}>{l("查看英文职业经历","Explore the English profile")} ↗</a>
+      </section>
+    </div>
+    <section id="resume-pdf-reader" className="resume-pdf-reader" ref={reader} tabIndex={-1} hidden={!reading} aria-label={l(document.title.zh+"预览",document.title.en+" preview")}>
+      <div className="resume-reader-header"><h2>{document.title[language]}</h2><div className="resume-reader-actions"><button type="button" disabled={previewError} aria-pressed={zoomed} aria-controls="resume-preview-page" onClick={()=>setZoomed(value=>!value)}>{zoomed?l("适合宽度","Fit width"):l("放大阅读","Zoom in")}</button><a href={pdf} target="_blank" rel="noreferrer">{l("打开 PDF","Open PDF")}<span aria-hidden="true">↗</span></a><a href={pdf} download={document.fileName}>{l("下载 PDF","Download PDF")}<span aria-hidden="true">↓</span></a></div></div>
+      {reading&&(previewError?<p className="exhibit-error" role="alert">{l("预览暂不可用，请打开或下载 PDF 阅读。","Preview unavailable. Open or download the PDF to read it.")}</p>:<div id="resume-preview-page" className="resume-preview-page" data-zoomed={zoomed} tabIndex={0} role="region" aria-label={l("简历页面", "Résumé page")}><Image key={documentLanguage} src={resumePreviewHref(documentLanguage,base)} width={document.preview.width} height={document.preview.height} alt={l("王睿的"+document.title.zh,"Rui Wang’s "+document.title.en)} unoptimized loading="eager" draggable={false} onError={()=>setPreviewError(true)}/></div>)}
+    </section>
+  </div>;
 }
 
 const looks=[{id:"original",zh:"原色",en:"Original",filter:""},{id:"warm",zh:"暖光",en:"Warm light",filter:"sepia(.18) saturate(.9) brightness(1.03)"},{id:"cinema",zh:"电影",en:"Cinema",filter:"saturate(.76) contrast(1.18) hue-rotate(-6deg)"},{id:"mono",zh:"黑白",en:"Monochrome",filter:"grayscale(1) contrast(1.12)"}];

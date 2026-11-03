@@ -2,5 +2,27 @@
   "contentVersion": "V17",
   "updatedAt": "2026-10-26",
   "downloadFileName": "王睿-中文简历-市场研究与数据分析-V17.pdf",
-  "pdfSha256": "3434593858df574742e83da094b93c8f339e87e81656e1d2aeda563e7d248262"
+  "pdfSha256": "3434593858df574742e83da094b93c8f339e87e81656e1d2aeda563e7d248262",
+  "english": {
+    "contentVersion": "V17",
+    "updatedAt": "2026-11-03",
+    "downloadFileName": "王睿-英文简历-市场研究与数据分析-V17.pdf",
+    "pdfSha256": "8f7c3e8e2dd34afea63f0e8f8147fe16da2e1d535461193395275820c4a5662d",
+    "preview": {
+      "path": "/resume/rui-wang-resume-en.webp",
+      "width": 1800,
+      "height": 2546,
+      "sha256": "1d53c07de6292931a3630df1a6344c7babcd34eb8c6d0ecd40fa3d6bee13ab31",
+      "sourcePdfSha256": "8f7c3e8e2dd34afea63f0e8f8147fe16da2e1d535461193395275820c4a5662d",
+      "bytes": 169580
+    }
+  },
+  "preview": {
+    "path": "/resume/rui-wang-resume-zh.webp",
+    "width": 1800,
+    "height": 2546,
+    "sha256": "047e0c0d38cbcffad15e4498b26c5c31c9c3c37190668032d08f0f1fc50ae568",
+    "sourcePdfSha256": "3434593858df574742e83da094b93c8f339e87e81656e1d2aeda563e7d248262",
+    "bytes": 286088
+  }
 }

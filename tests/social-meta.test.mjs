@@ -43,12 +43,17 @@ test("keeps share copy factual, language-specific and free of internal productio
   for (const card of Object.values(socialCards)) {
     const renderedCopy = [...card.heading, card.subtitle, card.footer].join(" ");
     if (card.language === "en") assert.doesNotMatch(card.title + card.description + renderedCopy, /\p{Script=Han}/u);
-    assert.doesNotMatch(card.title + card.description + renderedCopy, /Senior|Dreamina|BHT|TT生活服务|已脱敏|匿名化|领导确认|公开边界|anonymized|public profile|English PDF/i);
+    assert.doesNotMatch(card.title + card.description + renderedCopy, /Senior|Dreamina|BHT|TT生活服务|已脱敏|匿名化|领导确认|公开边界|anonymized|public profile/i);
     assert.ok(card.alt.length > 20);
   }
   assert.match(socialCards["profile-en"].description, /Research Executive at Ipsos/);
   assert.match(socialCards["profile-zh"].description, /字节跳动与联想/);
-  assert.match(socialCards["resume-en"].footer, /Chinese résumé.*English profile/);
+  assert.match(socialCards["resume-en"].footer, /Chinese.*English résumés.*PDF/);
+  assert.match(socialCards["resume-zh"].footer, /中英文简历/);
+  const release = JSON.parse(await readFile(new URL("content/resume-release.json", root), "utf8"));
+  const englishPdf = await readFile(new URL("public/resume/rui-wang-resume-en.pdf", root));
+  assert.equal(createHash("sha256").update(englishPdf).digest("hex"), release.english.pdfSha256);
+  assert.equal(release.english.contentVersion, release.contentVersion);
   assert.match(socialCards["atlas-zh"].description, /世界银行公开数据/);
   const script = await readFile(new URL("scripts/build_social_preview.mjs", root), "utf8");
   const wrapper = await readFile(new URL("scripts/build_social_preview.py", root), "utf8");

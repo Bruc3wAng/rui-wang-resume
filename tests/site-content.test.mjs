@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { createRequire } from "node:module";
 import { access, readFile } from "node:fs/promises";
 import test from "node:test";
+import { resumeDocuments, resumeHref, resumePreviewHref } from "../content/resume-documents.ts";
 
 const root = new URL("../", import.meta.url);
 
@@ -206,6 +208,80 @@ test("download matches the current validated resume release", async () => {
     assert.ok(html.includes(`download="${release.downloadFileName}"`));
     assert.ok(html.includes(`rui-wang-resume-zh.pdf?v=${release.contentVersion}`));
   }
+});
+
+test("keeps Chinese and English PDF selection bound to versioned release metadata", () => {
+  assert.notEqual(resumeDocuments.zh.path, resumeDocuments.en.path);
+  assert.equal(resumeDocuments.zh.version, resumeDocuments.en.version);
+  for (const base of ["", "/rui-wang-resume"]) for (const language of ["zh", "en"]) {
+    const document = resumeDocuments[language];
+    const url = new URL(resumeHref(language, base), "https://example.test");
+    assert.equal(url.pathname, base + document.path);
+    assert.equal(url.searchParams.get("v"), document.version);
+    assert.equal(url.searchParams.get("h"), document.sha256.slice(0, 12));
+    const preview = new URL(resumePreviewHref(language, base), "https://example.test");
+    assert.equal(preview.pathname, base + document.preview.path);
+    assert.equal(preview.searchParams.get("h"), document.preview.sha256.slice(0, 12));
+    assert.equal(document.preview.sourcePdfSha256, document.sha256);
+    assert.ok(document.fileName.includes(language === "en" ? "英文简历" : "中文简历"));
+  }
+});
+
+test("ships both validated PDF files and defaults each page to its own language", async () => {
+  const builds = process.env.NEXT_PUBLIC_BASE_PATH ? ["out", "dist/client"] : ["out"];
+  const attrs = tag => Object.fromEntries([...tag.matchAll(/([\w-]+)="([^"]*)"/g)].map(([, key, value]) => [key, value.replace(/&amp;/g, "&")]));
+  for (const build of builds) {
+    for (const language of ["zh", "en"]) {
+      const document = resumeDocuments[language];
+      const source = await readFile(new URL("public" + document.path, root));
+      const published = await readFile(new URL(build + document.path, root));
+      assert.deepEqual(published, source);
+      assert.equal(createHash("sha256").update(published).digest("hex"), document.sha256);
+      assert.equal(published.toString("ascii", 0, 4), "%PDF");
+      const prefix = language === "en" ? "en/" : "";
+      const html = await readFile(new URL(`${build}/${prefix}index.html`, root), "utf8");
+      const anchors = [...html.matchAll(/<a\b[^>]*>/g)].map(([tag]) => attrs(tag));
+      const primary = anchors.find(a => a.class === "pf-download");
+      assert.ok(primary, "Missing primary résumé download");
+      const url = new URL(primary.href, "https://example.test");
+      assert.ok(url.pathname.endsWith(document.path));
+      assert.equal(url.searchParams.get("h"), document.sha256.slice(0, 12));
+      assert.equal(primary.download, document.fileName);
+      assert.equal(primary["data-document-language"], language);
+      assert.ok(anchors.some(a => a.download === resumeDocuments.zh.fileName));
+      assert.ok(anchors.some(a => a.download === resumeDocuments.en.fileName));
+      const collection = await readFile(new URL(`${build}/${prefix}projects/resume/index.html`, root), "utf8");
+      assert.ok(collection.includes(`class="resume-document-shelf" data-document-language="${language}"`));
+      assert.ok(collection.includes(`download="${document.fileName}"`));
+      assert.match(collection, /class="resume-document-languages"/);
+      assert.match(collection, /id="resume-pdf-reader"/);
+    }
+  }
+});
+
+test("ships source-bound high-resolution previews without requiring a PDF plug-in", async () => {
+  const require = createRequire(import.meta.url);
+  const sharp = createRequire(require.resolve("next/package.json"))("sharp");
+  const builds = process.env.NEXT_PUBLIC_BASE_PATH ? ["out", "dist/client"] : ["out"];
+  for (const language of ["zh", "en"]) {
+    const document = resumeDocuments[language], preview = document.preview;
+    const bytes = await readFile(new URL("public" + preview.path, root));
+    assert.equal(preview.sourcePdfSha256, document.sha256);
+    assert.equal(createHash("sha256").update(bytes).digest("hex"), preview.sha256);
+    assert.equal(bytes.length, preview.bytes);
+    const image = await sharp(bytes).metadata();
+    assert.equal(image.format, "webp");
+    assert.equal(image.width, 1800);assert.equal(image.height, 2546);
+    assert.equal(image.width, preview.width);assert.equal(image.height, preview.height);
+    assert.equal((await sharp(bytes).stats()).isOpaque, true);
+    for (const build of builds) assert.deepEqual(await readFile(new URL(build + preview.path, root)), bytes);
+  }
+  const ui = await readFile(new URL("app/ProjectExhibit.tsx", root), "utf8");
+  const collection = ui.slice(ui.indexOf("function ResumeCollection("), ui.indexOf("const looks="));
+  assert.doesNotMatch(collection, /<iframe/);
+  assert.match(collection, /resumePreviewHref\(documentLanguage,base\)/);
+  assert.match(collection, /data-zoomed=\{zoomed\}/);
+  assert.match(collection, /Preview unavailable/);
 });
 
 test("keeps the script font contract", async () => {

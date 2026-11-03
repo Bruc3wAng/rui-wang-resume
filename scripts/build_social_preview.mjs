@@ -20,7 +20,7 @@ const fonts = [
 ];
 const han = /[\p{Script=Han}\u3000-\u303f\uff00-\uffef]/u;
 const glyphs = { han: new Set(), latin: new Set() };
-const textUsed = ["王睿", "Rui Wang", "MARKET & USER RESEARCH", "Research Executive at Ipsos", "BEIJING / CHINA", "PERSONAL PROJECT", "DATA PROJECT", "PDF / 中文", "CHINESE PDF", "研究经历", "数据分析", "AI 研究工作流", "RESEARCH", "ANALYTICS", "AI WORKFLOWS", "COUNTRY", "INDICATOR", "YEAR", "LIGHT", "COLOR", "BEIJING", ...Object.values(socialCards).flatMap(c => [...c.heading, c.subtitle, c.footer])];
+const textUsed = ["王睿", "Rui Wang", "MARKET & USER RESEARCH", "Research Executive at Ipsos", "BEIJING / CHINA", "PERSONAL PROJECT", "DATA PROJECT", "ZH / EN PDF", "研究经历", "数据分析", "AI 研究工作流", "RESEARCH", "ANALYTICS", "AI WORKFLOWS", "COUNTRY", "INDICATOR", "YEAR", "LIGHT", "COLOR", "BEIJING", ...Object.values(socialCards).flatMap(c => [...c.heading, c.subtitle, c.footer])];
 for (const value of textUsed) for (const character of value) {
   if (/\s/u.test(character)) continue;
   glyphs[han.test(character) ? "han" : "latin"].add(character.codePointAt(0));
@@ -119,7 +119,7 @@ function resumeArt(ctx, language) {
   line(ctx, 805, 183, 1088, 183, "#8197a5", 2);
   const labels = language === "zh" ? ["研究经历", "数据分析", "AI 研究工作流"] : ["RESEARCH", "ANALYTICS", "AI WORKFLOWS"];
   labels.forEach((value, index) => { text(ctx, value, 805, 239 + index * 78, 20, palette.ink, 285); line(ctx, 805, 259 + index * 78, 1087, 259 + index * 78); });
-  text(ctx, language === "zh" ? "PDF / 中文" : "CHINESE PDF", 805, 533, 16, palette.muted, 280);
+  text(ctx, "ZH / EN PDF", 805, 533, 16, palette.muted, 280);
 }
 function photoArt(ctx) {
   coverImage(ctx, stillLife, 730, 0, 470, height);
