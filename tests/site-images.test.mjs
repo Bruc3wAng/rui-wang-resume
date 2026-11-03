@@ -3,10 +3,11 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 const root = new URL("../", import.meta.url);
+const sitesBuild = process.env.RUI_SITES_BUILD_DIR ?? "dist/client";
 
 for (const [build, prefix] of [
   ["out", "/rui-wang-resume"],
-  ["dist/client", ""],
+  [sitesBuild, ""],
 ]) {
   test(`${build} serves the portrait directly in both languages`, async () => {
     for (const page of ["index.html", "en/index.html"]) {

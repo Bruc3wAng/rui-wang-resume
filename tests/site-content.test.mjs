@@ -6,6 +6,7 @@ import test from "node:test";
 import { resumeDocuments, resumeHref, resumePreviewHref } from "../content/resume-documents.ts";
 
 const root = new URL("../", import.meta.url);
+const sitesBuild = process.env.RUI_SITES_BUILD_DIR ?? "dist/client";
 
 test("exports the bilingual public profile", async () => {
   const [zh, en] = await Promise.all([
@@ -97,7 +98,7 @@ test("keeps the public atlas separate from the research-data prototype", async (
   assert.match(JSON.stringify(projects[0]), /SQLite/);
   assert.match(aiPractice[2].context.zh, /个人研究产品原型/);
   assert.doesNotMatch(JSON.stringify(aiPractice[2]), /WDI|World Bank|overseas\//);
-  for (const file of ["app/overseas/page.tsx", "app/en/overseas/page.tsx"]) await access(new URL(file, root));
+  for (const file of ["app/(zh)/overseas/page.tsx", "app/en/overseas/page.tsx"]) await access(new URL(file, root));
 });
 
 test("links each language to the available public Atlas on both hosting targets", async () => {
@@ -110,23 +111,24 @@ test("links each language to the available public Atlas on both hosting targets"
     const link = exported.match(/<a\b[^>]*class="pf-atlas-feature"[^>]*href="([^"]+)"/);
     assert.equal(link?.[1], `${assetBase || canonical}${suffix}`);
     if (process.env.NEXT_PUBLIC_BASE_PATH) {
-      const sites = await readFile(new URL(`dist/client/${locale}index.html`, root), "utf8");
+      const sites = await readFile(new URL(`${sitesBuild}/${locale}index.html`, root), "utf8");
       const sitesLink = sites.match(/<a\b[^>]*class="pf-atlas-feature"[^>]*href="([^"]+)"/);
       assert.equal(sitesLink?.[1], `${canonical}${suffix}`);
     }
   }
 });
 
-test("declares the correct content language and updates the document on locale navigation", async () => {
-  for (const component of ["app/Portfolio.tsx", "app/OverseasAtlas.tsx"]) {
+test("declares document and content languages in initial HTML without client-side repair", async () => {
+  for (const component of ["app/Portfolio.tsx", "app/OverseasAtlas.tsx", "app/ProjectExhibit.tsx"]) {
     const source = await readFile(new URL(component, root), "utf8");
-    assert.match(source, /document\.documentElement\.lang\s*=\s*language\s*===\s*"zh"\s*\?\s*"zh-CN"\s*:\s*"en"/);
+    assert.doesNotMatch(source, /document\.documentElement\.lang\s*=/);
   }
-  const targets = process.env.NEXT_PUBLIC_BASE_PATH ? ["out", "dist/client"] : ["out"];
+  const targets = process.env.NEXT_PUBLIC_BASE_PATH ? ["out", sitesBuild] : ["out"];
   for (const target of targets) {
     for (const locale of ["", "en/"]) {
       for (const page of ["", "overseas/"]) {
         const html = await readFile(new URL(`${target}/${locale}${page}index.html`, root), "utf8");
+        assert.match(html.match(/<html\b[^>]*>/)?.[0] ?? "", new RegExp(`\\blang="${locale ? "en" : "zh-CN"}"`));
         const contentRoot = html.match(/<(?:main|div)\b[^>]*class="[^"]*\b(?:portfolio-v17|market-atlas)\b[^"]*"[^>]*>/)?.[0];
         assert.ok(contentRoot, `${target}/${locale}${page} has a language-scoped content root`);
         assert.match(contentRoot, new RegExp(`\\blang="${locale ? "en" : "zh-CN"}"`));
@@ -228,7 +230,7 @@ test("keeps Chinese and English PDF selection bound to versioned release metadat
 });
 
 test("ships both validated PDF files and defaults each page to its own language", async () => {
-  const builds = process.env.NEXT_PUBLIC_BASE_PATH ? ["out", "dist/client"] : ["out"];
+  const builds = process.env.NEXT_PUBLIC_BASE_PATH ? ["out", sitesBuild] : ["out"];
   const attrs = tag => Object.fromEntries([...tag.matchAll(/([\w-]+)="([^"]*)"/g)].map(([, key, value]) => [key, value.replace(/&amp;/g, "&")]));
   for (const build of builds) {
     for (const language of ["zh", "en"]) {
@@ -262,7 +264,7 @@ test("ships both validated PDF files and defaults each page to its own language"
 test("ships source-bound high-resolution previews without requiring a PDF plug-in", async () => {
   const require = createRequire(import.meta.url);
   const sharp = createRequire(require.resolve("next/package.json"))("sharp");
-  const builds = process.env.NEXT_PUBLIC_BASE_PATH ? ["out", "dist/client"] : ["out"];
+  const builds = process.env.NEXT_PUBLIC_BASE_PATH ? ["out", sitesBuild] : ["out"];
   for (const language of ["zh", "en"]) {
     const document = resumeDocuments[language], preview = document.preview;
     const bytes = await readFile(new URL("public" + preview.path, root));
@@ -303,7 +305,7 @@ test("keeps current research and download content synchronized in the Sites buil
   // The GitHub workflow builds only out; release verification builds both targets.
   if (!process.env.NEXT_PUBLIC_BASE_PATH) return t.skip("Sites output is checked in local release verification");
   const release = JSON.parse(await readFile(new URL("content/resume-release.json", root), "utf8"));
-  for (const path of ["dist/client/index.html", "dist/client/en/index.html"]) {
+  for (const path of [`${sitesBuild}/index.html`, `${sitesBuild}/en/index.html`]) {
     const html = await readFile(new URL(path, root), "utf8");
     assert.match(html, /Research Executive/);
     assert.match(html, /Blender/);
@@ -315,7 +317,7 @@ test("keeps current research and download content synchronized in the Sites buil
     assert.ok(html.indexOf('id="work"') < html.indexOf('id="method"'));
     assert.ok(html.indexOf('id="method"') < html.indexOf('id="projects"'));
   }
-  const pdf = await readFile(new URL("dist/client/resume/rui-wang-resume-zh.pdf", root));
+  const pdf = await readFile(new URL(`${sitesBuild}/resume/rui-wang-resume-zh.pdf`, root));
   assert.equal(createHash("sha256").update(pdf).digest("hex"), release.pdfSha256);
 });
 
@@ -463,7 +465,7 @@ test("offers a real research-network material while preserving focal view and da
     assert.equal(routes.data[start+3],0);assert.equal(routes.data[end+3],1);
     for(let i=start;i<end;i+=8)assert.ok(routes.data[i+3]<=routes.data[i+11]);
   }
-  for(const target of process.env.NEXT_PUBLIC_BASE_PATH?["out","dist/client"]:["out"]){
+  for(const target of process.env.NEXT_PUBLIC_BASE_PATH?["out",sitesBuild]:["out"]){
     assert.deepEqual(await readFile(new URL(`${target}/images/earth-night-2016.jpg`,root)),await readFile(new URL("public/images/earth-night-2016.jpg",root)));
     for(const locale of ["","en/"]){const html=await readFile(new URL(`${target}/${locale}index.html`,root),"utf8");assert.match(html,/data-style="earth"/);assert.match(html,/Research network|研究网络/);}
   }
@@ -486,7 +488,7 @@ test("provides a real China Earth image before the interactive view is ready", a
   assert.match(source,/function lost\(e: Event\) \{ e\.preventDefault\(\); fail\(\); \}/);
   assert.match(css,/rg-globe\[data-renderer=webgl\] \.rg-earth-poster\{opacity:0\}/);
   assert.doesNotMatch(source+css,/rg-earth-placeholder/);
-  for(const target of process.env.NEXT_PUBLIC_BASE_PATH?["out","dist/client"]:["out"]){
+  for(const target of process.env.NEXT_PUBLIC_BASE_PATH?["out",sitesBuild]:["out"]){
     assert.deepEqual(await readFile(new URL(`${target}/images/earth-china-poster.webp`,root)),poster);
     for(const locale of ["","en/"]){
       const html=await readFile(new URL(`${target}/${locale}index.html`,root),"utf8");
@@ -512,7 +514,7 @@ test("research examples compute different findings from changed criteria", async
 });
 
 test("ships six bilingual product routes without importing personal-home state", async () => {
-  const targets=process.env.NEXT_PUBLIC_BASE_PATH?["out","dist/client"]:["out"];
+  const targets=process.env.NEXT_PUBLIC_BASE_PATH?["out",sitesBuild]:["out"];
   for(const target of targets)for(const locale of ["","en/"])for(const slug of ["resume","photo-workbench","dinner-notes"]){
     const html=await readFile(new URL(`${target}/${locale}projects/${slug}/index.html`,root),"utf8");
     assert.match(html,new RegExp(`lang="${locale?"en":"zh-CN"}"`));

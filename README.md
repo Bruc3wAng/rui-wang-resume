@@ -47,6 +47,9 @@ without relying on a runtime image-optimization endpoint.
 - Chinese résumé download: `public/resume/rui-wang-resume-zh.pdf`
 - English résumé download: `public/resume/rui-wang-resume-en.pdf`
 - Résumé pages default to the current interface language and offer a Chinese/English document switch. The reader uses lossless page previews rendered from the released PDFs, with zoom, direct PDF access and downloads; it does not require an embedded PDF plug-in. Regenerate previews with `RUI_PDFTOPPM=/path/to/pdftoppm node scripts/build_resume_previews.mjs` and record the returned source-PDF/image hashes in `content/resume-release.json`.
+- Chinese routes use `app/(zh)/layout.tsx`; English routes use `app/en/layout.tsx`. Both are server-rendered document roots with fixed, correct `lang` values. Route groups do not change the public URLs. Keep shared metadata and viewport settings in `content/document-metadata.ts`; do not restore a Chinese-only top-level layout or repair document language after hydration.
+- Atlas language navigation retains its selected country, indicator, year and topic in the destination URL. The same selection is restored by the destination page; language-link `lang` and `hreflang` identify the target language.
+- When the Sites export is built in a separate checkout, set `RUI_SITES_BUILD_DIR` to that checkout's absolute `dist/client` path for release tests. This checks the actual current export rather than a stale copy left in this checkout.
 - Résumé release and file checksum: `content/resume-release.json`
 - Portrait: `public/images/rui-wang-portrait.jpg`
 - Localized share copy: `content/social-cards.ts`; image paths and hashes: `content/social-images.json`

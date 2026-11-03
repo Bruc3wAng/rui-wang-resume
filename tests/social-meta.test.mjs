@@ -9,7 +9,8 @@ import { siteUrl } from "../content/site.ts";
 const root = new URL("../", import.meta.url), require = createRequire(import.meta.url);
 const sharp = createRequire(require.resolve("next/package.json"))("sharp");
 const images = JSON.parse(await readFile(new URL("content/social-images.json", root), "utf8"));
-const builds = process.env.NEXT_PUBLIC_BASE_PATH ? ["out", "dist/client"] : ["out"];
+const sitesBuild = process.env.RUI_SITES_BUILD_DIR ?? "dist/client";
+const builds = process.env.NEXT_PUBLIC_BASE_PATH ? ["out", sitesBuild] : ["out"];
 const decode = value => value.replace(/&(?:amp|quot|apos|lt|gt);|&#(?:x[\da-f]+|\d+);/gi, match => {
   const named = { "&amp;": "&", "&quot;": '"', "&apos;": "'", "&lt;": "<", "&gt;": ">" };
   return named[match] ?? String.fromCodePoint(match[2].toLowerCase() === "x" ? parseInt(match.slice(3, -1), 16) : parseInt(match.slice(2, -1), 10));
@@ -64,6 +65,34 @@ test("keeps share copy factual, language-specific and free of internal productio
 });
 
 for (const build of builds) for (const [key, card] of Object.entries(socialCards)) {
+  test(`${build}: ${key} declares the initial document language before scripts run`, async () => {
+    const html = await readFile(new URL(`${build}${card.route}index.html`, root), "utf8");
+    const documents = tags(html, "html");
+    assert.equal(documents.length, 1, `${key}: exactly one document root`);
+    assert.equal(documents[0].lang, card.language === "zh" ? "zh-CN" : "en", `${key}: initial HTML language`);
+    assert.equal((html.match(/<body\b/g) ?? []).length, 1, `${key}: exactly one body`);
+    assert.equal((html.match(/<\/html>/g) ?? []).length, 1, `${key}: exactly one closing document root`);
+  });
+
+  test(`${build}: ${key} has language-scoped navigation without changing public routes`, async () => {
+    const html = await readFile(new URL(`${build}${card.route}index.html`, root), "utf8");
+    const navigation = tags(html, "a").filter(tag => tag.hreflang);
+    assert.equal(navigation.length, card.kind === "profile" ? 2 : 1);
+    for (const link of navigation) {
+      assert.equal(link.lang, link.hreflang);
+      assert.equal(link["aria-label"], link.lang === "en" ? "English" : "中文");
+      const alternateLanguage = link.lang === "en" ? "en" : "zh";
+      const target = socialCards[`${card.kind}-${alternateLanguage}`];
+      const url = new URL(link.href, "https://portfolio.test");
+      assert.ok(url.pathname.endsWith(target.route), `${key}: matching language route`);
+      if (card.kind === "atlas") {
+        assert.deepEqual(Object.fromEntries(url.searchParams), {
+          country: "USA", metric: "SP.POP.TOTL", year: "2024", topic: "all",
+        });
+      }
+    }
+  });
+
   test(`${build}: ${key} has complete page-specific Open Graph and Twitter metadata`, async () => {
     const html = await readFile(new URL(`${build}${card.route}index.html`, root), "utf8");
     const head = html.match(/<head\b[^>]*>([\s\S]*?)<\/head>/)?.[1];

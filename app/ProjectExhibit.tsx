@@ -17,10 +17,9 @@ function saveText(text:string,name:string){const url=URL.createObjectURL(new Blo
 
 export default function ProjectExhibit({kind,language}:{kind:Kind;language:Language}){
   const l=(zh:string,en:string)=>language==="zh"?zh:en;
-  useEffect(()=>{document.documentElement.lang=language==="zh"?"zh-CN":"en";},[language]);
   return <main className={`exhibit exhibit-${kind}`} lang={language==="zh"?"zh-CN":"en"}>
     <ShareLocale language={language}/>
-    <header className="exhibit-header"><a href={`${base}${language==="en"?"/en":""}/#projects`} className="exhibit-back">← {l("返回作品集","Back to portfolio")}</a><span>{title[kind][language]}</span><a className="exhibit-language" href={`${base}${language==="zh"?"/en":""}/projects/${slugs[kind]}/`}>{language==="zh"?"EN":"中文"}</a></header>
+    <header className="exhibit-header"><a href={`${base}${language==="en"?"/en":""}/#projects`} className="exhibit-back">← {l("返回作品集","Back to portfolio")}</a><span>{title[kind][language]}</span><a className="exhibit-language" href={`${base}${language==="zh"?"/en":""}/projects/${slugs[kind]}/`} hrefLang={language==="zh"?"en":"zh-CN"} lang={language==="zh"?"en":"zh-CN"} aria-label={l("English","中文")}>{language==="zh"?"EN":"中文"}</a></header>
     {kind==="resume"?<ResumeCollection key={language} language={language}/>:kind==="photo"?<PhotoWorkbench language={language}/>:<DinnerNotes language={language}/>}
     <footer className="exhibit-footer"><a href={`${base}${language==="en"?"/en":""}/#projects`}>RUI WANG / SELECTED PROJECTS</a><span>{l("设计与 AI 辅助实现","DESIGN & AI-ASSISTED DEVELOPMENT")}</span></footer>
   </main>;

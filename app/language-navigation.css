@@ -1,0 +1,14 @@
+.portfolio-v17 .pf-header-tools > :is(a, button),
+.exhibit .exhibit-language,
+.market-atlas .atlas-language {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 600px) {
+  .portfolio-v17 .pf-header-tools { gap: 4px; }
+}

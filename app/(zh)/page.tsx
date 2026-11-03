@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { Portfolio } from "./Portfolio";
-import { socialMeta } from "../content/social-meta";
+import { Portfolio } from "../Portfolio";
+import { socialMeta } from "../../content/social-meta";
 
 export const metadata: Metadata = socialMeta("profile-zh");
 
