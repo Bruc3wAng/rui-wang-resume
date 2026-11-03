@@ -311,7 +311,7 @@ test("renders a genuinely rotatable globe with a China-centered default", async 
   assert.match(source,/ArrowLeft.*ArrowRight.*ArrowUp.*ArrowDown.*Home/);
   assert.match(source,/choose\("US",-98,37\)/);
   assert.doesNotMatch(source,/research-globe\.png|torus|ringGeometry/);
-  assert.match(source,/pow\(natural/);
+  assert.match(source,/earthFragment.*earthMaterial.*earthVertex/);
   assert.match(source,/item\.markets\.includes\(selected\)/);
   for(const locale of ["","en/"]){const html=await readFile(new URL(`out/${locale}index.html`,root),"utf8");assert.match(html,/data-view="CN"/);assert.match(html,/class="rg-globe-canvas"/);assert.match(html,/lenovo-horizontal.png/);assert.match(html,/uoft-signature.webp/);assert.match(html,/Exhibition-sector acquisition research|展会企业并购前期研究/);}
 });
@@ -332,10 +332,35 @@ test("projects geographic nodes correctly and keeps connections on the globe", a
   const globe=globeMesh(),network=networkMesh();
   assert.equal(globe.length%8,0);assert.equal(network.data.length/8,network.lines+network.points);
   assert.equal(network.points,9);assert.ok(network.data.every(Number.isFinite));
-  for(let i=0;i<network.data.length;i+=8){const r=Math.hypot(...network.data.slice(i,i+3));assert.ok(r>1&&r<1.12);}
+  for(let i=0;i<network.data.length;i+=8){const r=Math.hypot(...network.data.slice(i,i+3));assert.ok(r>1&&r<1.041);}
+});
+
+test("separates cloud height, cloud shadows and a thin atmospheric shell without decorative rings", async () => {
+  const {earthMaterial,earthFragment,intersectShell,shadeEarth,shadeAtmosphere}=await import("../app/earth-material.ts");
+  const {globeMesh,spherePoint}=await import("../app/globe-geometry.ts");
+  assert.ok(earthMaterial.cloudRadius>1&&earthMaterial.cloudRadius<1.01);
+  assert.ok(earthMaterial.atmosphereRadius>earthMaterial.cloudRadius&&earthMaterial.atmosphereRadius<1.025);
+  const shell=intersectShell([0,0,1],[0,0,1],earthMaterial.cloudRadius);
+  assert.ok(Math.abs(Math.hypot(...shell)-earthMaterial.cloudRadius)<1e-12);
+  const shellSide=intersectShell([0,0,1],[.6,0,.8],earthMaterial.cloudRadius);
+  assert.ok(shellSide[0]>0);assert.ok(Math.abs(Math.hypot(...shellSide)-earthMaterial.cloudRadius)<1e-12);
+  const atmosphereMesh=globeMesh(3,earthMaterial.atmosphereRadius);
+  for(let i=0;i<atmosphereMesh.length;i+=8){assert.equal(atmosphereMesh[i+6],3);assert.ok(Math.abs(Math.hypot(...atmosphereMesh.slice(i,i+3))-earthMaterial.atmosphereRadius)<1e-6);}
+  assert.ok(Math.abs(spherePoint(0,0,earthMaterial.atmosphereRadius)[2]-earthMaterial.atmosphereRadius)<1e-12);
+  const clear=shadeEarth([0,0,1],()=>[.16,.32,.15],()=>[0,0,0]);
+  const overcast=shadeEarth([0,0,1],()=>[.16,.32,.15],()=>[1,1,1]);
+  assert.ok(overcast.every((v,i)=>v>clear[i]));
+  assert.ok([...clear,...overcast,...shadeAtmosphere([0,0,earthMaterial.atmosphereRadius])].every(v=>Number.isFinite(v)&&v>=0&&v<=1));
+  assert.match(earthFragment,/cloudAt\(shellPoint\(n,light\)\)/);
+  assert.match(earthFragment,/cloudPoint=shellPoint\(n,v\)/);
+  assert.match(earthFragment,/if\(picked<\.5\)discard/);
+  assert.doesNotMatch(earthFragment,/torus|saturn|ringGeometry/i);
+  const ui=await readFile(new URL("app/InteractiveGlobe.tsx",root),"utf8");
+  assert.match(ui,/1200 \/ Math\.max/);assert.match(ui,/LINEAR_MIPMAP_LINEAR/);
 });
 
 test("provides a real China Earth image before the interactive view is ready", async () => {
+  const {earthPosterRevision}=await import("../app/earth-material.ts");
   const [source,css,poster]=await Promise.all([
     readFile(new URL("app/InteractiveGlobe.tsx",root),"utf8"),
     readFile(new URL("app/portfolio-refinement.css",root),"utf8"),
@@ -343,6 +368,7 @@ test("provides a real China Earth image before the interactive view is ready", a
   ]);
   assert.equal(poster.toString("ascii",0,4),"RIFF");assert.equal(poster.toString("ascii",8,12),"WEBP");
   assert.ok(poster.byteLength>15000&&poster.byteLength<120000);
+  assert.equal(createHash("sha256").update(poster).digest("hex").slice(0,12),earthPosterRevision);
   assert.match(source,/className="rg-earth-poster"/);assert.match(source,/earth-china-poster\.webp/);
   assert.match(source,/!surfaceReady \|\| !cloudsReady/);
   assert.match(source,/painted = true; setRenderer\("webgl"\)/);
@@ -355,6 +381,7 @@ test("provides a real China Earth image before the interactive view is ready", a
     for(const locale of ["","en/"]){
       const html=await readFile(new URL(`${target}/${locale}index.html`,root),"utf8");
       assert.match(html,/earth-china-poster\.webp/);assert.match(html,/PREPARING INTERACTIVE VIEW|正在准备地球交互/);
+      assert.ok(html.includes("earth-china-poster.webp?v="+earthPosterRevision));
     }
   }
 });

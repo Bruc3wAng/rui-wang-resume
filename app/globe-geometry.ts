@@ -10,9 +10,9 @@ export const researchMarkets = [
 ];
 const radians = Math.PI / 180;
 // Same camera and projection as the WebGL view; used to bake its first-paint image.
-export function spherePoint(clipX: number, clipY: number) {
+export function spherePoint(clipX: number, clipY: number, radius = 1) {
   const scale = 4.2 / 1.12, dx = clipX / scale, dy = clipY / scale;
-  const a = dx * dx + dy * dy + 1, discriminant = 4.6 * 4.6 - a * (4.6 * 4.6 - 1);
+  const a = dx * dx + dy * dy + 1, discriminant = 4.6 * 4.6 - a * (4.6 * 4.6 - radius * radius);
   if (discriminant < 0) return null;
   const distance = (4.6 - Math.sqrt(discriminant)) / a;
   return [distance * dx, distance * dy, 4.6 - distance];
@@ -33,12 +33,12 @@ export function projectPoint(lon: number, lat: number, centerLon: number, center
   const depth = 4.6 - vz * 1.015, scale = 4.2 / 1.12;
   return { x: .5 + qx * 1.015 * scale / aspect / depth / 2, y: .5 - vy * 1.015 * scale / depth / 2, visible: vz > .27 };
 }
-export function globeMesh() {
-  const data: number[] = [], columns = 96, rows = 64;
+export function globeMesh(material = 0, radius = 1) {
+  const data: number[] = [], columns = 128, rows = 96;
   function point(u: number, v: number) { const t = v * Math.PI, a = u * Math.PI * 2; return [Math.sin(t) * Math.cos(a), Math.cos(t), Math.sin(t) * Math.sin(a)]; }
   for (let y = 0; y < rows; y++) for (let x = 0; x < columns; x++) {
     const p = [point(x / columns, y / rows), point((x + 1) / columns, y / rows), point(x / columns, (y + 1) / rows), point((x + 1) / columns, (y + 1) / rows)];
-    for (const i of [0, 1, 2, 2, 1, 3]) data.push(...p[i], ...p[i], 0, -1);
+    for (const i of [0, 1, 2, 2, 1, 3]) data.push(...p[i].map(value => value * radius), ...p[i], material, -1);
   }
   return new Float32Array(data);
 }
@@ -46,7 +46,7 @@ export function networkMesh() {
   const data: number[] = [], hub = worldPoint(116.4, 39.9), segments = 48;
   researchMarkets.forEach((place, market) => {
     const end = worldPoint(place.lon, place.lat), angle = Math.acos(Math.min(1, Math.max(-1, hub.reduce((sum, v, i) => sum + v * end[i], 0))));
-    function arc(t: number) { const r = 1.015 + .10 * Math.sin(Math.PI * t), divisor = Math.sin(angle); return hub.map((v, i) => r * (v * Math.sin((1 - t) * angle) + end[i] * Math.sin(t * angle)) / divisor); }
+    function arc(t: number) { const r = 1.015 + .025 * Math.sin(Math.PI * t), divisor = Math.sin(angle); return hub.map((v, i) => r * (v * Math.sin((1 - t) * angle) + end[i] * Math.sin(t * angle)) / divisor); }
     for (let i = 0; i < segments; i++) for (const t of [i / segments, (i + 1) / segments]) data.push(...arc(t), 0, 0, 0, 1, market);
   });
   const lines = data.length / 8;
