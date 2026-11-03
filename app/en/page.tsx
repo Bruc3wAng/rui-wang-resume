@@ -1,27 +1,8 @@
 import type { Metadata } from "next";
-import { siteUrl } from "../../content/site";
+import { socialMeta } from "../../content/social-meta";
 import { Portfolio } from "../Portfolio";
 
-export const metadata: Metadata = {
-  title: { absolute: "Rui Wang — Market & User Research" },
-  description:
-    "Research Executive at Ipsos serving ByteDance and Lenovo. Quantitative research, multi-market insights, AI-assisted workflows, and research-data prototypes.",
-  alternates: {
-    canonical: `${siteUrl}/en/`,
-    languages: {
-      "zh-CN": `${siteUrl}/`,
-      en: `${siteUrl}/en/`,
-    },
-  },
-  openGraph: {
-    locale: "en_US",
-    alternateLocale: "zh_CN",
-    url: `${siteUrl}/en/`,
-    title: "Rui Wang — Market & User Research",
-    description:
-      "Research Executive at Ipsos. Quantitative research, multi-market insights, AI-assisted workflows, and research-data prototypes.",
-  },
-};
+export const metadata: Metadata = socialMeta("profile-en");
 
 export default function EnglishProfile() {
   return <Portfolio language="en" />;

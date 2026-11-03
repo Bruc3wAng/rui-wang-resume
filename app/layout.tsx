@@ -1,9 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import { siteUrl } from "../content/site";
+import { socialMeta } from "../content/social-meta";
 import "./globals.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
+  ...socialMeta("profile-zh"),
   title: {
     default: "王睿 — 市场研究与数据分析",
     template: "%s — Rui Wang",
@@ -34,31 +36,6 @@ export const metadata: Metadata = {
   icons: {
     icon: `${siteUrl}/favicon.svg`,
     shortcut: `${siteUrl}/favicon.svg`,
-  },
-  openGraph: {
-    type: "profile",
-    locale: "zh_CN",
-    alternateLocale: "en_US",
-    url: `${siteUrl}/`,
-    siteName: "Rui Wang — Research Portfolio",
-    title: "王睿 — 市场研究与数据分析",
-    description:
-      "Research Executive at Ipsos. Quantitative research, multi-market insights, AI-assisted workflows, and research-data products.",
-    images: [
-      {
-        url: `${siteUrl}/social-preview.png`,
-        width: 1200,
-        height: 630,
-        alt: "Rui Wang — Market & User Research",
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "王睿 — 市场研究与数据分析",
-    description:
-      "Research Executive at Ipsos. Quantitative research, analytics, and human-AI workflows.",
-    images: [`${siteUrl}/social-preview.png`],
   },
 };
 

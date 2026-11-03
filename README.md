@@ -47,7 +47,9 @@ without relying on a runtime image-optimization endpoint.
 - Chinese résumé download: `public/resume/rui-wang-resume-zh.pdf`
 - Résumé release and file checksum: `content/resume-release.json`
 - Portrait: `public/images/rui-wang-portrait.jpg`
-- Social preview source and build script: `work/social-preview-generated.png` and `scripts/build_social_preview.py`
+- Localized share copy: `content/social-cards.ts`; image paths and hashes: `content/social-images.json`
+- Social-card builder: `scripts/build_social_preview.mjs` (Node 24, local `@napi-rs/canvas` and the existing Sharp dependency). Set `RUI_FONT_HAN`, `RUI_FONT_LATIN` and `RUI_FONT_LATIN_BOLD` to licensed Microsoft YaHei and Arial files; `RUI_GRAPHICS_MODULES` can point to an existing graphics runtime. Font binaries stay local. The builder prints the manifest and font audit; review them before updating the checked-in manifest. `scripts/build_social_preview.py` forwards to this builder.
+- Cards have content-hashed image URLs for each language and page. `public/social-preview.png` is a Chinese-profile compatibility alias; public metadata uses the localized files.
 
 The verified master résumé data remains in the parent project’s `resume-library/resume_master.json`. New facts should be verified there before the bilingual public copy is updated.
 

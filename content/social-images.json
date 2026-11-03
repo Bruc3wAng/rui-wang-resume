@@ -1,0 +1,72 @@
+{
+  "profile-zh": {
+    "path": "/social/profile-zh-72ba4b6a9503.png",
+    "sha256": "72ba4b6a9503454cb9fb890687449ca53d3d010ec1aa19247aca6346519da028",
+    "width": 1200,
+    "height": 630,
+    "bytes": 577787
+  },
+  "profile-en": {
+    "path": "/social/profile-en-e86c6148ccdc.png",
+    "sha256": "e86c6148ccdc18b2c4750c33d3c6fd944c9a4dd683b3c644d9c4cd5f422fb9bf",
+    "width": 1200,
+    "height": 630,
+    "bytes": 585047
+  },
+  "resume-zh": {
+    "path": "/social/resume-zh-723c074215cf.png",
+    "sha256": "723c074215cfcaf27589eef17093bf20dce7519e605857c001d0d27c10103fc1",
+    "width": 1200,
+    "height": 630,
+    "bytes": 58015
+  },
+  "resume-en": {
+    "path": "/social/resume-en-68fbf90ddad6.png",
+    "sha256": "68fbf90ddad6a35b980e84ebaebd1336c6b3a93c5f4cd7fa2d82b4eea3132d99",
+    "width": 1200,
+    "height": 630,
+    "bytes": 51689
+  },
+  "photo-workbench-zh": {
+    "path": "/social/photo-workbench-zh-db78c5bf22bc.png",
+    "sha256": "db78c5bf22bc81567a0e515130c2f050bf6b6187a74cce47811cf0e26f784368",
+    "width": 1200,
+    "height": 630,
+    "bytes": 306257
+  },
+  "photo-workbench-en": {
+    "path": "/social/photo-workbench-en-71f465a9a0d2.png",
+    "sha256": "71f465a9a0d28a327696bd16ee07807bc789f47f03fe1e1c9dece958c02b2710",
+    "width": 1200,
+    "height": 630,
+    "bytes": 311364
+  },
+  "dinner-notes-zh": {
+    "path": "/social/dinner-notes-zh-782f28c96f22.png",
+    "sha256": "782f28c96f22c0544401095b8b6d0d1d2f0080a5fade1b13b853b860486deac9",
+    "width": 1200,
+    "height": 630,
+    "bytes": 71044
+  },
+  "dinner-notes-en": {
+    "path": "/social/dinner-notes-en-79cf28a81c9e.png",
+    "sha256": "79cf28a81c9e0fc0aff914c64fe13a7a21d5a8495eb0b6ec220ed350671bfb15",
+    "width": 1200,
+    "height": 630,
+    "bytes": 52749
+  },
+  "atlas-zh": {
+    "path": "/social/atlas-zh-02f9fd6e8767.png",
+    "sha256": "02f9fd6e8767dc5d84c257549766e7662f02ce3b00dcc94afc8b465463e42415",
+    "width": 1200,
+    "height": 630,
+    "bytes": 394021
+  },
+  "atlas-en": {
+    "path": "/social/atlas-en-8c640298bb4f.png",
+    "sha256": "8c640298bb4f926df868968e2a1c186df0a994a49e9340dcf05b0987f2a1bd5e",
+    "width": 1200,
+    "height": 630,
+    "bytes": 384399
+  }
+}

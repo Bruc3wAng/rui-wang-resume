@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type ChangeEvent, type PointerEvent } from "react";
 import Image from "next/image";
+import ShareLocale from "./ShareLocale";
 import { profile, experiences, education, type Language } from "../content/resume";
 import release from "../content/resume-release.json";
 import { dinnerPlaces, type DinnerPlace } from "../content/portfolio-exhibits";
@@ -17,6 +18,7 @@ export default function ProjectExhibit({kind,language}:{kind:Kind;language:Langu
   const l=(zh:string,en:string)=>language==="zh"?zh:en;
   useEffect(()=>{document.documentElement.lang=language==="zh"?"zh-CN":"en";},[language]);
   return <main className={`exhibit exhibit-${kind}`} lang={language==="zh"?"zh-CN":"en"}>
+    <ShareLocale language={language}/>
     <header className="exhibit-header"><a href={`${base}${language==="en"?"/en":""}/#projects`} className="exhibit-back">← {l("返回作品集","Back to portfolio")}</a><span>{title[kind][language]}</span><a className="exhibit-language" href={`${base}${language==="zh"?"/en":""}/projects/${slugs[kind]}/`}>{language==="zh"?"EN":"中文"}</a></header>
     {kind==="resume"?<ResumeCollection language={language}/>:kind==="photo"?<PhotoWorkbench language={language}/>:<DinnerNotes language={language}/>}
     <footer className="exhibit-footer"><a href={`${base}${language==="en"?"/en":""}/#projects`}>RUI WANG / SELECTED PROJECTS</a><span>{l("设计与 AI 辅助实现","DESIGN & AI-ASSISTED DEVELOPMENT")}</span></footer>
