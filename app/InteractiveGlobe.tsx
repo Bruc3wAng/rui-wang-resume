@@ -62,7 +62,7 @@ export default function InteractiveGlobe({ language, paused, onExplore }: { lang
     gl.uniform1i(gl.getUniformLocation(program, "earth"), 0);
     const cloudTexture = gl.createTexture(); gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, cloudTexture); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0]));
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE); gl.uniform1i(gl.getUniformLocation(program, "clouds"), 1);
-    let frame = 0, alive = true, visible = true, loaded = false, pointer = -1, lastX = 0, lastY = 0;
+    let frame = 0, alive = true, visible = true, loaded = false, surfaceReady = false, cloudsReady = false, painted = false, failed = false, pointer = -1, lastX = 0, lastY = 0;
     const current=[105,30], target=[105,30];
     const nodeLabels = labels.current?.querySelectorAll<HTMLElement>("[data-market]");
     function draw() {
@@ -71,6 +71,7 @@ export default function InteractiveGlobe({ language, paused, onExplore }: { lang
       gl!.viewport(0, 0, el!.width, el!.height); gl!.uniform2f(ur, el!.width, el!.height); gl!.uniform2f(uo, current[0] * Math.PI / 180, current[1] * Math.PI / 180); gl!.uniform1f(ua, active.current); gl!.clear(gl!.COLOR_BUFFER_BIT | gl!.DEPTH_BUFFER_BIT);
       gl!.drawArrays(gl!.TRIANGLES, 0, globe.length / 8);
       gl!.depthMask(false); gl!.drawArrays(gl!.LINES, globe.length / 8, network.lines); gl!.drawArrays(gl!.POINTS, globe.length / 8 + network.lines, network.points); gl!.depthMask(true);
+      if (!painted) { if (gl!.getError() !== gl!.NO_ERROR) { fail(); return; } painted = true; setRenderer("webgl"); }
       nodeLabels?.forEach((label, i) => {
         const p = projectPoint(researchMarkets[i].lon, researchMarkets[i].lat, current[0], current[1], el!.width / el!.height);
         label.hidden = !p.visible; label.style.left = `${p.x * 100}%`; label.style.top = `${p.y * 100}%`;
@@ -81,10 +82,12 @@ export default function InteractiveGlobe({ language, paused, onExplore }: { lang
     function wake() { if (!frame && alive) frame = requestAnimationFrame(draw); }
     focus.current = (lon, lat) => { target[0] = current[0] + (((lon - current[0]) % 360 + 540) % 360) - 180; target[1] = lat; wake(); };
     function resize() { const r = el!.getBoundingClientRect(), dpr = Math.min(devicePixelRatio, 1.25); el!.width = Math.round(r.width * dpr); el!.height = Math.round(r.height * dpr); wake(); }
+    function fail() { if (!alive) return; failed = true; loaded = false; cancelAnimationFrame(frame); frame = 0; focus.current = null; active.current = 8; setSelected("CN"); setRenderer("fallback"); }
+    function prepared() { if (!alive || failed || !surfaceReady || !cloudsReady) return; loaded = true; resize(); }
     const image = new window.Image();
-    image.onload = () => { if (!alive) return; gl!.activeTexture(gl!.TEXTURE0); gl!.bindTexture(gl!.TEXTURE_2D, texture); gl!.texImage2D(gl!.TEXTURE_2D, 0, gl!.RGB, gl!.RGB, gl!.UNSIGNED_BYTE, image); loaded = true; setRenderer("webgl"); resize(); };
-    image.onerror = () => { if (alive) setRenderer("fallback"); }; image.src = `${base}/images/earth-surface.jpg`;
-    const cloudImage = new window.Image(); cloudImage.onload = () => { if (!alive) return; gl!.activeTexture(gl!.TEXTURE1); gl!.bindTexture(gl!.TEXTURE_2D, cloudTexture); gl!.texImage2D(gl!.TEXTURE_2D, 0, gl!.RGB, gl!.RGB, gl!.UNSIGNED_BYTE, cloudImage); wake(); }; cloudImage.src = `${base}/images/earth-clouds.jpg`;
+    image.onload = () => { if (!alive || failed) return; gl!.activeTexture(gl!.TEXTURE0); gl!.bindTexture(gl!.TEXTURE_2D, texture); gl!.texImage2D(gl!.TEXTURE_2D, 0, gl!.RGB, gl!.RGB, gl!.UNSIGNED_BYTE, image); surfaceReady = true; prepared(); };
+    image.onerror = fail; image.src = `${base}/images/earth-surface.jpg`;
+    const cloudImage = new window.Image(); cloudImage.onload = () => { if (!alive || failed) return; gl!.activeTexture(gl!.TEXTURE1); gl!.bindTexture(gl!.TEXTURE_2D, cloudTexture); gl!.texImage2D(gl!.TEXTURE_2D, 0, gl!.RGB, gl!.RGB, gl!.UNSIGNED_BYTE, cloudImage); cloudsReady = true; prepared(); }; cloudImage.onerror = fail; cloudImage.src = `${base}/images/earth-clouds.jpg`;
     function down(e: globalThis.PointerEvent) { if (!loaded) return; pointer = e.pointerId; lastX = e.clientX; lastY = e.clientY; el!.setPointerCapture(pointer); el!.dataset.dragging = "true"; }
     function move(e: globalThis.PointerEvent) { if (e.pointerId !== pointer) return; target[0] -= (e.clientX - lastX) * .35; target[1] = Math.max(-65, Math.min(65, target[1] + (e.clientY - lastY) * .24)); lastX = e.clientX; lastY = e.clientY; active.current = -1; setSelected("FREE"); wake(); }
     function up(e: globalThis.PointerEvent) { if (e.pointerId !== pointer) return; if (el!.hasPointerCapture(pointer)) el!.releasePointerCapture(pointer); pointer = -1; el!.dataset.dragging = "false"; }
@@ -96,17 +99,17 @@ export default function InteractiveGlobe({ language, paused, onExplore }: { lang
     const resizeObserver = new ResizeObserver(resize); resizeObserver.observe(el);
     const observer = new IntersectionObserver(([e]) => { visible = e.isIntersecting; if (visible) wake(); else { cancelAnimationFrame(frame); frame = 0; } }, { rootMargin: "100px" }); observer.observe(el);
     function visibility() { if (document.hidden) { cancelAnimationFrame(frame); frame = 0; } else wake(); }
-    function lost(e: Event) { e.preventDefault(); loaded = false; cancelAnimationFrame(frame); setRenderer("fallback"); }
+    function lost(e: Event) { e.preventDefault(); fail(); }
     el.addEventListener("pointerdown", down); el.addEventListener("pointermove", move); el.addEventListener("pointerup", up); el.addEventListener("pointercancel", up); el.addEventListener("keydown", key); el.addEventListener("webglcontextlost", lost); document.addEventListener("visibilitychange", visibility);
-    return () => { alive = false; focus.current = null; image.onload = null; image.onerror = null; cloudImage.onload = null; cancelAnimationFrame(frame); resizeObserver.disconnect(); observer.disconnect(); el.removeEventListener("pointerdown", down); el.removeEventListener("pointermove", move); el.removeEventListener("pointerup", up); el.removeEventListener("pointercancel", up); el.removeEventListener("keydown", key); el.removeEventListener("webglcontextlost", lost); document.removeEventListener("visibilitychange", visibility); gl.deleteTexture(texture); gl.deleteTexture(cloudTexture); gl.deleteBuffer(buffer); gl.deleteProgram(program); gl.deleteShader(vs); gl.deleteShader(fs); };
+    return () => { alive = false; focus.current = null; image.onload = null; image.onerror = null; cloudImage.onload = null; cloudImage.onerror = null; cancelAnimationFrame(frame); resizeObserver.disconnect(); observer.disconnect(); el.removeEventListener("pointerdown", down); el.removeEventListener("pointermove", move); el.removeEventListener("pointerup", up); el.removeEventListener("pointercancel", up); el.removeEventListener("keydown", key); el.removeEventListener("webglcontextlost", lost); document.removeEventListener("visibilitychange", visibility); gl.deleteTexture(texture); gl.deleteTexture(cloudTexture); gl.deleteBuffer(buffer); gl.deleteProgram(program); gl.deleteShader(vs); gl.deleteShader(fs); };
   }, []);
   function choose(code: string, lon: number, lat: number) { active.current = code === "CN" ? 8 : researchMarkets.findIndex(p => p.code === code); setSelected(code); focus.current?.(lon, lat); }
   function keyboard(e: KeyboardEvent<HTMLDivElement>) { if (e.key === "Escape") { choose("CN", 105, 30); canvas.current?.focus(); } }
   return <div className="rg-globe" data-renderer={renderer} data-view={selected} onKeyDown={keyboard}>
-    <div className="rg-globe-stage"><div className="rg-globe-shadow"/><div className="rg-earth-placeholder" aria-hidden="true"/>
-      <canvas ref={canvas} className="rg-globe-canvas" tabIndex={renderer === "webgl" ? 0 : -1} role="img" aria-label={loc("可旋转地球。拖动改变视角，方向键旋转，Home返回中国。", "Interactive globe. Drag or use arrow keys to rotate. Home centers China.")} onDragStart={e => e.preventDefault()}/>
+    <div className="rg-globe-stage"><div className="rg-globe-shadow"/><Image className="rg-earth-poster" src={`${base}/images/earth-china-poster.webp`} width={768} height={768} alt={loc("中国视角的地球", "Earth centered on China")} aria-hidden={renderer === "webgl"} unoptimized priority draggable={false}/>
+      <canvas ref={canvas} className="rg-globe-canvas" tabIndex={renderer === "webgl" ? 0 : -1} role="img" aria-hidden={renderer !== "webgl"} aria-label={loc("可旋转地球。拖动改变视角，方向键旋转，Home返回中国。", "Interactive globe. Drag or use arrow keys to rotate. Home centers China.")} onDragStart={e => e.preventDefault()}/>
       <div className="rg-globe-nodes" ref={labels}>{researchMarkets.map(p => <button type="button" data-market={p.code} key={p.code} hidden disabled={renderer !== "webgl"} aria-label={loc(`选择${p.zh}研究市场`, `Select ${p.en} research market`)} aria-pressed={selected === p.code} onClick={() => choose(p.code, p.lon, p.lat)}><span>{p.code}</span></button>)}</div>
-      <span className="rg-globe-note">{renderer === "fallback" ? loc("当前浏览器暂不支持地球旋转", "Globe rotation is unavailable in this browser") : loc("拖动旋转 · 选择市场", "DRAG TO ROTATE · SELECT A MARKET")}</span>
+      <span className="rg-globe-note" role="status">{renderer === "fallback" ? loc("地球旋转暂不可用", "INTERACTIVE VIEW UNAVAILABLE") : renderer === "loading" ? loc("正在准备地球交互", "PREPARING INTERACTIVE VIEW") : loc("拖动旋转 · 选择市场", "DRAG TO ROTATE · SELECT A MARKET")}</span>
     </div>
     <div className="rg-globe-views" aria-label={loc("地球主体视角", "Globe focal view")}><button type="button" disabled={renderer !== "webgl"} aria-pressed={selected === "CN"} onClick={() => choose("CN", 105, 30)}>{loc("中国", "China")}<span>105°E</span></button><button type="button" disabled={renderer !== "webgl"} aria-pressed={selected === "US"} onClick={()=>choose("US",-98,37)}>{loc("美国", "United States")}<span>98°W</span></button><button type="button" className="rg-globe-reset" disabled={renderer !== "webgl"} onClick={() => choose("CN", 105, 30)} aria-label={loc("重置地球视角", "Reset globe view")}>↺</button></div>
     <div className="pf-market-controls" aria-label={loc("项目涉及的部分市场", "Selected research markets")}>{researchMarkets.map(p => <button type="button" key={p.code} disabled={renderer !== "webgl"} title={language === "zh" ? p.zh : p.en} aria-label={loc(`旋转至${p.zh}`, `Rotate to ${p.en}`)} aria-pressed={selected === p.code} onClick={() => choose(p.code, p.lon, p.lat)}><Image src={`${base}/images/flags/${p.flag}.svg`} alt="" width={28} height={21} unoptimized draggable={false}/><span>{p.code}</span></button>)}</div>

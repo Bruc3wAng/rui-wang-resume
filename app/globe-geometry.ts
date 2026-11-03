@@ -9,6 +9,19 @@ export const researchMarkets = [
   { code: "KR", flag: "kr", zh: "韩国", en: "South Korea", lon: 128, lat: 36 },
 ];
 const radians = Math.PI / 180;
+// Same camera and projection as the WebGL view; used to bake its first-paint image.
+export function spherePoint(clipX: number, clipY: number) {
+  const scale = 4.2 / 1.12, dx = clipX / scale, dy = clipY / scale;
+  const a = dx * dx + dy * dy + 1, discriminant = 4.6 * 4.6 - a * (4.6 * 4.6 - 1);
+  if (discriminant < 0) return null;
+  const distance = (4.6 - Math.sqrt(discriminant)) / a;
+  return [distance * dx, distance * dy, 4.6 - distance];
+}
+export function worldFromView(n: number[], lon: number, lat: number) {
+  const a = lat * radians, b = lon * radians;
+  const y = Math.cos(a) * n[1] + Math.sin(a) * n[2], z = -Math.sin(a) * n[1] + Math.cos(a) * n[2];
+  return [Math.cos(b) * n[0] + Math.sin(b) * z, y, -Math.sin(b) * n[0] + Math.cos(b) * z];
+}
 export function worldPoint(lon: number, lat: number) {
   const a = lon * radians, b = lat * radians;
   return [Math.sin(a) * Math.cos(b), Math.sin(b), Math.cos(a) * Math.cos(b)];

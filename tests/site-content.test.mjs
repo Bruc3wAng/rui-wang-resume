@@ -317,18 +317,46 @@ test("renders a genuinely rotatable globe with a China-centered default", async 
 });
 
 test("projects geographic nodes correctly and keeps connections on the globe", async () => {
-  const {worldPoint,projectPoint,globeMesh,networkMesh,researchMarkets}=await import("../app/globe-geometry.ts");
+  const {worldPoint,projectPoint,globeMesh,networkMesh,researchMarkets,spherePoint,worldFromView}=await import("../app/globe-geometry.ts");
+  assert.deepEqual(spherePoint(0,0),[0,0,1]);
+  assert.equal(spherePoint(1,1),null);
   for(const market of researchMarkets){
     const p=worldPoint(market.lon,market.lat);
     assert.ok(Math.abs(Math.hypot(...p)-1)<1e-10);
     const center=projectPoint(market.lon,market.lat,market.lon,market.lat,1.2);
     assert.ok(Math.abs(center.x-.5)<1e-10&&Math.abs(center.y-.5)<1e-10&&center.visible);
+    const posterCenter=worldFromView([0,0,1],market.lon,market.lat);
+    assert.ok(posterCenter.every((v,i)=>Math.abs(v-p[i])<1e-10));
   }
   assert.equal(projectPoint(-75,-30,105,30,1).visible,false);
   const globe=globeMesh(),network=networkMesh();
   assert.equal(globe.length%8,0);assert.equal(network.data.length/8,network.lines+network.points);
   assert.equal(network.points,9);assert.ok(network.data.every(Number.isFinite));
   for(let i=0;i<network.data.length;i+=8){const r=Math.hypot(...network.data.slice(i,i+3));assert.ok(r>1&&r<1.12);}
+});
+
+test("provides a real China Earth image before the interactive view is ready", async () => {
+  const [source,css,poster]=await Promise.all([
+    readFile(new URL("app/InteractiveGlobe.tsx",root),"utf8"),
+    readFile(new URL("app/portfolio-refinement.css",root),"utf8"),
+    readFile(new URL("public/images/earth-china-poster.webp",root)),
+  ]);
+  assert.equal(poster.toString("ascii",0,4),"RIFF");assert.equal(poster.toString("ascii",8,12),"WEBP");
+  assert.ok(poster.byteLength>15000&&poster.byteLength<120000);
+  assert.match(source,/className="rg-earth-poster"/);assert.match(source,/earth-china-poster\.webp/);
+  assert.match(source,/!surfaceReady \|\| !cloudsReady/);
+  assert.match(source,/painted = true; setRenderer\("webgl"\)/);
+  assert.match(source,/image\.onerror = fail/);assert.match(source,/cloudImage\.onerror = fail/);
+  assert.match(source,/function lost\(e: Event\) \{ e\.preventDefault\(\); fail\(\); \}/);
+  assert.match(css,/rg-globe\[data-renderer=webgl\] \.rg-earth-poster\{opacity:0\}/);
+  assert.doesNotMatch(source+css,/rg-earth-placeholder/);
+  for(const target of process.env.NEXT_PUBLIC_BASE_PATH?["out","dist/client"]:["out"]){
+    assert.deepEqual(await readFile(new URL(`${target}/images/earth-china-poster.webp`,root)),poster);
+    for(const locale of ["","en/"]){
+      const html=await readFile(new URL(`${target}/${locale}index.html`,root),"utf8");
+      assert.match(html,/earth-china-poster\.webp/);assert.match(html,/PREPARING INTERACTIVE VIEW|正在准备地球交互/);
+    }
+  }
 });
 
 test("research examples compute different findings from changed criteria", async () => {

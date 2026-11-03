@@ -59,6 +59,7 @@ When updating the résumé download, copy the validated PDF, update its filename
 
 - Earth surface: [NASA Blue Marble surface texture](https://eoimages.gsfc.nasa.gov/images/imagerecords/57000/57752/land_shallow_topo_2048.jpg).
 - Clouds: [NASA Blue Marble cloud composite](https://eoimages.gsfc.nasa.gov/images/imagerecords/57000/57747/cloud_combined_2048.jpg), used as a visual texture, not current weather.
+- The first-paint China view is rendered from the same textures, camera and lighting as the interactive Earth. Regenerate it offline with `node scripts/render_globe_poster.mjs`; the script uses the existing Next.js Sharp dependency and requires no downloads.
 - Lenovo: [official horizontal logo asset](https://media.lenovobrandworld.fiestic.com/2021/01/08011220/03_Logo_01Overview_6B_v-07.png).
 - University of Toronto: [official signature resource](https://www.utm.utoronto.ca/communications/brand-resources/utm-signature-usage-guidelines).
 - The photo-editor demonstration uses an original code-native still-life illustration. Visitor-selected photographs remain browser-local.
