@@ -64,6 +64,17 @@ test("keeps share copy factual, language-specific and free of internal productio
   assert.doesNotMatch(script + wrapper, /Georgia|\/Users\//);
 });
 
+test("keeps Atlas initialization CSS native, scoped and free of timer-driven fallback logic", async () => {
+  const css = await readFile(new URL("app/atlas-view-state.css", root), "utf8");
+  const view = await readFile(new URL("app/AtlasViewState.tsx", root), "utf8");
+  assert.match(css, /\.atlas-view-state\[data-ready="false"\] \.atlas-data-view:not\(:target\)\s*\{\s*display: none;/);
+  assert.match(css, /\.atlas-data-view:target \+ \.atlas-view-loading\s*\{\s*display: none;/);
+  assert.match(css, /min-inline-size: 0/);
+  assert.match(css, /min-height: 48px/);
+  assert.match(view, /disabled=\{!ready\}/);
+  assert.doesNotMatch(view + css, /setTimeout|setInterval|dangerouslySetInnerHTML|Georgia|Helvetica|Times New Roman/);
+});
+
 for (const build of builds) for (const [key, card] of Object.entries(socialCards)) {
   test(`${build}: ${key} declares the initial document language before scripts run`, async () => {
     const html = await readFile(new URL(`${build}${card.route}index.html`, root), "utf8");
@@ -91,6 +102,23 @@ for (const build of builds) for (const [key, card] of Object.entries(socialCards
         });
       }
     }
+  });
+
+  if (card.kind === "atlas") test(`${build}: ${key} starts with a neutral pending view and a native data fallback`, async () => {
+    const html = await readFile(new URL(`${build}${card.route}index.html`, root), "utf8");
+    const main = tags(html, "main");
+    assert.equal(main.length, 1);
+    assert.equal(main[0].id, "atlas-main");
+    assert.equal(main[0]["data-ready"], "false");
+    assert.equal(main[0].tabindex, "-1");
+    const region = tags(html, "section").find(tag => tag.id === "atlas-default-data");
+    assert.ok(region, "The default dataset remains available in the initial HTML");
+    assert.equal(region.tabindex, "-1");
+    const fieldset = tags(html, "fieldset").find(tag => tag.class === "atlas-view-fields");
+    assert.ok(fieldset && Object.hasOwn(fieldset, "disabled"), "Uninitialized controls are disabled");
+    const fallback = tags(html, "a").find(tag => tag.class === "atlas-default-link");
+    assert.equal(fallback?.href, "#atlas-default-data", "Fallback is a native fragment link, not a script action");
+    assert.match(html, card.language === "en" ? /Preparing the selected view/ : /正在准备所选视图/);
   });
 
   test(`${build}: ${key} has complete page-specific Open Graph and Twitter metadata`, async () => {

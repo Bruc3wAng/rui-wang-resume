@@ -1,0 +1,89 @@
+.market-atlas .atlas-intro h1,
+.market-atlas .atlas-result-head h2 {
+  text-wrap: balance;
+}
+
+.atlas-view-state[data-ready="false"] .atlas-data-view:not(:target) {
+  display: none;
+}
+
+.atlas-view-state[data-ready="false"] .atlas-data-view:target + .atlas-view-loading {
+  display: none;
+}
+
+.atlas-view-fields {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-inline-size: 0;
+  width: 100%;
+}
+
+.atlas-view-fields :is(button, input, select) {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.atlas-view-fields:disabled :is(button, input, select) {
+  cursor: default;
+  opacity: .65;
+}
+
+.atlas-view-loading {
+  min-height: 520px;
+  padding: 64px 5%;
+  color: var(--atlas-ink);
+}
+
+.atlas-view-loading > p {
+  margin: 0 0 24px;
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.atlas-view-loading > div {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+}
+
+.atlas-default-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  border-bottom: 1px solid #73958c;
+  color: var(--atlas-ink);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.atlas-view-loading > div > span,
+.atlas-default-caption {
+  color: #4f6b72;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.atlas-default-caption {
+  margin: 0;
+  padding: 22px 5%;
+  border-bottom: 1px solid #1f526024;
+}
+
+.atlas-default-link:focus-visible,
+.atlas-data-view:focus-visible,
+.atlas-view-state:focus-visible {
+  outline: 2px solid var(--atlas-green);
+  outline-offset: 4px;
+}
+
+.atlas-data-view:focus-visible,
+.atlas-view-state:focus-visible {
+  outline-offset: -2px;
+}
+
+@media (max-width: 700px) {
+  .atlas-view-loading { padding-block: 40px; }
+  .atlas-view-loading > div { align-items: flex-start; flex-direction: column; }
+}
