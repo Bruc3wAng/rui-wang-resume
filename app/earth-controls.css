@@ -1,0 +1,12 @@
+.rg-globe-toolbar{display:flex;justify-content:center;align-items:center;gap:18px;margin-top:15px}
+.rg-globe-toolbar .rg-globe-views{margin-top:0;gap:0}
+.rg-globe-styles{display:flex;gap:0;border:1px solid #b9c6cb;border-radius:3px;padding:3px;background:#edf0ec}
+.rg-globe-styles button{min-width:44px;min-height:44px;padding:6px 12px;border:0;border-radius:1px;background:transparent;color:#718390;font-size:11px;white-space:nowrap;transition:background .3s,color .3s,box-shadow .3s}
+.rg-globe-styles button[aria-pressed=true]{background:#263e54;color:#f5f1e7;box-shadow:0 2px 5px #19344c1c}
+.rg-globe-styles button:disabled{opacity:.55}
+.rg-globe-styles button:focus-visible{outline:2px solid #647e94;outline-offset:3px}
+.rg-globe-stage{transition:filter .4s}
+.rg-globe[data-style=network] .rg-globe-shadow{background:#233b5b2c}
+@media(max-width:1100px) and (min-width:700px){.rg-globe-toolbar{flex-wrap:wrap;gap:5px 12px}}
+@media(max-width:699px){.rg-globe-toolbar{flex-wrap:wrap;gap:4px 8px;margin-top:10px}.rg-globe-toolbar .rg-globe-views{gap:0}.rg-globe-toolbar .rg-globe-views button{padding-inline:8px;gap:6px}.rg-globe-styles button{font-size:10px;padding-inline:9px}.rg-globe-views button>span{display:none}}
+@media(prefers-reduced-motion:reduce){.rg-globe-styles button,.rg-globe-stage{transition:none}}

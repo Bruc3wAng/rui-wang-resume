@@ -353,10 +353,44 @@ test("separates cloud height, cloud shadows and a thin atmospheric shell without
   assert.ok([...clear,...overcast,...shadeAtmosphere([0,0,earthMaterial.atmosphereRadius])].every(v=>Number.isFinite(v)&&v>=0&&v<=1));
   assert.match(earthFragment,/cloudAt\(shellPoint\(n,light\)\)/);
   assert.match(earthFragment,/cloudPoint=shellPoint\(n,v\)/);
-  assert.match(earthFragment,/if\(picked<\.5\)discard/);
+  assert.match(earthFragment,/if\(picked<\.5&&networkView<\.01\)discard/);
   assert.doesNotMatch(earthFragment,/torus|saturn|ringGeometry/i);
   const ui=await readFile(new URL("app/InteractiveGlobe.tsx",root),"utf8");
   assert.match(ui,/1200 \/ Math\.max/);assert.match(ui,/LINEAR_MIPMAP_LINEAR/);
+});
+
+test("offers a real research-network material while preserving focal view and day-night imagery", async () => {
+  const {earthFragment,earthVertex,shadeEarth,nightEmission}=await import("../app/earth-material.ts");
+  const {networkMesh}=await import("../app/globe-geometry.ts");
+  const ui=await readFile(new URL("app/InteractiveGlobe.tsx",root),"utf8");
+  assert.match(ui,/data-style=\{style\}/);
+  assert.match(ui,/chooseStyle\("network"\)/);
+  assert.match(ui,/chooseStyle\("earth"\)/);
+  assert.match(ui,/networkTarget = network \? 1 : 0/);
+  assert.match(ui,/uniform1f\(un, networkBlend\)/);
+  assert.match(ui,/nightImage\.onerror = \(\) => \{ if \(alive\) el!\.dataset\.nightTexture = "unavailable"/);
+  assert.match(ui,/gl\.deleteTexture\(nightTexture\)/);
+  assert.match(earthFragment,/mix\(satellite,network,networkView\)/);
+  assert.match(earthFragment,/nightMask=1\.-smoothstep\(-\.13,\.20,incidence\)/);
+  assert.match(earthVertex,/pathPosition=normal\.x/);
+  assert.deepEqual(nightEmission([.17,.19,.31]),[0,0,0]);
+  assert.deepEqual(nightEmission([.9,.8,.65]),[.9,.8,.65]);
+  const darkSide=[.94,0,Math.sqrt(1-.94**2)];
+  const dark=shadeEarth(darkSide,()=>[.2,.3,.15],()=>[0,0,0]);
+  const illuminated=shadeEarth(darkSide,()=>[.2,.3,.15],()=>[0,0,0],()=>[.15,.12,.07]);
+  assert.ok(illuminated.every((v,i)=>Number.isFinite(v)&&v>dark[i]));
+  const daySide=[-.6,0,.8];
+  assert.deepEqual(shadeEarth(daySide,()=>[.2,.3,.15],()=>[0,0,0]),shadeEarth(daySide,()=>[.2,.3,.15],()=>[0,0,0],()=>[1,1,1]));
+  const routes=networkMesh();
+  for(let route=0;route<8;route++){
+    const start=route*48*2*8,end=start+(48*2-1)*8;
+    assert.equal(routes.data[start+3],0);assert.equal(routes.data[end+3],1);
+    for(let i=start;i<end;i+=8)assert.ok(routes.data[i+3]<=routes.data[i+11]);
+  }
+  for(const target of process.env.NEXT_PUBLIC_BASE_PATH?["out","dist/client"]:["out"]){
+    assert.deepEqual(await readFile(new URL(`${target}/images/earth-night-2016.jpg`,root)),await readFile(new URL("public/images/earth-night-2016.jpg",root)));
+    for(const locale of ["","en/"]){const html=await readFile(new URL(`${target}/${locale}index.html`,root),"utf8");assert.match(html,/data-style="earth"/);assert.match(html,/Research network|研究网络/);}
+  }
 });
 
 test("provides a real China Earth image before the interactive view is ready", async () => {

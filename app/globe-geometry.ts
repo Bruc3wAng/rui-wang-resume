@@ -47,7 +47,7 @@ export function networkMesh() {
   researchMarkets.forEach((place, market) => {
     const end = worldPoint(place.lon, place.lat), angle = Math.acos(Math.min(1, Math.max(-1, hub.reduce((sum, v, i) => sum + v * end[i], 0))));
     function arc(t: number) { const r = 1.015 + .025 * Math.sin(Math.PI * t), divisor = Math.sin(angle); return hub.map((v, i) => r * (v * Math.sin((1 - t) * angle) + end[i] * Math.sin(t * angle)) / divisor); }
-    for (let i = 0; i < segments; i++) for (const t of [i / segments, (i + 1) / segments]) data.push(...arc(t), 0, 0, 0, 1, market);
+    for (let i = 0; i < segments; i++) for (const t of [i / segments, (i + 1) / segments]) data.push(...arc(t), t, 0, 0, 1, market);
   });
   const lines = data.length / 8;
   [...researchMarkets.map(p => worldPoint(p.lon, p.lat)), hub].forEach((p, market) => data.push(...p.map(v => v * 1.015), 0, 0, 0, 2, market));
