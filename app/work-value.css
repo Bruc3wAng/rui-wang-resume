@@ -1,0 +1,10 @@
+.pf-contribution{margin-top:22px;padding-top:16px;border-top:1px solid #bbc8d1}
+.pf-contribution h4{font-size:12px;font-weight:500;color:#4c6e8b;line-height:1.8;margin:0}
+.pf-contribution p{font-size:13px;line-height:1.85;color:#687f90;margin:8px 0 0}
+.pf-case-ai-link{display:inline-flex;align-items:center;gap:22px;min-height:44px;padding:8px 0;margin-top:17px;border:0;border-bottom:1px solid #a8bbc9;background:none;color:#385e7e;font-size:12px}
+.pf-case-ai-link .pf-arrow{width:18px;height:18px}
+.pf-case-ai-link:focus-visible{outline:2px solid currentColor;outline-offset:4px}
+.pf-ai-outcome{border-left:2px solid #c4ac85;padding-left:16px;margin:20px 0 24px}
+.pf-ai-outcome>span{font-size:10px;color:#c4ac85;line-height:1.7}
+.pf-ai-outcome>p{font-size:13px;line-height:1.85;color:#d5e1e6;margin:8px 0 0}
+@media(max-width:699px){.pf-contribution{margin-top:18px;padding-top:14px}.pf-contribution p{font-size:12px}.pf-ai-outcome>p{font-size:12px}.pf-ai-outcome{padding-left:13px;margin-block:18px}}

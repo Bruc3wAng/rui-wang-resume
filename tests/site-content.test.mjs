@@ -348,6 +348,38 @@ test("ships complete research panels and valid tab relationships", async () => {
   }
 });
 
+test("presents project judgment and AI outcomes before optional exploration", async () => {
+  const { aiPractice, selectedWork } = await import("../content/resume.ts");
+  assert.deepEqual(selectedWork.slice(0, 2).map(work => work.id), ["content-tracking", "brand-tracking"]);
+  const targets = process.env.NEXT_PUBLIC_BASE_PATH ? ["out", sitesBuild] : ["out"];
+  const escaped = value => value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  for (const build of targets) for (const language of ["zh", "en"]) {
+    const html = await readFile(new URL(`${build}/${language === "en" ? "en/" : ""}index.html`, root), "utf8");
+    assert.equal([...html.matchAll(/class="pf-contribution"/g)].length, 5);
+    assert.doesNotMatch(html, /<details\b[^>]*class="pf-deeper"/);
+    for (let i = 0; i < 5; i++) {
+      const panel = html.match(new RegExp(`<article\\b[^>]*id="pf-work-panel-${i}"[^>]*>([\\s\\S]*?)<\\/article>`))?.[1];
+      assert.ok(panel);
+      assert.match(panel, /<div class="pf-contribution"><h4>[^<]+<\/h4><p>[^<]+<\/p><\/div>/);
+      const targets = [...panel.matchAll(/data-ai-practice="([^"]+)"/g)].map(([, value]) => value);
+      assert.deepEqual(targets, i < 2 ? [String(i)] : [], "Only the two evidence-backed work-to-AI mappings are linked");
+    }
+    const outcome = html.match(/<div class="pf-ai-outcome"><span>[^<]+<\/span><p>([\s\S]*?)<\/p><\/div>/)?.[1];
+    assert.equal(outcome, escaped(aiPractice[0].output[language]));
+    assert.ok(html.indexOf('class="pf-ai-outcome"') < html.indexOf('class="pf-stage-tabs"'));
+    assert.match(html, /id="pf-ai-panel"[^>]*data-practice="0"[^>]*data-stage="0"/);
+  }
+});
+
+test("keeps AI workflow controls coordinated and company adoption separate from the personal prototype", async () => {
+  const ui = await readFile(new URL("app/Portfolio.tsx", root), "utf8");
+  assert.match(ui, /"content-tracking": 0, "brand-tracking": 1/);
+  assert.match(ui, /data-ai-practice=\{aiPracticeIndex\}/);
+  assert.match(ui, /practice < 2 && <p className="pf-adoption"/);
+  assert.match(ui, /stage !== 2 && <p>/);
+  assert.match(ui, /focusId\) document\.getElementById\(focusId\)\?\.focus\(\{ preventScroll: true \}\)/);
+});
+
 test("adds explorable research folios and a synchronized workflow route", async () => {
   for (const path of ["out/index.html", "out/en/index.html"]) {
     const html = await readFile(new URL(path, root), "utf8");
@@ -390,7 +422,7 @@ test("renders a genuinely rotatable globe with a China-centered default", async 
   assert.match(source,/choose\("US",-98,37\)/);
   assert.doesNotMatch(source,/research-globe\.png|torus|ringGeometry/);
   assert.match(source,/earthFragment.*earthMaterial.*earthVertex/);
-  assert.match(source,/item\.markets\.includes\(selected\)/);
+  assert.match(source,/researchForMarket\(cases, selected\)/);
   for(const locale of ["","en/"]){const html=await readFile(new URL(`out/${locale}index.html`,root),"utf8");assert.match(html,/data-view="CN"/);assert.match(html,/class="rg-globe-canvas"/);assert.match(html,/lenovo-horizontal.png/);assert.match(html,/uoft-signature.webp/);assert.match(html,/Exhibition-sector acquisition research|展会企业并购前期研究/);}
 });
 
@@ -408,9 +440,9 @@ test("projects geographic nodes correctly and keeps connections on the globe", a
   }
   assert.equal(projectPoint(-75,-30,105,30,1).visible,false);
   const globe=globeMesh(),network=networkMesh();
-  assert.equal(globe.length%8,0);assert.equal(network.data.length/8,network.lines+network.points);
+  assert.equal(globe.length%8,0);assert.equal(network.data.length/8,network.triangles+network.points+network.particles);
   assert.equal(network.points,9);assert.ok(network.data.every(Number.isFinite));
-  for(let i=0;i<network.data.length;i+=8){const r=Math.hypot(...network.data.slice(i,i+3));assert.ok(r>1&&r<1.041);}
+  for(let i=0;i<(network.triangles+network.points)*8;i+=8){const r=Math.hypot(...network.data.slice(i,i+3));assert.ok(r>1&&r<1.057);}
 });
 
 test("separates cloud height, cloud shadows and a thin atmospheric shell without decorative rings", async () => {
@@ -461,9 +493,14 @@ test("offers a real research-network material while preserving focal view and da
   assert.deepEqual(shadeEarth(daySide,()=>[.2,.3,.15],()=>[0,0,0]),shadeEarth(daySide,()=>[.2,.3,.15],()=>[0,0,0],()=>[1,1,1]));
   const routes=networkMesh();
   for(let route=0;route<8;route++){
-    const start=route*48*2*8,end=start+(48*2-1)*8;
+    const start=route*48*6*8,end=start+(48*6-1)*8;
     assert.equal(routes.data[start+3],0);assert.equal(routes.data[end+3],1);
-    for(let i=start;i<end;i+=8)assert.ok(routes.data[i+3]<=routes.data[i+11]);
+    for(let segment=0;segment<48;segment++){
+      const i=start+segment*6*8;
+      assert.ok(routes.data[i+3]<=routes.data[i+2*8+3]);
+      assert.ok(Math.abs(routes.data[i+3]-segment/48)<1e-7);
+      assert.deepEqual(Array.from(routes.data.slice(i+4,i+6)),[-1,0]);
+    }
   }
   for(const target of process.env.NEXT_PUBLIC_BASE_PATH?["out",sitesBuild]:["out"]){
     assert.deepEqual(await readFile(new URL(`${target}/images/earth-night-2016.jpg`,root)),await readFile(new URL("public/images/earth-night-2016.jpg",root)));

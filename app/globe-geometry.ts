@@ -42,14 +42,41 @@ export function globeMesh(material = 0, radius = 1) {
   }
   return new Float32Array(data);
 }
-export function networkMesh() {
+// An illustrative comparison network, not traffic, sample counts or electricity data.
+// Extra edges can only join markets that coexist in a supplied, verified study.
+export function networkMesh(groups: readonly (readonly string[])[] = []) {
   const data: number[] = [], hub = worldPoint(116.4, 39.9), segments = 48;
-  researchMarkets.forEach((place, market) => {
-    const end = worldPoint(place.lon, place.lat), angle = Math.acos(Math.min(1, Math.max(-1, hub.reduce((sum, v, i) => sum + v * end[i], 0))));
-    function arc(t: number) { const r = 1.015 + .025 * Math.sin(Math.PI * t), divisor = Math.sin(angle); return hub.map((v, i) => r * (v * Math.sin((1 - t) * angle) + end[i] * Math.sin(t * angle)) / divisor); }
-    for (let i = 0; i < segments; i++) for (const t of [i / segments, (i + 1) / segments]) data.push(...arc(t), t, 0, 0, 1, market);
+  const places = [...researchMarkets.map(p => worldPoint(p.lon, p.lat)), hub];
+  const edges: [number, number][] = researchMarkets.map((_, index) => [8, index]);
+  const seen = new Set<string>();
+  for (const group of groups) {
+    const members = researchMarkets.flatMap((p, i) => group.includes(p.code) ? [i] : []);
+    members.forEach((a, index) => members.slice(index + 1).forEach(b => {
+      const key = `${a}:${b}`;
+      if (!seen.has(key)) { seen.add(key); edges.push([a, b]); }
+    }));
+  }
+  for (const [a, b] of edges) {
+    const start = places[a], end = places[b], code = a * 16 + b;
+    const angle = Math.acos(Math.min(1, Math.max(-1, start.reduce((sum, v, i) => sum + v * end[i], 0))));
+    const normal = [start[1] * end[2] - start[2] * end[1], start[2] * end[0] - start[0] * end[2], start[0] * end[1] - start[1] * end[0]];
+    const length = Math.hypot(...normal), side = normal.map(v => v / length);
+    function vertex(t: number, direction: number) {
+      const r = 1.015 + .041 * Math.sin(Math.PI * t), divisor = Math.sin(angle);
+      const point = start.map((v, i) => r * (v * Math.sin((1 - t) * angle) + end[i] * Math.sin(t * angle)) / divisor + side[i] * .0038 * direction);
+      data.push(...point, t, direction, 0, 1, code);
+    }
+    for (let i = 0; i < segments; i++) {
+      const t = i / segments, next = (i + 1) / segments;
+      vertex(t, -1); vertex(t, 1); vertex(next, -1);
+      vertex(next, -1); vertex(t, 1); vertex(next, 1);
+    }
+  }
+  const triangles = data.length / 8;
+  places.forEach((p, market) => data.push(...p.map(v => v * 1.018), 0, 0, 0, 2, market * 16 + market));
+  // Two light packets per path. The GPU moves them; no per-frame mesh uploads.
+  edges.forEach(([a, b]) => {
+    for (const phase of [0, .5]) data.push(...places[a], ...places[b], 4 + phase, a * 16 + b);
   });
-  const lines = data.length / 8;
-  [...researchMarkets.map(p => worldPoint(p.lon, p.lat)), hub].forEach((p, market) => data.push(...p.map(v => v * 1.015), 0, 0, 0, 2, market));
-  return { data: new Float32Array(data), lines, points: researchMarkets.length + 1 };
+  return { data: new Float32Array(data), triangles, points: places.length, particles: edges.length * 2, edges, segments };
 }
