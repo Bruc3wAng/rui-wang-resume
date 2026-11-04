@@ -75,6 +75,16 @@ test("keeps Atlas initialization CSS native, scoped and free of timer-driven fal
   assert.doesNotMatch(view + css, /setTimeout|setInterval|dangerouslySetInnerHTML|Georgia|Helvetica|Times New Roman/);
 });
 
+test("aligns every Atlas header link with the same accessible hit area", async () => {
+  const css = await readFile(new URL("app/language-navigation.css", root), "utf8");
+  assert.match(css, /\.market-atlas \.atlas-header nav\s*\{[^}]*align-items: center;/);
+  assert.match(css, /\.market-atlas \.atlas-header nav > a,\s*\.market-atlas \.atlas-home\s*\{[^}]*display: inline-flex;[^}]*align-items: center;[^}]*min-height: 44px;/);
+  assert.match(css, /\.market-atlas \.atlas-header nav > a\s*\{[^}]*min-width: 44px;[^}]*white-space: nowrap;/);
+  assert.match(css, /\.market-atlas \.atlas-header a:focus-visible\s*\{[^}]*outline: 2px solid currentColor;/);
+  assert.match(css, /@media \(max-width: 700px\)/);
+  assert.match(css, /\.market-atlas \.atlas-header nav\s*\{[^}]*width: 100%;[^}]*justify-content: space-between;/);
+});
+
 for (const build of builds) for (const [key, card] of Object.entries(socialCards)) {
   test(`${build}: ${key} declares the initial document language before scripts run`, async () => {
     const html = await readFile(new URL(`${build}${card.route}index.html`, root), "utf8");
@@ -102,6 +112,18 @@ for (const build of builds) for (const [key, card] of Object.entries(socialCards
         });
       }
     }
+  });
+
+  if (card.kind === "atlas") test(`${build}: ${key} names its data-explorer navigation and keeps all destinations`, async () => {
+    const html = await readFile(new URL(`${build}${card.route}index.html`, root), "utf8");
+    const nav = html.match(/<nav\b[^>]*aria-label="([^"]+)"[^>]*>([\s\S]*?)<\/nav>/);
+    assert.ok(nav, "Navigation has an accessible name");
+    assert.equal(nav[1], card.language === "zh" ? "数据页导航" : "Data explorer navigation");
+    const links = tags(nav[2], "a");
+    assert.equal(links.length, 3);
+    assert.equal(links[0].href, "#atlas-sources");
+    assert.ok(links[1].href.includes("country=USA") && links[1].href.includes("metric=SP.POP.TOTL"));
+    assert.ok(links[2].href.endsWith(`${card.language === "en" ? "/en/" : "/"}#projects`));
   });
 
   if (card.kind === "atlas") test(`${build}: ${key} starts with a neutral pending view and a native data fallback`, async () => {
