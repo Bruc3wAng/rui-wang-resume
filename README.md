@@ -43,6 +43,8 @@ without relying on a runtime image-optimization endpoint.
 
 ## Content maintenance
 
+The three interactive research examples use a shared output model for the visible document and its text download. Tracking updates distinguish update work, analyst review, and valid content retention; retained content is never counted as an update. Each practice has its own three output documents. A changed input invalidates the previous run before outputs can be downloaded again. These examples illustrate research rules rather than executing client-data calculations.
+
 - Website copy: `content/resume.ts`
 - Chinese résumé download: `public/resume/rui-wang-resume-zh.pdf`
 - English résumé download: `public/resume/rui-wang-resume-en.pdf`

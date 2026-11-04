@@ -542,8 +542,8 @@ test("research examples compute different findings from changed criteria", async
   assert.deepEqual(changed.filter(c=>!c.aligned).map(c=>c.key),["method","measure"]);
   assert.match(changed[0].actionZh,/重算/);
   assert.equal(planUpdates([false,false,false]).length,0);
-  assert.deepEqual(planUpdates([true,false,false]).map(x=>x.zh),["数据期次","趋势图","跨期比较"]);
-  assert.equal(planUpdates([true,true,true]).length,9);
+  assert.deepEqual(planUpdates([true,false,false]).map(x=>x.id),["wave-data","charts","copy"]);
+  assert.deepEqual(planUpdates([true,true,true]).map(x=>x.id),["wave-data","metric-map","charts","copy","layout"]);
   assert.equal(queryLibrary("all").length,4);
   assert.equal(queryLibrary("health").length,2);
   assert.ok(queryLibrary("pet").every(r=>r.category==="pet"));

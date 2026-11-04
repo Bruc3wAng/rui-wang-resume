@@ -7,12 +7,34 @@ const criteria = [
 export function compareConditions(values: boolean[]): Check[] {
   return criteria.map(([key,zh,en,actionZh,actionEn],i)=>({key,zh,en,actionZh,actionEn,aligned:values[i]===true}));
 }
-const impacts = [
-  [{zh:"数据期次",en:"Data waves"},{zh:"趋势图",en:"Trend charts"},{zh:"跨期比较",en:"Wave comparisons"}],
-  [{zh:"指标定义",en:"Measure definitions"},{zh:"历史可比性",en:"Historical comparability"},{zh:"报告注释",en:"Report notes"}],
-  [{zh:"图表字段",en:"Chart fields"},{zh:"页面布局",en:"Page layout"},{zh:"未变内容保留",en:"Unchanged content"}],
+type ResearchLanguage = "zh" | "en";
+type Bilingual = { zh: string; en: string };
+export type UpdatePlanItem = Bilingual & { id: string; action: Bilingual };
+type UpdateRule = UpdatePlanItem & { when: number[] };
+const updateRules: UpdateRule[] = [
+  {id:"wave-data",zh:"新增期次数据",en:"New-wave data",when:[0],action:{zh:"接入新增期次，并保留原有有效数据。",en:"Add the new wave while retaining valid existing data."}},
+  {id:"metric-map",zh:"指标字段与映射",en:"Measure fields and mappings",when:[1],action:{zh:"按确认的指标定义更新字段与映射。",en:"Update fields and mappings to the confirmed measure definitions."}},
+  {id:"charts",zh:"受影响图表与趋势",en:"Affected charts and trends",when:[0,1,2],action:{zh:"只更新受影响图表及对应趋势区间。",en:"Update only affected charts and their relevant trend periods."}},
+  {id:"copy",zh:"对应文字与指标说明",en:"Related copy and measure notes",when:[0,1],action:{zh:"同步图表涉及的文字与指标说明。",en:"Align the related text and measure notes with the charts."}},
+  {id:"layout",zh:"图表字段位置与版式",en:"Chart-field placement and layout",when:[2],action:{zh:"按确认模板调整字段位置和版式。",en:"Adjust field placement and layout to the confirmed template."}},
 ];
-export function planUpdates(values: boolean[]) { return impacts.flatMap((items,i)=>values[i]?items:[]); }
+const reviewRules: UpdateRule[] = [
+  {id:"comparability",zh:"跨期比较条件",en:"Wave-comparison criteria",when:[0,1],action:{zh:"确认目标人群、指标定义与跨期条件，必要时重算或分开说明。",en:"Check audiences, definitions, and wave criteria; recalculate or report separately where needed."}},
+  {id:"source-mapping",zh:"数据、图表与文字映射",en:"Data, chart, and text mapping",when:[0,1,2],action:{zh:"核对数据、图表和文字是否指向同一期次及指标。",en:"Check that data, charts, and text refer to the same wave and measure."}},
+  {id:"presentation",zh:"交付内容一致性",en:"Delivery consistency",when:[0,1,2],action:{zh:"检查数值、标题、图例及文字是否与更新范围一致。",en:"Check values, titles, legends, and text against the update scope."}},
+];
+const retentionRules: UpdatePlanItem[] = [
+  {id:"valid-history",zh:"仍有效的历史结果",en:"Valid historical results",action:{zh:"保留仍符合当前定义与比较条件的历史结果。",en:"Retain historical results that remain valid under the current definitions and comparison criteria."}},
+  {id:"unaffected-content",zh:"未受影响的有效内容",en:"Valid, unaffected content",action:{zh:"不因批量更新而改写未受影响的有效内容。",en:"Do not overwrite valid, unaffected content during batch updates."}},
+];
+function selectedRules(rules: UpdateRule[], values: boolean[]): UpdatePlanItem[] {
+  return rules.filter(rule=>rule.when.some(index=>values[index]===true))
+    .map(rule=>({id:rule.id,zh:rule.zh,en:rule.en,action:{...rule.action}}));
+}
+export function planTrackingUpdate(values: boolean[]) {
+  return {updates:selectedRules(updateRules,values),reviews:selectedRules(reviewRules,values),preserve:retentionRules.map(item=>({...item,action:{...item.action}}))};
+}
+export function planUpdates(values: boolean[]) { return planTrackingUpdate(values).updates; }
 export const libraryExamples = [
   {category:"health",zh:"健康产品",en:"Health products",topicZh:"规格与组合",topicEn:"Formats & bundles",sourceZh:"商品资料",sourceEn:"Product material"},
   {category:"health",zh:"健康产品",en:"Health products",topicZh:"价格带定义",topicEn:"Price-band definitions",sourceZh:"指标记录",sourceEn:"Measure record"},
@@ -20,3 +42,52 @@ export const libraryExamples = [
   {category:"pet",zh:"宠物食品",en:"Pet food",topicZh:"来源与时间",topicEn:"Source & collection date",sourceZh:"来源记录",sourceEn:"Source record"},
 ];
 export function queryLibrary(category: string) { return libraryExamples.filter(row=>category==="all"||row.category===category); }
+
+export type ResearchArtifactSection = { title: string; rows?: {label: string; text: string}[]; points?: string[] };
+export type ResearchArtifact = { title: string; summary: string; filename: string; sections: ResearchArtifactSection[] };
+function validPractice(practice: number) { if (!Number.isInteger(practice)||practice<0||practice>2) throw new RangeError("Unknown research practice"); }
+export function researchOutputLabels(practice: number, language: ResearchLanguage) {
+  validPractice(practice);
+  const labels = language==="zh" ? [["判断","处理","复用"],["范围","复核","规则"],["资料","来源","比较"]] : [["Findings","Actions","Reuse"],["Scope","Review","Rules"],["Records","Sources","Compare"]];
+  return labels[practice];
+}
+export function researchResultSummary(practice: number, values: boolean[], category: string, language: ResearchLanguage) {
+  validPractice(practice);
+  const l=(zh:string,en:string)=>language==="zh"?zh:en;
+  if(practice===0){const count=compareConditions(values).filter(item=>!item.aligned).length;return count?l(`${count}项比较条件需要先处理`,count===1?"1 comparison criterion needs attention":`${count} comparison criteria need attention`):l("比较条件一致，可以进入分析","Comparison criteria align; proceed to analysis");}
+  if(practice===1){const count=planUpdates(values).length;return count?l(`${count}类内容需要更新`,`${count} areas to update`):l("本次未选择变更","No changes selected");}
+  const count=queryLibrary(category).length;return l(`${count}条样例记录`,`${count} example records`);
+}
+export function buildResearchArtifact(practice: number, artifact: number, values: boolean[], category: string, language: ResearchLanguage): ResearchArtifact {
+  validPractice(practice);
+  if(!Number.isInteger(artifact)||artifact<0||artifact>2)throw new RangeError("Unknown research output");
+  const l=(zh:string,en:string)=>language==="zh"?zh:en;
+  const titleSets=language==="zh"?[["跨期比较判断","比较差异处理建议","分析复用清单"],["多期报告更新范围","多期更新复核计划","多期报告复用规则"],["研究资料查询结果","来源核对要点","比较准备清单"]]:[["Cross-wave comparison findings","Actions for comparison differences","Reusable analysis checklist"],["Report update scope","Report update review plan","Reusable update rules"],["Research-material results","Source-verification checklist","Preparation for comparison"]];
+  const filenames=[["comparison-findings","comparison-actions","comparison-reuse"],["tracking-update-scope","tracking-update-review","tracking-update-rules"],["research-query-records","research-query-sources","research-query-comparison"]];
+  const sections: ResearchArtifactSection[]=[];
+  const plan=planTrackingUpdate(values),comparisons=compareConditions(values),records=queryLibrary(category);
+  const row=(item:UpdatePlanItem)=>({label:item[language],text:item.action[language]});
+  if(practice===0){
+    if(artifact===0)sections.push({title:l("比较条件","Comparison criteria"),rows:comparisons.map(item=>({label:item[language],text:item.aligned?l("一致","Aligned"):l("有变化","Changed")}))});
+    else if(artifact===1){const changed=comparisons.filter(item=>!item.aligned);sections.push({title:l("需要先处理的差异","Differences to resolve first"),points:changed.length?changed.map(item=>item[language==="zh"?"actionZh":"actionEn"]):[l("比较条件一致，但仍需复核数据质量并解释研究结果。","Criteria align; data quality and interpretation still require review.")]});}
+    else sections.push({title:l("下次分析沿用的依据","Basis for the next analysis"),points:[l("记录比较市场、人群、指标定义与分析方法。","Record the markets, audiences, measure definitions, and analysis method."),l("保留计算规则、检查结果与需要解释的差异。","Retain calculation rules, check results, and differences requiring interpretation."),l("条件变化后重新运行，不直接沿用旧判断。","Rerun when criteria change rather than carrying forward an old assessment.")]});
+  } else if(practice===1){
+    if(artifact===0)sections.push(
+      {title:l("需要更新","Update work"),rows:plan.updates.map(row),...(!plan.updates.length?{points:[l("未选择需要批量更新的内容。","No batch-update work selected.")]}:{})},
+      {title:l("需要复核","Analyst review"),rows:plan.reviews.map(row),...(!plan.reviews.length?{points:[l("未选择新的变更范围。","No new change scope selected.")]}:{})},
+      {title:l("保留内容","Retain valid content"),points:plan.preserve.map(item=>`${item[language]}${language==="zh"?"：":": "}${item.action[language]}`)},
+    );
+    else if(artifact===1){const points:string[]=[];if(values[0])points.push(l("先确认新增期次及比较样本，保留有效历史记录。","Confirm the new wave and comparison sample while retaining valid historical records."));if(values[1])points.push(l("核对新旧指标定义与历史可比性，再决定是否重算或分开报告。","Check old and new definitions and historical comparability before deciding to recalculate or report separately."));if(values[2])points.push(l("确认模板字段与数据来源的对应关系，再调整图表及版式。","Confirm how template fields map to source data before adjusting charts and layout."));if(points.length)points.push(l("按确认范围批量更新，再重点复核数值、图表、文字及保留内容。","Batch-update the agreed scope, then review values, charts, text, and retained content."));else points.push(l("本次没有选中变更，保留现有有效交付；后续范围变化时重新规划。","No changes are selected. Retain valid existing outputs and re-plan when the scope changes."));sections.push({title:l("建议处理顺序","Recommended sequence"),points});}
+    else sections.push({title:l("可复用规则","Reusable rules"),points:[l("将来源、期次、指标与报告位置的映射保留在规则中。","Retain mappings between sources, waves, measures, and report locations."),l("按变更选择更新范围，不逐份复制或全量覆盖。","Select update work from the changes rather than copying files or overwriting everything."),l("有效历史与未受影响内容保留；条件变化后重跑并复核。","Preserve valid history and unaffected content; rerun and review when criteria change.")]});
+  } else {
+    if(artifact===0)sections.push({title:l("当前品类的资料","Material for the selected category"),rows:records.map(item=>({label:item[language==="zh"?"topicZh":"topicEn"],text:`${item[language]} · ${item[language==="zh"?"sourceZh":"sourceEn"]}`})),...(!records.length?{points:[l("未找到符合条件的样例记录。","No matching example records found.")]}:{})});
+    else if(artifact===1)sections.push({title:l("回到来源核对","Checks against the original source"),points:records.length?[...new Set(records.map(item=>item[language==="zh"?"sourceZh":"sourceEn"]))].map(source=>l(`${source}：核对定义、采集时间及适用范围。`,`${source}: check definitions, collection date, and scope.`)):[l("先补充符合条件的资料，再核对来源与定义。","Add matching material before checking sources and definitions.")]});
+    else sections.push({title:l("比较前的准备","Before comparing records"),points:[l("保留当前品类、研究主题与来源类型。","Retain the selected category, research topic, and source type."),l("比较前核对定义、规格、单位与采集时间是否一致。","Check definitions, formats, units, and collection dates before comparing."),l("定义或来源不足时补充资料，不把缺失内容当作已核实结果。","Add missing definitions or sources rather than treating incomplete material as verified.")]});
+  }
+  return {title:titleSets[practice][artifact],summary:researchResultSummary(practice,values,category,language),filename:filenames[practice][artifact]+".txt",sections};
+}
+export function serializeResearchArtifact(document: ResearchArtifact, language: ResearchLanguage) {
+  const lines=[document.title,language==="zh"?"研究方法示例":"Research-method example",document.summary,""];
+  for(const section of document.sections){lines.push(section.title);for(const item of section.rows??[])lines.push(`${item.label}: ${item.text}`);for(const point of section.points??[])lines.push(`- ${point}`);lines.push("");}
+  return lines.join("\n");
+}
