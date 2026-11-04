@@ -40,6 +40,8 @@ Before publishing to both hosts, build GitHub Pages with its base path, run
 `pnpm run build` for Sites, then run `NEXT_PUBLIC_BASE_PATH=/rui-wang-resume pnpm run test:release`.
 
 The work section keeps desktop roving tabs and exposes a full mobile study index. Explicit mobile selection opens the matching contribution, with an index return action; related AI practices link back to their actual work entry. The personal prototype has no employer-study association.
+
+Research folios add three contribution/purpose views for each approved work entry. Ownership labels are derived from the existing role wording. Open folios grow with their content, use a stable reading plane, support keyboard output selection and Escape-to-close, and retain selections per study.
 This also checks that both language pages serve the bundled portrait directly
 without relying on a runtime image-optimization endpoint.
 

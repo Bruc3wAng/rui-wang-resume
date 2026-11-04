@@ -1,0 +1,24 @@
+.pf-work-ownership{display:block;font-size:10px;line-height:1.7;color:#4c6e8b;margin-bottom:5px}
+.portfolio-v17 .pf-research-object[data-open=true]{height:auto;min-height:420px;padding:24px 10px 66px;transform:none;transform-style:flat}
+.portfolio-v17 .pf-research-object[data-open=false] .pf-folio-page{display:none}
+.portfolio-v17 .pf-folio-page{position:relative;left:auto;top:auto;width:100%;max-width:360px;height:auto;padding:25px 24px 28px;margin:0 auto;border-radius:2px 8px 8px 2px;background:#f4f1e9;z-index:4;scroll-margin-top:100px;box-shadow:4px 7px 0 #dce1dd,9px 14px 30px #233c4e16}
+.portfolio-v17 .pf-research-object[data-open=true] .pf-folio-page{transform:none;animation:pf-folio-read .35s ease both}
+.portfolio-v17 .pf-research-object[data-open=true] .pf-report-cover{opacity:.12;transform:translateX(-18px) rotateY(-87deg);pointer-events:none}
+.portfolio-v17 .pf-research-object[data-open=true] :is(.pf-report-cover,.pf-report-sheet,.pf-object-orbit){opacity:0;visibility:hidden;pointer-events:none}
+.portfolio-v17 .pf-research-object[data-open=true] .pf-folio-toggle{left:10px;right:10px;width:auto;bottom:0}
+.pf-folio-page h4{font-size:20px;font-weight:400;line-height:1.5;margin:11px 0 22px}
+.pf-folio-output-tabs{display:grid;border-top:1px solid #c3ccd0}
+.pf-folio-output-tabs button{display:grid;grid-template-columns:18px minmax(0,1fr) 12px;align-items:center;gap:8px;text-align:left;min-height:44px;padding:11px 0;border:0;border-bottom:1px solid #c3ccd0;color:#687d8d;background:none;font-size:12px;line-height:1.65}
+.pf-folio-output-tabs button>span:first-child{font-size:8px;color:#8a969d}
+.pf-folio-output-tabs button>span:last-child{font-size:13px;opacity:0}
+.pf-folio-output-tabs button[aria-selected=true]{color:#254b6b;box-shadow:inset 2px 0 #ad9169;padding-left:8px}
+.pf-folio-output-tabs button[aria-selected=true]>span:last-child{opacity:1}
+.pf-folio-output-tabs button:focus-visible{outline:2px solid #4c6e8b;outline-offset:3px;z-index:1}
+.pf-folio-detail{padding-top:22px;animation:pf-folio-read .25s ease both}
+.pf-folio-detail dl{margin:0;display:grid;gap:20px}
+.pf-folio-detail dt{font-size:10px;line-height:1.7;color:#4c6e8b;margin-bottom:7px}
+.pf-folio-detail dd{font-size:12px;line-height:1.85;color:#526c7e;margin:0;text-align:left;overflow-wrap:anywhere}
+@keyframes pf-folio-read{from{opacity:0;translate:0 8px}to{opacity:1;translate:0 0}}
+@media(max-width:699px){.pf-work-ownership{font-size:10px}.portfolio-v17 .pf-research-object[data-open=true]{padding-top:15px;margin-top:15px}.portfolio-v17 .pf-folio-page{padding:24px 20px 27px}.pf-folio-page h4{font-size:20px}}
+@media(prefers-reduced-motion:reduce){.portfolio-v17 .pf-folio-page,.pf-folio-detail{animation:none!important}}
+.portfolio-v17[data-motion=still] .pf-folio-page,.portfolio-v17[data-motion=still] .pf-folio-detail{animation:none!important}

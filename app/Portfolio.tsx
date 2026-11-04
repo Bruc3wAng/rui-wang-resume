@@ -12,10 +12,12 @@ import InteractiveGlobe from "./InteractiveGlobe";
 import ShareLocale from "./ShareLocale";
 import ResearchLab from "./ResearchLab";
 import { internshipProjects } from "../content/portfolio-exhibits";
+import { folioDescriptionsFor, responsibilityLabel } from "../content/work-folios";
 import "./portfolio.css";
 import "./portfolio-refinement.css";
 import "./work-value.css";
 import "./work-navigation.css";
+import "./research-folios.css";
 
 const base = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 const atlasBase = base || "https://bruc3wang.github.io/rui-wang-resume";
@@ -90,19 +92,30 @@ function tilt(e: PointerEvent<HTMLElement>, paused: boolean) {
 }
 function resetTilt(e: PointerEvent<HTMLElement>) { e.currentTarget.style.setProperty("--rx", "0deg"); e.currentTarget.style.setProperty("--ry", "0deg"); }
 
-function ResearchObject({ active, language }: { active: number; language: Language }) {
-  const [open, setOpen] = useState(false);
+function ResearchObject({ active, language, paused }: { active: number; language: Language; paused: boolean }) {
+  const [open, setOpen] = useState(false), [output, setOutput] = useState(0);
+  const selectedOutput = useRef<HTMLButtonElement>(null), toggleButton = useRef<HTMLButtonElement>(null), page = useRef<HTMLDivElement>(null), focusContents = useRef(false);
   const note = workNotes[active];
+  const description = folioDescriptionsFor(selectedWork[active].id)[output];
   const pageId = `pf-folio-page-${active}`;
-  return <div className={`pf-research-object object-${active}`} data-open={open}>
+  const detailId = `pf-folio-detail-${active}`;
+  useEffect(() => {
+    if (!open || !focusContents.current) return;
+    focusContents.current = false;
+    page.current?.scrollIntoView({ behavior: paused ? "auto" : "smooth", block: "nearest" });
+    selectedOutput.current?.focus({ preventScroll: true });
+  }, [open, paused]);
+  function closeFolio() { setOpen(false); toggleButton.current?.focus({ preventScroll: true }); }
+  function toggleFolio() { if (open) closeFolio(); else { focusContents.current = true; setOpen(true); } }
+  return <div className={`pf-research-object object-${active}`} data-open={open} data-output={output} onKeyDown={e => { if (e.key === "Escape" && open) { e.preventDefault(); e.stopPropagation(); closeFolio(); } }}>
     <div className="pf-object-orbit" aria-hidden="true" />
     <div className="pf-report-sheet sheet-back" aria-hidden="true" />
     <div className="pf-report-sheet sheet-middle" aria-hidden="true" />
-    <div className="pf-folio-page" id={pageId} aria-hidden={!open} inert={!open}>
+    <div className="pf-folio-page" id={pageId} ref={page} aria-hidden={!open} inert={!open}>
       <span className="pf-folio-kicker">{selectedWork[active].index} / RESEARCH</span>
       <h4>{local(language, "研究交付", "Research outputs")}</h4>
-      <ol>{note.outputs[language].map((output, i) => <li key={output}><span>0{i + 1}</span>{output}</li>)}</ol>
-      <p>{note.nodes[language][3]}</p>
+      <div className="pf-folio-output-tabs" role="tablist" aria-orientation="vertical" aria-label={local(language, "选择研究交付", "Choose a research output")}>{note.outputs[language].map((title, i) => <button type="button" role="tab" key={title} ref={i === output ? selectedOutput : undefined} id={`pf-folio-output-${active}-${i}`} aria-controls={detailId} aria-selected={output === i} tabIndex={output === i ? 0 : -1} onClick={() => setOutput(i)} onKeyDown={e => tabs(e, i, 3, setOutput)}><span>0{i + 1}</span>{title}<span aria-hidden="true">↗</span></button>)}</div>
+      <div className="pf-folio-detail" id={detailId} role="tabpanel" aria-labelledby={`pf-folio-output-${active}-${output}`} key={output}><dl><div><dt>{local(language, "我做的部分", "My contribution")}</dt><dd>{description.content[language]}</dd></div><div><dt>{local(language, "研究用途", "Research purpose")}</dt><dd>{description.purpose[language]}</dd></div></dl></div>
     </div>
     <div className="pf-report-cover" aria-hidden={open}>
       <div className="pf-report-top"><span>RESEARCH / {selectedWork[active].index}</span><span>RUI WANG</span></div>
@@ -115,7 +128,7 @@ function ResearchObject({ active, language }: { active: number; language: Langua
       <div className="pf-report-bottom"><span>{local(language, "分析与研究交付", "ANALYSIS & RESEARCH DELIVERY")}</span><span>↗</span></div>
     </div>
     <div className="pf-object-shadow" aria-hidden="true" />
-    <button className="pf-folio-toggle" type="button" aria-expanded={open} aria-controls={pageId} onClick={() => setOpen(v => !v)}><span>{local(language, open ? "合上研究档案" : "翻开研究档案", open ? "Close research folio" : "Open research folio")}</span><span aria-hidden="true">{open ? "−" : "＋"}</span></button>
+    <button className="pf-folio-toggle" type="button" ref={toggleButton} aria-expanded={open} aria-controls={pageId} onClick={toggleFolio}><span>{local(language, open ? "合上研究档案" : "翻开研究档案", open ? "Close research folio" : "Open research folio")}</span><span aria-hidden="true">{open ? "−" : "＋"}</span></button>
   </div>;
 }
 
@@ -146,11 +159,11 @@ function Work({ language, active, setActive, paused, onExploreAI }: { language: 
       <div className="pf-employment"><div><h3>Ipsos <span>Research Executive</span></h3><p>{experiences[0].period[language]}<span>·</span>{experiences[0].meta[language]}</p></div><div className="pf-clients"><span>{local(language, "服务字节跳动与联想", "Serving ByteDance and Lenovo")}</span><div><Image src={`${base}/images/clients/bytedance.svg`} width={130} height={24} alt="ByteDance" unoptimized/><Image src={`${base}/images/clients/lenovo-horizontal.png`} className="pf-lenovo" width={146} height={35} alt="Lenovo" unoptimized/></div></div></div>
       <div className="pf-work-layout">
         <div className="pf-work-nav" id="pf-work-index" role={compact ? "group" : "tablist"} aria-label={local(language, "选择研究项目", "Select a research project")} aria-orientation={compact ? undefined : "vertical"}>
-          {selectedWork.map((p, i) => <button type="button" role={compact ? undefined : "tab"} key={p.id} id={`pf-work-tab-${i}`} aria-controls={`pf-work-panel-${i}`} aria-selected={compact ? undefined : active === i} aria-pressed={compact ? active === i : undefined} tabIndex={compact || active === i ? 0 : -1} onClick={() => chooseWork(i)} onKeyDown={e => tabs(e, i, selectedWork.length, setActive, ":scope > button")}><span>{p.index}</span><div><strong>{p.title[language]}</strong><small>{p.scope[language]}</small></div><span className="pf-tab-arrow" aria-hidden="true">↗</span></button>)}
+          {selectedWork.map((p, i) => <button type="button" role={compact ? undefined : "tab"} key={p.id} id={`pf-work-tab-${i}`} aria-controls={`pf-work-panel-${i}`} aria-selected={compact ? undefined : active === i} aria-pressed={compact ? active === i : undefined} tabIndex={compact || active === i ? 0 : -1} onClick={() => chooseWork(i)} onKeyDown={e => tabs(e, i, selectedWork.length, setActive, ":scope > button")}><span>{p.index}</span><div><span className="pf-work-ownership">{responsibilityLabel(p.role[language])}</span><strong>{p.title[language]}</strong><small>{p.scope[language]}</small></div><span className="pf-tab-arrow" aria-hidden="true">↗</span></button>)}
         </div>
         {selectedWork.map((item, index) => { const note = workNotes[index], aiPracticeIndex = workAIPracticeById[item.id]; return <article key={item.id} hidden={active !== index} className="pf-work-panel" id={`pf-work-panel-${index}`} role={compact ? "region" : "tabpanel"} aria-labelledby={`pf-work-tab-${index}`}>
           <div className="pf-work-story" key={item.id}><button className="pf-work-return" type="button" onClick={returnToIndex}><Arrow/>{local(language, "返回研究目录", "Back to study index")}</button><p className="pf-role">{item.role[language]}</p><h3 id={`pf-work-question-${index}`} tabIndex={-1}>{note.question[language]}</h3><p className="pf-work-summary">{item.summary[language]}</p><div className="pf-contribution"><h4>{local(language, "我的关键判断", "My analytical contribution")}</h4><p>{note.judgment[language]}</p></div><div className="pf-deliverables"><span>{local(language, "研究交付", "Deliverables")}</span>{note.outputs[language].map(v => <strong key={v}>{v}</strong>)}</div>{aiPracticeIndex !== undefined && <button type="button" className="pf-case-ai-link" data-ai-practice={aiPracticeIndex} aria-controls="pf-ai-panel" onClick={() => onExploreAI(aiPracticeIndex)}>{aiPracticeIndex === 0 ? local(language, "查看 AI 分析流程", "Explore AI-assisted analysis") : local(language, "查看 AI 更新流程", "Explore AI-assisted reporting")}<Arrow/></button>}</div>
-          <div className="pf-object-stage" onPointerMove={e => tilt(e, paused)} onPointerLeave={resetTilt}><ResearchObject active={index} language={language}/></div>
+          <div className="pf-object-stage" onPointerMove={e => tilt(e, paused)} onPointerLeave={resetTilt}><ResearchObject active={index} language={language} paused={paused}/></div>
         </article>; })}
       </div>
       <section className="pf-internship-expanded"><header><div><p className="pf-eyebrow">EARLIER EXPERIENCE / COMMERCIAL RESEARCH</p><h3>{earlier.company[language]}<span>{earlier.title[language]}</span></h3></div><span>{earlier.period[language]}</span></header><div>{internshipProjects.map((project,i)=><article key={project.title.en}><span className="pf-internship-number">0{i+1}</span><h4>{project.title[language]}</h4><div><p>{project.contribution[language]}</p><p className="pf-internship-output">{project.output[language]}</p></div></article>)}</div></section>
