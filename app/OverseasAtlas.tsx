@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import Image from "next/image";
+import NavigationAvatar from "./NavigationAvatar";
 import ShareLocale from "./ShareLocale";
 import AtlasViewState from "./AtlasViewState";
 import { atlas, atlasYears, atlasObservation, availableValue, comparisonRows, formatAtlas, atlasCsv } from "../content/overseas-data";
@@ -29,7 +29,7 @@ export default function OverseasAtlas({language}:{language:Language}) {
  return <div className="market-atlas" lang={zh?"zh-CN":"en"}>
   <ShareLocale language={language}/>
   <a className="skip-link" href="#atlas-main">{t("跳至数据","Skip to data")}</a>
-  <header className="atlas-header"><a className="atlas-home" href={`${base}/${zh?"":"en/"}`}><b><Image src={`${base}/images/rui-wang-chibi.png`} alt={t("王睿","Rui Wang")} width={1254} height={1254} unoptimized /></b><span>OPEN MARKET ATLAS</span></a><nav><a href="#atlas-sources">{t("数据与来源","Data & sources")}</a><a className="atlas-language" href={`${base}/${zh?"en/":""}overseas/?${alternateQuery}`} hrefLang={zh?"en":"zh-CN"} lang={zh?"en":"zh-CN"} aria-label={zh?"English":"中文"}>{zh?"EN":"中文"}</a><a href={`${base}/${zh?"":"en/"}#projects`}>{t("返回作品","Portfolio")} ↗</a></nav></header>
+  <header className="atlas-header"><a className="atlas-home" href={`${base}/${zh?"":"en/"}`}><b><NavigationAvatar alt={t("王睿","Rui Wang")} size={192}/></b><span>OPEN MARKET ATLAS</span></a><nav><a href="#atlas-sources">{t("数据与来源","Data & sources")}</a><a className="atlas-language" href={`${base}/${zh?"en/":""}overseas/?${alternateQuery}`} hrefLang={zh?"en":"zh-CN"} lang={zh?"en":"zh-CN"} aria-label={zh?"English":"中文"}>{zh?"EN":"中文"}</a><a href={`${base}/${zh?"":"en/"}#projects`}>{t("返回作品","Portfolio")} ↗</a></nav></header>
   <section className="atlas-intro"><div><p>PUBLIC DATA / GLOBAL PERSPECTIVES</p><h1>{t("从多国数据，理解市场。","A clearer view of markets.")}</h1><p className="atlas-lead">{t("人口、数字生活、经济与教育。把每个指标的数值、定义和出处放在一起。","Population, digital life, economy and education — values, definitions, and sources in one place.")}</p></div><div className="atlas-stamp"><span>WORLD DEVELOPMENT INDICATORS</span><strong>{t("多国 · 多维度","Across markets")}</strong><span>{t("数据采集","Collected")} {atlas.collectedAt.slice(0,10)}</span></div></section>
   <AtlasViewState ready={ready} language={language} defaultLabel={`${zh?defaultCountry.name:defaultCountry.english} · ${zh?defaultMetric.name:defaultMetric.originalName} · ${atlasDefaults.year}`}>
   <div className="atlas-country-strip" aria-label={t("选择国家","Choose a country")}>{atlas.countries.map(c=><button type="button" key={c.iso3} aria-pressed={country===c.iso3} onClick={()=>setCountry(c.iso3)}><span>{c.iso3}</span>{zh?c.name:c.english}</button>)}</div>
