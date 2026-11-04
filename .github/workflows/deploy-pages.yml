@@ -44,7 +44,7 @@ jobs:
         run: pnpm run build:github
 
       - name: Verify public artifact
-        run: node --test tests/site-content.test.mjs tests/social-meta.test.mjs tests/globe-research.test.mjs tests/ai-navigation.test.mjs tests/research-artifacts.test.mjs
+        run: node --test tests/site-content.test.mjs tests/social-meta.test.mjs tests/globe-research.test.mjs tests/ai-navigation.test.mjs tests/research-artifacts.test.mjs tests/work-navigation.test.mjs
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
