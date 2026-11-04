@@ -7,4 +7,16 @@
 .pf-ai-outcome{border-left:2px solid #c4ac85;padding-left:16px;margin:20px 0 24px}
 .pf-ai-outcome>span{font-size:10px;color:#c4ac85;line-height:1.7}
 .pf-ai-outcome>p{font-size:13px;line-height:1.85;color:#d5e1e6;margin:8px 0 0}
+.portfolio-v17 .pf-ai-tabs button>.pf-ai-tab-label{font-size:inherit;color:inherit;white-space:nowrap}
+.pf-ai-tab-indicator{display:none}
 @media(max-width:699px){.pf-contribution{margin-top:18px;padding-top:14px}.pf-contribution p{font-size:12px}.pf-ai-outcome>p{font-size:12px}.pf-ai-outcome{padding-left:13px;margin-block:18px}}
+@media(max-width:767px){
+  .portfolio-v17 .pf-ai-tabs{display:grid;grid-template-columns:minmax(0,1fr);gap:0;overflow:visible;border-top:1px solid #354155;border-bottom:0;margin-bottom:24px;scrollbar-width:none}
+  .portfolio-v17 .pf-ai-tabs::-webkit-scrollbar{display:none}
+  .portfolio-v17 .pf-ai-tabs button{display:grid;grid-template-columns:22px minmax(0,1fr) 12px;align-items:center;gap:10px;width:100%;min-width:0;min-height:56px;padding:15px 12px;border-left:2px solid transparent;border-bottom:1px solid #354155;font-size:12px;text-align:left;background:transparent;box-shadow:none}
+  .portfolio-v17 .pf-ai-tabs button>.pf-ai-tab-label{white-space:nowrap;min-width:0;line-height:1.6}
+  .portfolio-v17 .pf-ai-tabs button[aria-selected=true]{background:#202f42;border-left-color:#c4ac85;border-bottom-color:#526071;box-shadow:none;color:#f0ebe1}
+  .portfolio-v17 .pf-ai-tabs button:focus-visible{outline:2px solid #c4ac85;outline-offset:3px;z-index:1}
+  .portfolio-v17 .pf-ai-tabs button:hover{background:#23344a}
+  .portfolio-v17 .pf-ai-tab-indicator{display:block;width:12px;height:16px;stroke:currentColor;stroke-width:1.5}
+}

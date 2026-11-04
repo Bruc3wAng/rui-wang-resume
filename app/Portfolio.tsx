@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent, type CSSProperties } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, type KeyboardEvent, type PointerEvent, type CSSProperties } from "react";
 import Image from "next/image";
 import NavigationAvatar from "./NavigationAvatar";
 import { profile, selectedWork, experiences, aiPractice, creativeCategories, capabilities, education, type Language } from "../content/resume";
@@ -20,6 +20,14 @@ const base = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 const atlasBase = base || "https://bruc3wang.github.io/rui-wang-resume";
 const local = (l: Language, zh: string, en: string) => l === "zh" ? zh : en;
 const chapters = ["work", "method", "projects", "capabilities", "contact"];
+const compactAIQuery = "(max-width: 767px)";
+function subscribeCompactAI(onChange: () => void) {
+  const media = window.matchMedia(compactAIQuery);
+  media.addEventListener("change", onChange);
+  return () => media.removeEventListener("change", onChange);
+}
+function isCompactAI() { return window.matchMedia(compactAIQuery).matches; }
+function serverCompactAI() { return false; }
 const workAIPracticeById: Record<string, number | undefined> = {
   "content-tracking": 0, "brand-tracking": 1,
 };
@@ -124,12 +132,13 @@ function Work({ language, active, setActive, paused, onExploreAI }: { language: 
 }
 
 function AIPractice({ language, practice, stage, setPractice, setStage }: { language: Language; practice: number; stage: number; setPractice: (index: number) => void; setStage: (index: number) => void }) {
+  const compact = useSyncExternalStore(subscribeCompactAI, isCompactAI, serverCompactAI);
   const item = aiPractice[practice], detail = details[practice].stages[stage];
   const labels = [local(language, "我的判断", "My judgment"), local(language, "Codex 执行", "Codex execution"), local(language, "交付与复用", "Delivery & reuse")];
   function choosePractice(index: number) { setPractice(index); setStage(0); }
   return <section className="pf-ai pf-section" id="method" data-tone="night"><div className="pf-wrap">
     <div className="pf-section-head"><div><p className="pf-eyebrow">02 / RESEARCH × AI</p><h2>{local(language, "AI 提效实践", "AI in research practice")}</h2></div><p>{local(language, "把研究规则写进工具，让分析、核验与报告更新能够复用。", "Reusable tools for analysis, validation, and reporting, built around research rules.")}</p></div>
-    <div className="pf-ai-tabs" role="tablist" aria-label={local(language, "选择AI实践", "Choose an AI practice")}>{aiPractice.map((p, i) => <button key={p.id} role="tab" id={`pf-ai-tab-${i}`} aria-controls="pf-ai-panel" aria-selected={practice === i} tabIndex={practice === i ? 0 : -1} onClick={() => choosePractice(i)} onKeyDown={e => tabs(e, i, 3, choosePractice)}><span>0{i + 1}</span>{p.title[language]}</button>)}</div>
+    <div className="pf-ai-tabs" role="tablist" aria-orientation={compact ? "vertical" : "horizontal"} aria-label={local(language, "选择AI实践", "Choose an AI practice")}>{aiPractice.map((p, i) => <button type="button" key={p.id} role="tab" id={`pf-ai-tab-${i}`} aria-controls="pf-ai-panel" aria-selected={practice === i} tabIndex={practice === i ? 0 : -1} onClick={() => choosePractice(i)} onKeyDown={e => tabs(e, i, 3, choosePractice)}><span>0{i + 1}</span><span className="pf-ai-tab-label">{p.title[language]}</span><svg className="pf-ai-tab-indicator" aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="m6 4 4 4-4 4"/></svg></button>)}</div>
     <article id="pf-ai-panel" role="tabpanel" aria-labelledby={`pf-ai-tab-${practice}`} className="pf-ai-panel" data-practice={practice} data-stage={stage}>
       <div className="pf-ai-text"><p className="pf-ai-context">{item.context[language]}</p><div className="pf-ai-outcome"><span>{local(language, practice < 2 ? "研究成果" : "原型进展", practice < 2 ? "Research outcomes" : "Prototype progress")}</span><p>{item.output[language]}</p></div><div className="pf-stage-tabs" role="tablist" aria-label={local(language, "研究工作阶段", "Research workflow stage")}>{labels.map((label, i) => <button type="button" role="tab" key={label} id={`pf-stage-tab-${i}`} aria-controls="pf-stage-panel" aria-selected={stage === i} tabIndex={stage === i ? 0 : -1} onClick={() => setStage(i)} onKeyDown={e => tabs(e, i, 3, setStage)}><span>0{i + 1}</span>{label}</button>)}</div>
         <div id="pf-stage-panel" role="tabpanel" aria-labelledby={`pf-stage-tab-${stage}`} className="pf-stage-content" key={`${practice}-${stage}`}><h3>{detail.title[language]}</h3>{stage !== 2 && <p>{item[(["decision", "execution", "output"] as const)[stage]][language]}</p>}<dl>{detail.points.map(p => <div key={p.label.en}><dt>{p.label[language]}</dt><dd>{p.text[language]}</dd></div>)}</dl></div>
