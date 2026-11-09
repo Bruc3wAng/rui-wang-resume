@@ -121,8 +121,8 @@ test("exports the responsibility labels and separates contribution, AI use and d
     assert.match(region,/class="rg-study-explore"[^>]*aria-controls="pf-work-panel-0"/);
     const work=html.match(/<section\b[^>]*id="work"[^>]*>[\s\S]*?<section class="pf-internship-expanded"/)?.[0];
     assert.ok(work);
-    assert.equal([...work.matchAll(/class="pf-contribution pf-case-ai-note"/g)].length,2);
-    assert.ok(work.includes(marketStudyPresentation[1].ai[language]));
+    assert.equal([...work.matchAll(/class="pf-contribution pf-case-ai-note"/g)].length,3);
+    assert.match(work, language==="zh" ? /我设计并验证了 Codex 辅助复核工具/ : /I designed and validated a Codex-assisted review tool/);
     assert.doesNotMatch(work,/class="pf-market-return"/);
   }
 });

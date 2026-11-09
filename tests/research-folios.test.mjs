@@ -2,8 +2,43 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { selectedWork } from "../content/resume.ts";
+import { workStudyCopy, workStudyCopyFor } from "../app/work-study-copy.ts";
+import { folioDescriptionsFor } from "../content/work-folios.ts";
 const root=new URL("../",import.meta.url);
 const read=path=>readFile(new URL(path,root),"utf8");
+const escaped = value => value.replace(/[&<>"']/g, char => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#x27;" })[char]);
+
+test("case briefs use known study IDs, conservative claims and distinct evidenced AI work",()=>{
+  assert.deepEqual(Object.keys(workStudyCopy),selectedWork.map(work=>work.id));
+  assert.deepEqual(selectedWork.filter(work=>workStudyCopyFor(work.id).ai).map(work=>work.id),["content-tracking","brand-tracking","search-tracking"]);
+  assert.deepEqual(selectedWork.map(work=>workStudyCopyFor(work.id).output),[0,0,1,0,2]);
+  for(const work of selectedWork)for(const language of ["zh","en"]){
+    const story=workStudyCopyFor(work.id);
+    assert.ok(story.context[language].length < work.summary[language].length);
+    assert.ok(story.contribution[language].length > 25);
+    if(story.ai)assert.match(story.ai[language],/Codex/);
+    assert.ok(folioDescriptionsFor(work.id)[story.output].purpose[language]);
+  }
+  assert.doesNotMatch(JSON.stringify(workStudyCopy),/TikTok|ByteDance|Lenovo|联想|字节|BHT|Dreamina|\d+%|客户已采纳|Senior|GTM|全自动/i);
+  assert.throws(()=>workStudyCopyFor("not-a-study"),RangeError);
+});
+
+test("exposes the exact approved output purpose and a specific action in every bilingual case",async()=>{
+  const targets=process.env.NEXT_PUBLIC_BASE_PATH?["out",process.env.RUI_SITES_BUILD_DIR??"dist/client"]:["out"];
+  for(const build of targets)for(const language of ["zh","en"]){
+    const html=await read(`${build}/${language==="en"?"en/":""}index.html`);
+    for(const [index,work] of selectedWork.entries()){
+      const panel=html.match(new RegExp(`<article\\b[^>]*id="pf-work-panel-${index}"[^>]*>([\\s\\S]*?)<\\/article>`))?.[1];
+      assert.ok(panel);
+      const story=workStudyCopyFor(work.id);
+      assert.ok(panel.includes(`<p class="pf-work-summary">${escaped(story.context[language])}</p>`));
+      const result=panel.match(new RegExp(`<div class="pf-case-result" data-case-output="${story.output}">([\\s\\S]*?)<\\/div>`))?.[1];
+      assert.ok(result?.includes(escaped(folioDescriptionsFor(work.id)[story.output].purpose[language])));
+      assert.match(result,new RegExp(`class="pf-case-output-action" aria-controls="pf-folio-page-${index}" aria-describedby="pf-case-output-title-${index}"`));
+      assert.equal(panel.includes('class="pf-contribution pf-case-ai-note"'),Boolean(story.ai));
+    }
+  }
+});
 
 test("covers each work entry with three distinct bilingual contribution and purpose descriptions",async()=>{
   const {folioDescriptions,folioDescriptionsFor}=await import("../content/work-folios.ts");
@@ -39,6 +74,9 @@ test("renders substantive output selection and moves focus only for explicit ope
   assert.match(ui,/focusContents.current/);assert.match(ui,/selectedOutput.current\?\.focus\(\{ preventScroll: true \}\)/);
   assert.match(ui,/ref=\{i === output \? selectedOutput : undefined\}/);
   assert.match(ui,/e.key === "Escape"/);assert.match(ui,/toggleButton.current\?\.focus\(\{ preventScroll: true \}\)/);
+  assert.match(ui,/folio.current\?\.openAt\(story.output, event.currentTarget\)/);
+  assert.match(ui,/opener.current = source/);
+  assert.match(ui,/target.focus\(\{ preventScroll: true \}\)/);
 });
 
 test("exports responsibility at first scan and unique accessible output targets on both builds",async()=>{

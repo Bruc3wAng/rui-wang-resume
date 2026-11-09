@@ -70,7 +70,8 @@ test("reveals a project only on explicit narrow-screen selection and supports re
   assert.match(ui,/focus\(\{ preventScroll: true \}\)/);
   assert.match(ui,/revealTarget.current = null/);
   assert.match(ui,/function returnToIndex\(\)/);
-  assert.match(ui,/onClick=\{returnToIndex\}/);
+  assert.match(ui,/onReturn=\{origin \? \(\) => onBackToMarket\(origin\) : returnToIndex\}/);
+  assert.match(ui,/className="pf-work-return" type="button" onClick=\{onReturn\}/);
 });
 
 test("derives AI-to-work links from the same mapping and excludes the personal prototype",async()=>{

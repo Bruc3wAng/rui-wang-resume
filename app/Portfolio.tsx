@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useSyncExternalStore, type KeyboardEvent, type PointerEvent, type CSSProperties } from "react";
+import { useEffect, useImperativeHandle, useRef, useState, useSyncExternalStore, type KeyboardEvent, type PointerEvent, type CSSProperties, type Ref } from "react";
 import Image from "next/image";
 import NavigationAvatar from "./NavigationAvatar";
 import { profile, selectedWork, experiences, aiPractice, creativeCategories, capabilities, education, type CreativeItem, type Language } from "../content/resume";
@@ -9,15 +9,15 @@ import release from "../content/resume-release.json";
 import ResumeDownload from "./ResumeDownload";
 import PortfolioLight from "./PortfolioLight";
 import InteractiveGlobe from "./InteractiveGlobe";
-import { caseWorkIndices, type MarketStudyOrigin } from "./globe-research";
+import type { MarketStudyOrigin } from "./globe-research";
 import ShareLocale from "./ShareLocale";
 import ResearchLab, { type ResearchLabHandle } from "./ResearchLab";
 import { researchExampleFor } from "./research-lab";
 import { internshipProjects } from "../content/portfolio-exhibits";
 import { folioDescriptionsFor, responsibilityLabel } from "../content/work-folios";
-import { marketStudyPresentation } from "../content/market-studies";
 import { atlasProjectPath, personalProjectHref, personalProjectStories, personalProjectStory } from "../content/personal-projects";
 import WorkStudyHeader from "./WorkStudyHeader";
+import { workStudyCopyFor } from "./work-study-copy";
 import { browserPortfolioFragment, portfolioLocaleHref, staticPortfolioFragment, studyFragment, studyHistoryInitializer, studyIndexFromFragment, subscribePortfolioFragment, updatePortfolioFragment, type HistoryMode } from "./study-location";
 import "./portfolio.css";
 import "./portfolio-refinement.css";
@@ -50,31 +50,26 @@ const workAIPracticeById: Record<string, number | undefined> = {
 const workNotes = [
   {
     question: { zh: "哪些体验因素，与用户满意度关联更强？", en: "Which experiences matter most to user satisfaction?" },
-    judgment: { zh: "确认分组、加权与跨期比较条件，核对分析方法的差异，解释体验因素与满意度的关系。", en: "Define groups, weighting, and wave-comparison criteria; examine methodological differences and interpret relationships with satisfaction." },
     outputs: { zh: ["跨市场分析报告", "跨期比较", "分析方法 SOP"], en: ["Cross-market report", "Wave comparisons", "Analysis guide"] },
     nodes: { zh: ["市场与平台", "用户分组", "体验因素", "满意度分析"], en: ["Markets & platforms", "Audience groups", "Experience factors", "Satisfaction analysis"] },
   },
   {
     question: { zh: "不同客群、品类与期次，如何持续判断品牌表现？", en: "How does brand performance compare across audiences, categories, and waves?" },
-    judgment: { zh: "厘清指标定义与历史可比性，追溯数据、平台和报告差异，判断哪些需要修正、哪些应保留。", en: "Align definitions and historical comparisons; trace discrepancies across data, platforms, and reports to distinguish corrections from valid differences." },
     outputs: { zh: ["多期数据与报告", "来源与指标映射", "复用程序"], en: ["Multi-wave reports", "Source & metric mapping", "Reusable tools"] },
     nodes: { zh: ["客群与品类", "指标定义", "历史可比性", "品牌表现"], en: ["Audiences & categories", "Metric definitions", "Historical comparisons", "Brand performance"] },
   },
   {
     question: { zh: "不同用户怎样消费内容，目标人群在哪里？", en: "How do audiences consume content, and where do they overlap?" },
-    judgment: { zh: "组织研究执行与用户分层，比较内容偏好、消费习惯及人群重合，为目标用户和内容定位提供依据。", en: "Manage fieldwork and audience segmentation; compare preferences, consumption habits, and overlap to inform positioning." },
     outputs: { zh: ["用户分层", "偏好与习惯比较", "分析交付"], en: ["Audience segments", "Preference comparisons", "Analytical delivery"] },
     nodes: { zh: ["用户分层", "内容偏好", "消费习惯", "人群重合"], en: ["Audience segments", "Content preferences", "Consumption habits", "Audience overlap"] },
   },
   {
     question: { zh: "用户什么时候搜索，又会想到哪些平台？", en: "When do people search, and which platforms come to mind?" },
-    judgment: { zh: "通过用户分层、交叉分析与趋势比较，解释不同市场与人群的搜索场景、平台认知和使用习惯。", en: "Use segmentation, cross-tabulation, and trend comparisons to examine search contexts, awareness, and habits across markets." },
     outputs: { zh: ["跨市场比较", "用户与场景分析", "批量核验工具"], en: ["Market comparisons", "Audience & context analysis", "Batch-validation tools"] },
     nodes: { zh: ["平台认知", "搜索场景", "使用习惯", "趋势比较"], en: ["Platform awareness", "Search contexts", "Usage habits", "Trend comparisons"] },
   },
   {
     question: { zh: "使用场景和采购决策背后，有哪些真实需求？", en: "What needs shape product use and purchasing decisions?" },
-    judgment: { zh: "结合海外实地访谈与定量资料理解需求，协调跨语言研究执行，将用户场景与产品问题联系起来。", en: "Combine international field interviews and survey evidence, coordinate cross-language research, and connect use cases with product needs." },
     outputs: { zh: ["实地研究资料", "用户画像", "需求与决策分析"], en: ["Field-research evidence", "User profiles", "Needs & decision analysis"] },
     nodes: { zh: ["实地访谈", "用户场景", "产品需求", "采购决策"], en: ["Field interviews", "Use cases", "Product needs", "Purchasing decisions"] },
   },
@@ -98,9 +93,13 @@ function tilt(e: PointerEvent<HTMLElement>, paused: boolean) {
 }
 function resetTilt(e: PointerEvent<HTMLElement>) { e.currentTarget.style.setProperty("--rx", "0deg"); e.currentTarget.style.setProperty("--ry", "0deg"); }
 
-function ResearchObject({ active, language, paused }: { active: number; language: Language; paused: boolean }) {
+type ResearchFolioHandle = { openAt: (output: number, source: HTMLButtonElement) => void };
+
+function ResearchObject({ active, language, paused, ref }: { active: number; language: Language; paused: boolean; ref: Ref<ResearchFolioHandle> }) {
   const [open, setOpen] = useState(false), [output, setOutput] = useState(0);
+  const [focusRequest, setFocusRequest] = useState(0);
   const selectedOutput = useRef<HTMLButtonElement>(null), toggleButton = useRef<HTMLButtonElement>(null), page = useRef<HTMLDivElement>(null), focusContents = useRef(false);
+  const opener = useRef<HTMLButtonElement | null>(null);
   const note = workNotes[active];
   const description = folioDescriptionsFor(selectedWork[active].id)[output];
   const pageId = `pf-folio-page-${active}`;
@@ -110,9 +109,28 @@ function ResearchObject({ active, language, paused }: { active: number; language
     focusContents.current = false;
     page.current?.scrollIntoView({ behavior: paused ? "auto" : "smooth", block: "nearest" });
     selectedOutput.current?.focus({ preventScroll: true });
-  }, [open, paused]);
-  function closeFolio() { setOpen(false); toggleButton.current?.focus({ preventScroll: true }); }
-  function toggleFolio() { if (open) closeFolio(); else { focusContents.current = true; setOpen(true); } }
+  }, [open, paused, focusRequest]);
+  function openAt(index: number, source: HTMLButtonElement) {
+    opener.current = source;
+    focusContents.current = true;
+    setOutput(index);
+    setOpen(true);
+    setFocusRequest(value => value + 1);
+  }
+  useImperativeHandle(ref, () => ({ openAt }));
+  function closeFolio() {
+    setOpen(false);
+    const target = opener.current;
+    opener.current = null;
+    if (target?.isConnected && target !== toggleButton.current) {
+      target.scrollIntoView({ behavior: paused ? "instant" : "smooth", block: "center" });
+      target.focus({ preventScroll: true });
+    } else toggleButton.current?.focus({ preventScroll: true });
+  }
+  function toggleFolio() {
+    if (open) closeFolio();
+    else if (toggleButton.current) openAt(output, toggleButton.current);
+  }
   return <div className={`pf-research-object object-${active}`} data-open={open} data-output={output} onKeyDown={e => { if (e.key === "Escape" && open) { e.preventDefault(); e.stopPropagation(); closeFolio(); } }}>
     <div className="pf-object-orbit" aria-hidden="true" />
     <div className="pf-report-sheet sheet-back" aria-hidden="true" />
@@ -139,6 +157,40 @@ function ResearchObject({ active, language, paused }: { active: number; language
 }
 
 type WorkMarketContext = MarketStudyOrigin & { workIndex: number };
+
+function WorkStudyPanel({ index, selected, ready, compact, language, paused, onReturn, fromMarket, onExploreAI }: {
+  index: number; selected: boolean; ready: boolean; compact: boolean; language: Language; paused: boolean;
+  onReturn: () => void; fromMarket: boolean; onExploreAI: (index: number) => void;
+}) {
+  const folio = useRef<ResearchFolioHandle>(null);
+  const item = selectedWork[index], note = workNotes[index], story = workStudyCopyFor(item.id), aiPracticeIndex = workAIPracticeById[item.id];
+  const outputName = note.outputs[language][story.output];
+  const outputPurpose = folioDescriptionsFor(item.id)[story.output].purpose[language];
+  const titleId = `pf-case-output-title-${index}`;
+  return <article hidden={ready && !selected} className="pf-work-panel" data-selected={selected} id={`pf-work-panel-${index}`} role={compact ? "region" : "tabpanel"} aria-labelledby={`pf-work-tab-${index}`}>
+    <span className="pf-study-anchor" id={studyFragment(item.id).slice(1)} aria-hidden="true"/>
+    <div className="pf-work-story">
+      {fromMarket
+        ? <button className="pf-market-return" type="button" onClick={onReturn}><Arrow/>{local(language, "返回市场研究", "Back to market studies")}</button>
+        : <button className="pf-work-return" type="button" onClick={onReturn}><Arrow/>{local(language, "返回研究目录", "Back to study index")}</button>}
+      <WorkStudyHeader id={item.id} title={item.title[language]} role={item.role[language]} language={language}/>
+      <h3 id={`pf-work-question-${index}`} tabIndex={-1}>{note.question[language]}</h3>
+      <p className="pf-work-summary">{story.context[language]}</p>
+      <div className="pf-contribution"><h4>{local(language, "我的关键判断", "My analytical contribution")}</h4><p>{story.contribution[language]}</p></div>
+      {story.ai && <div className="pf-contribution pf-case-ai-note"><h4>{local(language, "AI 用法", "How I used AI")}</h4><p>{story.ai[language]}</p></div>}
+      <div className="pf-case-result" data-case-output={story.output}>
+        <h4>{local(language, "代表性交付", "Selected deliverable")}</h4>
+        <strong id={titleId}>{outputName}</strong>
+        <p>{outputPurpose}</p>
+        <button type="button" className="pf-case-output-action" aria-controls={`pf-folio-page-${index}`} aria-describedby={titleId} onClick={event => folio.current?.openAt(story.output, event.currentTarget)}>
+          {local(language, "查看交付说明", "View output details")}<Arrow/>
+        </button>
+      </div>
+      {aiPracticeIndex !== undefined && <button type="button" className="pf-case-ai-link" data-ai-practice={aiPracticeIndex} aria-controls="pf-ai-panel" onClick={() => onExploreAI(aiPracticeIndex)}>{aiPracticeIndex === 0 ? local(language, "查看 AI 分析流程", "Explore AI-assisted analysis") : local(language, "查看 AI 更新流程", "Explore AI-assisted reporting")}<Arrow/></button>}
+    </div>
+    <div className="pf-object-stage" onPointerMove={e => tilt(e, paused)} onPointerLeave={resetTilt}><ResearchObject ref={folio} active={index} language={language} paused={paused}/></div>
+  </article>;
+}
 
 function Work({ language, active, setActive, paused, ready, onExploreAI, marketContext, onBackToMarket, onReturnToIndex }: {
   language: Language; active: number; setActive: (n: number, mode?: HistoryMode) => void; paused: boolean; ready: boolean;
@@ -173,26 +225,11 @@ function Work({ language, active, setActive, paused, ready, onExploreAI, marketC
         <div className="pf-work-nav" id="pf-work-index" role={compact ? "group" : "tablist"} aria-label={local(language, "选择研究项目", "Select a research project")} aria-orientation={compact ? undefined : "vertical"}>
           {selectedWork.map((p, i) => <button type="button" role={compact ? undefined : "tab"} key={p.id} id={`pf-work-tab-${i}`} aria-controls={`pf-work-panel-${i}`} aria-selected={compact ? undefined : active === i} aria-pressed={compact ? active === i : undefined} tabIndex={compact || active === i ? 0 : -1} onClick={() => chooseWork(i)} onKeyDown={e => tabs(e, i, selectedWork.length, setActive, ":scope > button")}><span>{p.index}</span><div><span className="pf-work-ownership">{responsibilityLabel(p.role[language])}</span><strong>{p.title[language]}</strong><small>{p.scope[language]}</small></div><span className="pf-tab-arrow" aria-hidden="true">↗</span></button>)}
         </div>
-        {selectedWork.map((item, index) => { const note = workNotes[index], aiPracticeIndex = workAIPracticeById[item.id];
+        {selectedWork.map((item, index) => {
           const origin = marketContext?.workIndex === index ? marketContext : null;
-          const caseIndex = caseWorkIndices.findIndex(workIndex => workIndex === index);
-          const caseAI = caseIndex < 0 ? undefined : marketStudyPresentation[caseIndex].ai;
-          return <article key={item.id} hidden={ready && active !== index} className="pf-work-panel" data-selected={active === index} id={`pf-work-panel-${index}`} role={compact ? "region" : "tabpanel"} aria-labelledby={`pf-work-tab-${index}`}>
-          <span className="pf-study-anchor" id={studyFragment(item.id).slice(1)} aria-hidden="true"/>
-          <div className="pf-work-story" key={item.id}>
-            {origin
-              ? <button className="pf-market-return" type="button" onClick={() => onBackToMarket(origin)}><Arrow/>{local(language, "返回市场研究", "Back to market studies")}</button>
-              : <button className="pf-work-return" type="button" onClick={returnToIndex}><Arrow/>{local(language, "返回研究目录", "Back to study index")}</button>}
-            <WorkStudyHeader id={item.id} title={item.title[language]} role={item.role[language]} language={language}/>
-            <h3 id={`pf-work-question-${index}`} tabIndex={-1}>{note.question[language]}</h3>
-            <p className="pf-work-summary">{item.summary[language]}</p>
-            <div className="pf-contribution"><h4>{local(language, "我的关键判断", "My analytical contribution")}</h4><p>{note.judgment[language]}</p></div>
-            {caseAI && <div className="pf-contribution pf-case-ai-note"><h4>{local(language, "AI 用法", "How I used AI")}</h4><p>{caseAI[language]}</p></div>}
-            <div className="pf-deliverables"><span>{local(language, "研究交付", "Deliverables")}</span>{note.outputs[language].map(v => <strong key={v}>{v}</strong>)}</div>
-            {aiPracticeIndex !== undefined && <button type="button" className="pf-case-ai-link" data-ai-practice={aiPracticeIndex} aria-controls="pf-ai-panel" onClick={() => onExploreAI(aiPracticeIndex)}>{aiPracticeIndex === 0 ? local(language, "查看 AI 分析流程", "Explore AI-assisted analysis") : local(language, "查看 AI 更新流程", "Explore AI-assisted reporting")}<Arrow/></button>}
-          </div>
-          <div className="pf-object-stage" onPointerMove={e => tilt(e, paused)} onPointerLeave={resetTilt}><ResearchObject active={index} language={language} paused={paused}/></div>
-        </article>; })}
+          return <WorkStudyPanel key={item.id} index={index} selected={active === index} ready={ready} compact={compact} language={language} paused={paused}
+            fromMarket={origin !== null} onReturn={origin ? () => onBackToMarket(origin) : returnToIndex} onExploreAI={onExploreAI}/>;
+        })}
       </div>
       <section className="pf-internship-expanded"><header><div><p className="pf-eyebrow">EARLIER EXPERIENCE / COMMERCIAL RESEARCH</p><h3>{earlier.company[language]}<span>{earlier.title[language]}</span></h3></div><span>{earlier.period[language]}</span></header><div>{internshipProjects.map((project,i)=><article key={project.title.en}><span className="pf-internship-number">0{i+1}</span><h4>{project.title[language]}</h4><div><p>{project.contribution[language]}</p><p className="pf-internship-output">{project.output[language]}</p></div></article>)}</div></section>
     </div>
