@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { aiPractice } from "../content/resume.ts";
+import { researchExampleFor } from "../app/research-lab.ts";
 
 const root=new URL("../",import.meta.url);
 test("exports complete AI practice labels and decorative-only selection indicators",async()=>{
@@ -16,6 +17,18 @@ test("exports complete AI practice labels and decorative-only selection indicato
       assert.ok(tab[0].includes(`<span class="pf-ai-tab-label">${aiPractice[index].title[language]}</span>`));
       assert.match(tab[0],/<svg class="pf-ai-tab-indicator" aria-hidden="true"/);
     }
+  }
+});
+
+test("both homepages expose a guided example before the detailed workflow",async()=>{
+  const targets=process.env.NEXT_PUBLIC_BASE_PATH?["out",process.env.RUI_SITES_BUILD_DIR??"dist/client"]:["out"];
+  for(const build of targets)for(const language of ["zh","en"]){
+    const html=await readFile(new URL(`${build}/${language==="en"?"en/":""}index.html`,root),"utf8");
+    const strip=html.match(/<div class="pf-ai-example"[\s\S]*?<\/button><\/div>/)?.[0];
+    assert.ok(strip?.includes(researchExampleFor(0).title[language]));
+    assert.match(strip,/class="pf-ai-run-example" aria-controls="pf-ai-method-example"/);
+    assert.ok(html.indexOf(strip)<html.indexOf('id="pf-ai-panel"'));
+    assert.equal(html.match(/id="pf-ai-method-example"/g)?.length,1);
   }
 });
 

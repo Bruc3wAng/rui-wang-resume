@@ -9,6 +9,24 @@
 .pf-ai-outcome>p{font-size:13px;line-height:1.85;color:#d5e1e6;margin:8px 0 0}
 .portfolio-v17 .pf-ai-tabs button>.pf-ai-tab-label{font-size:inherit;color:inherit;white-space:nowrap}
 .pf-ai-tab-indicator{display:none}
+.pf-ai-example{position:relative;display:grid;grid-template-columns:44px minmax(0,1fr) auto;align-items:center;gap:18px;margin:0 0 18px;padding:17px 20px;border:1px solid #4b5868;border-left:2px solid #bc9f71;background:linear-gradient(115deg,#223247,#19283b);color:#f0ece2}
+.pf-ai-example-mark{width:38px;height:38px;stroke:#cbb58f;stroke-width:1.2;stroke-linecap:round;justify-self:center}
+.pf-ai-example>div{min-width:0}
+.pf-ai-example>div>span{display:block;color:#d2be9a;font-size:10px;letter-spacing:.09em;line-height:1.5}
+.pf-ai-example h3{font-size:clamp(16px,1.55vw,21px);font-weight:500;line-height:1.46;margin:5px 0 0;text-wrap:pretty}
+.pf-ai-example p{font-size:13px;line-height:1.6;color:#c5d0db;margin:5px 0 0;text-wrap:pretty}
+.portfolio-v17 .pf-ai-run-example{display:inline-flex;align-items:center;justify-content:space-between;gap:15px;min-height:44px;padding:8px 13px;background:#e8d7b7;border:1px solid #e8d7b7;color:#1a293b;font-size:13px;font-weight:600;white-space:nowrap;transition:background .2s,border-color .2s}
+.portfolio-v17 .pf-ai-run-example:hover{background:#f4e7cb;border-color:#f4e7cb}
+.portfolio-v17 .pf-ai-run-example:focus-visible{outline:2px solid #f4e7cb;outline-offset:4px}
+.pf-ai-run-example .pf-arrow{width:17px;height:17px;flex:none}
+.pf-ai-example+.pf-ai-project{margin-top:0;padding-top:0}
+@media(max-width:599px){
+  .pf-ai-example{grid-template-columns:minmax(0,1fr);gap:12px;padding:14px 14px 15px}
+  .pf-ai-example-mark{position:absolute;top:10px;right:12px;width:23px;height:23px;opacity:.8}
+  .pf-ai-example>div>span{padding-right:29px}
+  .pf-ai-example h3{font-size:16px}
+  .pf-ai-run-example{justify-self:start}
+}
 @media(max-width:699px){.pf-contribution{margin-top:18px;padding-top:14px}.pf-contribution p{font-size:12px}.pf-ai-outcome>p{font-size:12px}.pf-ai-outcome{padding-left:13px;margin-block:18px}}
 @media(max-width:767px){
   .portfolio-v17 .pf-ai-tabs{display:grid;grid-template-columns:minmax(0,1fr);gap:0;overflow:visible;border-top:1px solid #354155;border-bottom:0;margin-bottom:24px;scrollbar-width:none}

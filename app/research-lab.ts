@@ -35,6 +35,11 @@ export function planTrackingUpdate(values: boolean[]) {
   return {updates:selectedRules(updateRules,values),reviews:selectedRules(reviewRules,values),preserve:retentionRules.map(item=>({...item,action:{...item.action}}))};
 }
 export function planUpdates(values: boolean[]) { return planTrackingUpdate(values).updates; }
+export function trackingImpactForChange(values: boolean[], change: number) {
+  if (!Number.isInteger(change) || change < 0 || change > 2 || values[change] !== true) return null;
+  const {updates, reviews} = planTrackingUpdate([0,1,2].map(index=>index===change));
+  return {updates, reviews};
+}
 export const libraryExamples = [
   {category:"health",zh:"健康产品",en:"Health products",topicZh:"规格与组合",topicEn:"Formats & bundles",sourceZh:"商品资料",sourceEn:"Product material"},
   {category:"health",zh:"健康产品",en:"Health products",topicZh:"价格带定义",topicEn:"Price-band definitions",sourceZh:"指标记录",sourceEn:"Measure record"},
@@ -46,6 +51,28 @@ export function queryLibrary(category: string) { return libraryExamples.filter(r
 export type ResearchArtifactSection = { title: string; rows?: {label: string; text: string}[]; points?: string[] };
 export type ResearchArtifact = { title: string; summary: string; filename: string; sections: ResearchArtifactSection[] };
 function validPractice(practice: number) { if (!Number.isInteger(practice)||practice<0||practice>2) throw new RangeError("Unknown research practice"); }
+const examples: readonly { title: Bilingual; prompt: Bilingual; values: readonly [boolean,boolean,boolean]; category: "all" | "pet" }[] = [
+  {
+    title: {zh:"分析方法变了，两期结果还能直接比吗？",en:"The method changed. Can we still compare waves?"},
+    prompt: {zh:"人群和指标保持一致，看看比较前需要先做什么。",en:"The audience and measure are unchanged. See what to check before comparing."},
+    values: [false,true,true], category: "all",
+  },
+  {
+    title: {zh:"新增一期、指标也变了，报告要改哪里？",en:"A new wave and a revised measure: what needs updating?"},
+    prompt: {zh:"点开每个变化，查看它影响的更新项、复核项，以及应保留的内容。",en:"Trace each change to what needs updating or reviewing and what stays as it is."},
+    values: [true,true,false], category: "all",
+  },
+  {
+    title: {zh:"想比较宠物食品，先去哪里找资料？",en:"Where would you start a pet-food comparison?"},
+    prompt: {zh:"按品类找到研究主题和来源，再看比较前需要核对什么。",en:"Find relevant topics and sources, then see what to verify before comparing."},
+    values: [true,true,true], category: "pet",
+  },
+];
+export function researchExampleFor(practice: number) {
+  validPractice(practice);
+  const {title,prompt,values,category} = examples[practice];
+  return {title:{...title},prompt:{...prompt},values:[...values],category};
+}
 export function researchOutputLabels(practice: number, language: ResearchLanguage) {
   validPractice(practice);
   const labels = language==="zh" ? [["判断","处理","复用"],["范围","复核","规则"],["资料","来源","比较"]] : [["Findings","Actions","Reuse"],["Scope","Review","Rules"],["Records","Sources","Compare"]];

@@ -11,7 +11,8 @@ import PortfolioLight from "./PortfolioLight";
 import InteractiveGlobe from "./InteractiveGlobe";
 import { caseWorkIndices, type MarketStudyOrigin } from "./globe-research";
 import ShareLocale from "./ShareLocale";
-import ResearchLab from "./ResearchLab";
+import ResearchLab, { type ResearchLabHandle } from "./ResearchLab";
+import { researchExampleFor } from "./research-lab";
 import { internshipProjects } from "../content/portfolio-exhibits";
 import { folioDescriptionsFor, responsibilityLabel } from "../content/work-folios";
 import { marketStudyPresentation } from "../content/market-studies";
@@ -194,6 +195,8 @@ function Work({ language, active, setActive, paused, onExploreAI, marketContext,
 
 function AIPractice({ language, practice, stage, setPractice, setStage, onExploreWork }: { language: Language; practice: number; stage: number; setPractice: (index: number) => void; setStage: (index: number) => void; onExploreWork: (index: number) => void }) {
   const compact = useSyncExternalStore(subscribeCompactAI, isCompactAI, serverCompactAI);
+  const lab = useRef<ResearchLabHandle>(null);
+  const example = researchExampleFor(practice);
   const relatedWorkIndex = selectedWork.findIndex(work => workAIPracticeById[work.id] === practice);
   const item = aiPractice[practice], detail = details[practice].stages[stage];
   const labels = [local(language, "我的判断", "My judgment"), local(language, "Codex 执行", "Codex execution"), local(language, "交付与复用", "Delivery & reuse")];
@@ -201,13 +204,18 @@ function AIPractice({ language, practice, stage, setPractice, setStage, onExplor
   return <section className="pf-ai pf-section" id="method" data-tone="night"><div className="pf-wrap">
     <div className="pf-section-head"><div><p className="pf-eyebrow">02 / RESEARCH × AI</p><h2>{local(language, "AI 提效实践", "AI in research practice")}</h2></div><p>{local(language, "把研究规则写进工具，让分析、核验与报告更新能够复用。", "Reusable tools for analysis, validation, and reporting, built around research rules.")}</p></div>
     <div className="pf-ai-tabs" role="tablist" aria-orientation={compact ? "vertical" : "horizontal"} aria-label={local(language, "选择AI实践", "Choose an AI practice")}>{aiPractice.map((p, i) => <button type="button" key={p.id} role="tab" id={`pf-ai-tab-${i}`} aria-controls="pf-ai-panel" aria-selected={practice === i} tabIndex={practice === i ? 0 : -1} onClick={() => choosePractice(i)} onKeyDown={e => tabs(e, i, 3, choosePractice)}><span>0{i + 1}</span><span className="pf-ai-tab-label">{p.title[language]}</span><svg className="pf-ai-tab-indicator" aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="m6 4 4 4-4 4"/></svg></button>)}</div>
+    <div className="pf-ai-example" data-example={practice}>
+      <svg className="pf-ai-example-mark" viewBox="0 0 42 42" fill="none" aria-hidden="true"><path d="M8 21h11m4 0 9-12m-9 12 9 12"/><circle cx="6" cy="21" r="2.5"/><circle cx="21" cy="21" r="3"/><circle cx="34" cy="7" r="2.5"/><circle cx="34" cy="35" r="2.5"/></svg>
+      <div><span>{local(language, "方法示例", "WORKFLOW EXAMPLE")}</span><h3 id="pf-ai-example-title">{example.title[language]}</h3><p id="pf-ai-example-summary">{example.prompt[language]}</p></div>
+      <button type="button" className="pf-ai-run-example" aria-controls="pf-ai-method-example" aria-describedby="pf-ai-example-title pf-ai-example-summary" onClick={() => lab.current?.runExample()}>{local(language, "运行示例", "Run example")}<Arrow/></button>
+    </div>
     {relatedWorkIndex >= 0 && <div className="pf-ai-project" data-work-index={relatedWorkIndex}><div><span>{local(language, "研究项目", "RELATED STUDY")}</span><p>{selectedWork[relatedWorkIndex].title[language]}</p></div><button type="button" aria-controls={`pf-work-panel-${relatedWorkIndex}`} onClick={() => onExploreWork(relatedWorkIndex)}>{local(language, "查看项目", "View study")}<Arrow/></button></div>}
     <article id="pf-ai-panel" role="tabpanel" aria-labelledby={`pf-ai-tab-${practice}`} className="pf-ai-panel" data-practice={practice} data-stage={stage}>
       <div className="pf-ai-text"><p className="pf-ai-context">{item.context[language]}</p><div className="pf-ai-outcome"><span>{local(language, practice < 2 ? "研究成果" : "原型进展", practice < 2 ? "Research outcomes" : "Prototype progress")}</span><p>{item.output[language]}</p></div><div className="pf-stage-tabs" role="tablist" aria-label={local(language, "研究工作阶段", "Research workflow stage")}>{labels.map((label, i) => <button type="button" role="tab" key={label} id={`pf-stage-tab-${i}`} aria-controls="pf-stage-panel" aria-selected={stage === i} tabIndex={stage === i ? 0 : -1} onClick={() => setStage(i)} onKeyDown={e => tabs(e, i, 3, setStage)}><span>0{i + 1}</span>{label}</button>)}</div>
         <div id="pf-stage-panel" role="tabpanel" aria-labelledby={`pf-stage-tab-${stage}`} className="pf-stage-content" key={`${practice}-${stage}`}><h3>{detail.title[language]}</h3>{stage !== 2 && <p>{item[(["decision", "execution", "output"] as const)[stage]][language]}</p>}<dl>{detail.points.map(p => <div key={p.label.en}><dt>{p.label[language]}</dt><dd>{p.text[language]}</dd></div>)}</dl></div>
         <div className="pf-stage-footer"><span>{local(language, "研究规则 → 批量处理 → 重点复核", "RESEARCH RULES → BATCH EXECUTION → TARGETED REVIEW")}</span><button type="button" onClick={() => { setStage((stage + 1) % 3); document.getElementById(`pf-stage-tab-${(stage + 1) % 3}`)?.focus(); }} aria-label={local(language, "查看下一个阶段", "View the next stage")}><Arrow/></button></div>
       </div>
-      <div className="pf-ai-visual"><ResearchLab key={practice} practice={practice} stage={stage} language={language} onStageChange={setStage}/></div>
+      <div className="pf-ai-visual"><ResearchLab ref={lab} key={practice} practice={practice} stage={stage} language={language} onStageChange={setStage}/></div>
     </article>
     {practice < 2 && <p className="pf-adoption"><i aria-hidden="true"/>{local(language, "研究工具已用于正式交付并被同事采用；配套手册与团队分享支持持续复用。", "Research tools are used in formal delivery and adopted by colleagues, supported by guides and team sharing.")}</p>}
   </div></section>;
