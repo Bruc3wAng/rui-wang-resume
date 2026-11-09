@@ -1,9 +1,11 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { runInNewContext } from "node:vm";
 import { selectedWork } from "../content/resume.ts";
 import { siteUrl } from "../content/site.ts";
-import { portfolioLocaleHref, studyFragment, studyIndexFromFragment } from "../app/study-location.ts";
+import { portfolioLocaleHref, studyFragment, studyHistoryInitializer, studyIndexFromFragment } from "../app/study-location.ts";
+import { heroBrief, heroCases } from "../app/hero-brief.ts";
 
 const root=new URL("../",import.meta.url);
 const read=path=>readFile(new URL(path,root),"utf8");
@@ -26,6 +28,32 @@ test("work permalinks bind to stable case IDs, not order or visible labels",()=>
   assert.equal(portfolioLocaleHref("/rui-wang-resume","en"),"/rui-wang-resume/en/");
 });
 
+test("keeps chapter and case fragment history native without swallowing real route changes",()=>{
+  const initial="https://portfolio.test/rui-wang-resume/en/";
+  const location={href:initial};
+  const listeners=new Map();
+  runInNewContext(studyHistoryInitializer,{URL,location,addEventListener(name,listener,capture){
+    if(name==="popstate")assert.equal(capture,true);
+    listeners.set(name,listener);
+  }});
+  const pop=(next,expected)=>{
+    location.href=new URL(next,initial).href;
+    let intercepted=false;
+    listeners.get("popstate")({stopImmediatePropagation:()=>{intercepted=true}});
+    assert.equal(intercepted,expected,next);
+  };
+  pop("#work",true);
+  pop("#method",true);
+  location.href=initial+"#study-brand-tracking";
+  listeners.get("portfolio-fragment-change")();
+  pop("#work",true);
+  pop(initial,true);
+  pop(initial,false);
+  pop("?ref=portfolio#work",false);
+  pop("/rui-wang-resume/#work",false);
+  pop("/rui-wang-resume/overseas/#sources",false);
+});
+
 test("static pages contain one native target and explicit case header for every work story",async()=>{
   const targets=process.env.NEXT_PUBLIC_BASE_PATH?["out",process.env.RUI_SITES_BUILD_DIR??"dist/client"]:["out"];
   for(const target of targets)for(const language of ["zh","en"]){
@@ -40,6 +68,34 @@ test("static pages contain one native target and explicit case header for every 
   }
   const css=await read("app/work-navigation.css");
   assert.match(css,/data-study-url-ready=false[^\n]+:has\(\.pf-study-anchor:target\)[^\n]+display:grid/);
+});
+
+test("gives both homepages a native overview of three supported work studies before the globe",async()=>{
+  const ids=["content-tracking","brand-tracking","us-content"];
+  assert.deepEqual(heroCases.map(entry=>entry.id),ids);
+  assert.ok(heroCases.every(entry=>selectedWork.some(study=>study.id===entry.id)));
+  assert.match(heroCases[0].note.zh,/主要负责/);
+  assert.match(heroCases[1].note.zh,/Codex.*多期数据与报告/);
+  assert.match(heroCases[2].note.zh,/独立负责/);
+  const targets=process.env.NEXT_PUBLIC_BASE_PATH?["out",process.env.RUI_SITES_BUILD_DIR??"dist/client"]:["out"];
+  for(const target of targets)for(const language of ["zh","en"]){
+    const html=await read(`${target}/${language==="en"?"en/":""}index.html`);
+    const hero=html.match(/<section class="pf-hero"[^>]*>([\s\S]*?)<\/section>/)?.[1];
+    assert.ok(hero,"static hero region");
+    const index=hero.match(/<nav class="pf-hero-index"[^>]*>([\s\S]*?)<\/nav>/)?.[1];
+    assert.ok(index,"native case index");
+    assert.ok(hero.indexOf('class="pf-hero-index"')<hero.indexOf('class="rg-globe"'),"work links precede the map in reading order");
+    assert.ok(hero.includes(`<h1>${heroBrief.headline[language]}</h1>`));
+    assert.ok(hero.includes(heroBrief.summary[language]));
+    assert.match(hero,/class="pf-masthead-role".*Research Executive/);
+    assert.match(hero,/class="pf-button" href="#work"/);
+    assert.ok(hero.includes(`data-document-language="${language}"`));
+    assert.deepEqual([...index.matchAll(/<a class="pf-hero-case-link" href="([^"]+)"/g)].map(match=>match[1]),ids.map(studyFragment));
+    for(const entry of heroCases) {
+      assert.ok(index.includes(entry.title[language]));
+      assert.ok(index.includes(entry.note[language]));
+    }
+  }
 });
 
 test("shows the complete narrow-screen research index rather than a hidden horizontal rail",async()=>{

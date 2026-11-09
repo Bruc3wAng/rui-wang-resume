@@ -18,6 +18,7 @@ import { folioDescriptionsFor, responsibilityLabel } from "../content/work-folio
 import { atlasProjectPath, personalProjectHref, personalProjectStories, personalProjectStory } from "../content/personal-projects";
 import WorkStudyHeader from "./WorkStudyHeader";
 import { workStudyCopyFor } from "./work-study-copy";
+import { heroBrief, heroCases } from "./hero-brief";
 import { browserPortfolioFragment, portfolioLocaleHref, staticPortfolioFragment, studyFragment, studyHistoryInitializer, studyIndexFromFragment, subscribePortfolioFragment, updatePortfolioFragment, type HistoryMode } from "./study-location";
 import "./portfolio.css";
 import "./portfolio-refinement.css";
@@ -25,6 +26,7 @@ import "./work-value.css";
 import "./work-navigation.css";
 import "./research-folios.css";
 import "./personal-projects.css";
+import "./hero-brief.css";
 
 const base = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 const local = (l: Language, zh: string, en: string) => l === "zh" ? zh : en;
@@ -77,6 +79,25 @@ const workNotes = [
 
 function Arrow({ down = false }: { down?: boolean }) {
   return <svg aria-hidden="true" viewBox="0 0 24 24" className={down ? "pf-arrow is-down" : "pf-arrow"} fill="none"><path d="M4 12h15m-6-6 6 6-6 6" /></svg>;
+}
+
+function HeroCaseIndex({ language, onOpen }: { language: Language; onOpen: (id: string) => void }) {
+  return <nav className="pf-hero-index" aria-labelledby="pf-hero-index-title">
+    <h2 id="pf-hero-index-title">{local(language, "代表案例", "Selected studies")}</h2>
+    <ol role="list">
+      {heroCases.map((entry, i) => <li key={entry.id}>
+        <a className="pf-hero-case-link" href={studyFragment(entry.id)} onClick={event => {
+          if (event.button !== 0 || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
+          event.preventDefault();
+          onOpen(entry.id);
+        }}>
+          <span className="pf-hero-case-number" aria-hidden="true">0{i + 1}</span>
+          <span className="pf-hero-case-copy"><strong>{entry.title[language]}</strong><small>{entry.note[language]}</small></span>
+          <Arrow/>
+        </a>
+      </li>)}
+    </ol>
+  </nav>;
 }
 
 function tabs(e: KeyboardEvent<HTMLButtonElement>, index: number, total: number, set: (i: number) => void, selector = '[role="tab"]') {
@@ -396,6 +417,12 @@ export function Portfolio({ language }: { language: Language }) {
   function goToSection(id: string, focusId?: string) { setSectionLocation(id); jump(id, focusId); }
   function selectWork(index: number, mode: HistoryMode = "replace") { setMarketContext(null); setWorkLocation(index, mode); }
   function showWork(index: number) { setWorkLocation(index, "push"); jump(`pf-work-panel-${index}`, `pf-work-question-${index}`); }
+  function openFeaturedStudy(id: string) {
+    const index = selectedWork.findIndex(study => study.id === id);
+    if (index < 0) return;
+    setMarketContext(null);
+    showWork(index);
+  }
   function openWorkFromMarket(index: number, origin: MarketStudyOrigin) { setMarketContext({ ...origin, workIndex: index }); showWork(index); }
   function backToMarket(origin: WorkMarketContext) {
     const market = document.getElementById("rg-market-research")?.dataset.market;
@@ -409,7 +436,32 @@ export function Portfolio({ language }: { language: Language }) {
     <ShareLocale language={language}/>
     <a className="skip-link" href="#work">{local(language, "跳至工作经历", "Skip to work experience")}</a>
     <header className={`pf-header tone-${tone}`}><div className="pf-wrap pf-header-inner"><a className="pf-brand" href="#top"><NavigationAvatar/><span>{profile.name[language]}</span><small>RESEARCH & AI</small></a><nav aria-label={local(language, "主导航", "Main navigation")}>{nav.map((v, i) => <a href={`#${chapters[i]}`} key={v} aria-current={activeSection === chapters[i] ? "location" : undefined}>{v}</a>)}</nav><div className="pf-header-tools"><a href={portfolioLocaleHref(base, "zh", caseFragment)} hrefLang="zh-CN" lang="zh-CN" aria-label="中文" aria-current={language === "zh" ? "page" : undefined}>中</a><span>/</span><a href={portfolioLocaleHref(base, "en", caseFragment)} hrefLang="en" lang="en" aria-label="English" aria-current={language === "en" ? "page" : undefined}>EN</a><button type="button" onClick={() => setPalette(true)} aria-label={local(language, "打开快速访问", "Open quick access")}>⌘K</button></div></div><div className="pf-reading-progress" aria-hidden="true"/></header>
-    <section className="pf-hero" id="content" data-tone="light"><PortfolioLight paused={paused}/><div className="pf-wrap pf-hero-layout"><div className="pf-hero-copy"><p className="pf-eyebrow"><i/>IPSOS · RESEARCH EXECUTIVE · BEIJING</p><p className="pf-hero-name">{profile.name[language]}<span>{language === "zh" ? "RUI WANG" : "王睿"}</span></p><h1>{profile.headline[language]}</h1><p className="pf-positioning">{profile.positioning[language]}</p><p className="pf-hero-summary">{profile.summary[language]}</p><div className="pf-hero-actions"><a className="pf-button" href="#work">{local(language, "查看重点工作", "Explore selected work")}<Arrow/></a><ResumeDownload language={language} className="pf-download"/></div><div className="pf-hero-identity"><Image src={`${base}/images/rui-wang-portrait.jpg`} alt={local(language, "王睿的职业照片", "Portrait of Rui Wang")} width={48} height={54} unoptimized priority/><p>{local(language, "定量研究为主，结合定性证据。", "Quantitative-led, with qualitative perspective.")}<span>{local(language, "多国用户研究 · 品牌追踪 · AI 研究工作流", "Multi-country research · Brand tracking · AI workflows")}</span></p></div></div><div className="pf-hero-world"><div className="pf-world-label"><span>DIFFERENT MARKETS.</span><span>CONNECTED INSIGHTS.</span></div><InteractiveGlobe language={language} paused={paused} onExplore={openWorkFromMarket}/></div></div><div className="pf-hero-bottom pf-wrap"><span>RESEARCH / ANALYSIS / DELIVERY</span><a href="#work">{local(language, "继续探索", "Continue exploring")}<Arrow down/></a><button type="button" onClick={() => setPaused(v => !v)} aria-pressed={paused}>{paused ? "◌" : "≈"} {local(language, paused ? "开启动效" : "暂停动效", paused ? "Enable motion" : "Pause motion")}</button></div></section>
+    <section className="pf-hero" id="content" data-tone="light">
+      <PortfolioLight paused={paused}/>
+      <div className="pf-wrap pf-hero-layout">
+        <div className="pf-hero-copy">
+          <div className="pf-hero-masthead">
+            <Image src={`${base}/images/rui-wang-portrait.jpg`} alt={local(language, "王睿的职业照片", "Portrait of Rui Wang")} width={48} height={54} unoptimized priority/>
+            <div>
+              <p className="pf-masthead-name">{profile.name[language]}<span lang={language === "zh" ? "en" : "zh-CN"}>{language === "zh" ? "RUI WANG" : "王睿"}</span></p>
+              <p className="pf-masthead-role">{local(language, "益普索", "Ipsos")} · <span lang="en">{experiences[0].title.en}</span> · {local(language, "北京", "Beijing")}</p>
+            </div>
+          </div>
+          <h1>{heroBrief.headline[language]}</h1>
+          <p className="pf-hero-summary">{heroBrief.summary[language]}</p>
+          <div className="pf-hero-actions">
+            <a className="pf-button" href="#work">{local(language, "全部案例", "All cases")}<Arrow/></a>
+            <ResumeDownload language={language} className="pf-download"/>
+          </div>
+          <HeroCaseIndex language={language} onOpen={openFeaturedStudy}/>
+        </div>
+        <div className="pf-hero-world">
+          <div className="pf-world-label"><span>{local(language, "多国研究地图", "RESEARCH BY MARKET")}</span><span>{local(language, "选择市场，查看研究项目", "Select a market to see its studies")}</span></div>
+          <InteractiveGlobe language={language} paused={paused} onExplore={openWorkFromMarket}/>
+        </div>
+      </div>
+      <div className="pf-hero-bottom pf-wrap"><span>RESEARCH / ANALYSIS / DELIVERY</span><a href="#work">{local(language, "继续探索", "Continue exploring")}<Arrow down/></a><button type="button" onClick={() => setPaused(v => !v)} aria-pressed={paused}>{paused ? "◌" : "≈"} {local(language, paused ? "开启动效" : "暂停动效", paused ? "Enable motion" : "Pause motion")}</button></div>
+    </section>
     <Work language={language} active={activeWork} setActive={selectWork} paused={paused} ready={fragment !== null} marketContext={marketContext} onBackToMarket={backToMarket}
       onReturnToIndex={() => setSectionLocation("pf-work-index")} onExploreAI={index => { setActiveAIPractice(index); setAIStage(0); goToSection("method", `pf-ai-tab-${index}`); }}/>
     <AIPractice language={language} practice={activeAIPractice} stage={aiStage} setPractice={setActiveAIPractice} setStage={setAIStage} onExploreWork={index => { if (marketContext?.workIndex !== index) setMarketContext(null); showWork(index); }}/>

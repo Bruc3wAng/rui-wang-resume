@@ -16,16 +16,16 @@ export function portfolioLocaleHref(base: string, language: Language, fragment =
 }
 
 // Emit this fixed, data-free initializer in the static document before the
-// hosting adapter boots. Case fragments never need a page/data navigation.
+// hosting adapter boots. Homepage anchors are native same-document navigation.
 export const studyHistoryInitializer = `(() => {
   let previous = new URL(location.href);
   const sync = () => { previous = new URL(location.href); };
   addEventListener("popstate", event => {
     const next = new URL(location.href);
-    if (next.pathname === previous.pathname && next.search === previous.search && next.hash !== previous.hash
-      && (next.hash.startsWith(${JSON.stringify(casePrefix)}) || previous.hash.startsWith(${JSON.stringify(casePrefix)}))) {
+    if (next.pathname === previous.pathname && next.search === previous.search && next.hash !== previous.hash) {
       event.stopImmediatePropagation();
     }
+    previous = next;
   }, true);
   addEventListener("hashchange", sync);
   addEventListener(${JSON.stringify(changeEvent)}, sync);

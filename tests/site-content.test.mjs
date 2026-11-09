@@ -30,13 +30,13 @@ test("exports the bilingual public profile", async () => {
   assert.match(zh, /\+86 137 1880 1573/);
   assert.match(zh, /⌘K/);
   assert.match(zh, /Research Executive/);
-  assert.match(zh, /专注多国用户研究与品牌追踪/);
-  assert.match(en, /multi-country user research and brand tracking/);
+  assert.match(zh, /在益普索服务字节跳动与联想/);
+  assert.match(en, /At Ipsos, I serve ByteDance and Lenovo/);
   assert.match(zh, /内容体验与满意度追踪/);
   assert.match(zh, /搜索行为与用户心智研究/);
   assert.match(zh, /字节跳动与联想/);
   assert.match(zh, /相对权重分析/);
-  assert.match(zh, /研究用户如何选择、使用与评价产品/);
+  assert.match(zh, /多国用户研究与品牌追踪/);
   assert.match(zh, /跨市场分析报告/);
   assert.match(zh, /品牌表现追踪/);
   assert.match(zh, /跨客群、多品类/);
