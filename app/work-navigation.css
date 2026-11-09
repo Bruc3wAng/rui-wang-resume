@@ -1,5 +1,9 @@
 #pf-work-index,.pf-work-panel{scroll-margin-top:100px}
 .pf-work-return{display:none}
+.pf-market-return{display:inline-flex;align-items:center;gap:12px;min-height:44px;margin:0 0 14px;padding:8px 0;border:0;border-bottom:1px solid #bbc8d1;background:none;color:#365a7a;font-size:12px;white-space:nowrap}
+.pf-market-return .pf-arrow{width:16px;height:16px;rotate:180deg}
+.pf-market-return:focus-visible{outline:2px solid currentColor;outline-offset:4px}
+.pf-work-story .pf-market-work-title{margin:0 0 6px;font-size:13px;line-height:1.5;font-weight:600;color:#344f69}
 .pf-ai-project{display:flex;align-items:center;justify-content:space-between;gap:24px;margin:-4px 0 30px;padding:17px 0 20px;border-bottom:1px solid #354155}
 .pf-ai-project>div{min-width:0}
 .pf-ai-project>div>span{font-size:9px;letter-spacing:.08em;color:#c4ac85}

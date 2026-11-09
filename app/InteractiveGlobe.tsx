@@ -3,18 +3,15 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import Image from "next/image";
 import { cases, type Language } from "../content/resume";
+import { marketStudyPresentation } from "../content/market-studies";
+import { responsibilityLabel } from "../content/work-folios";
 import { globeMesh, networkMesh, projectPoint, researchMarkets } from "./globe-geometry";
 import { earthFragment, earthMaterial, earthPosterRevision, earthVertex } from "./earth-material";
-import { caseWorkIndices, researchForMarket } from "./globe-research";
+import { caseWorkIndices, marketStudyIndex, type MarketStudyOrigin } from "./globe-research";
 import "./earth-controls.css";
 
 const base = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
-const studyLabels = [
-  { zh: "内容追踪", en: "Content tracker" }, { zh: "搜索心智", en: "Search tracker" },
-  { zh: "搜索体验", en: "Search experience" }, { zh: "内容消费", en: "Content audiences" },
-];
-
-export default function InteractiveGlobe({ language, paused, onExplore }: { language: Language; paused: boolean; onExplore: (index: number) => void }) {
+export default function InteractiveGlobe({ language, paused, onExplore }: { language: Language; paused: boolean; onExplore: (index: number, origin: MarketStudyOrigin) => void }) {
   const canvas = useRef<HTMLCanvasElement>(null), labels = useRef<HTMLDivElement>(null), motion = useRef(paused);
   const focus = useRef<((lon: number, lat: number) => void) | null>(null), active = useRef(8);
   const changeStyle = useRef<((network: boolean) => void) | null>(null), redraw = useRef<(() => void) | null>(null);
@@ -22,9 +19,10 @@ export default function InteractiveGlobe({ language, paused, onExplore }: { lang
   const [view, setView] = useState("CN"), [study, setStudy] = useState(0);
   const loc = (zh: string, en: string) => language === "zh" ? zh : en;
   const selectedPlace = researchMarkets.find(p => p.code === selected);
-  const related = researchForMarket(cases, selected);
+  const related = marketStudyIndex(cases, selected);
   const currentStudy = related.find(item => item.index === study) ?? related[0];
   const workIndex = caseWorkIndices[currentStudy.index];
+  const presentation = marketStudyPresentation[currentStudy.index];
   useEffect(() => { motion.current = paused; redraw.current?.(); }, [paused]);
   useEffect(() => {
     const el = canvas.current;
@@ -112,17 +110,27 @@ export default function InteractiveGlobe({ language, paused, onExplore }: { lang
     el.addEventListener("pointerdown", down); el.addEventListener("pointermove", move); el.addEventListener("pointerup", up); el.addEventListener("pointercancel", up); el.addEventListener("keydown", key); el.addEventListener("webglcontextlost", lost); document.addEventListener("visibilitychange", visibility);
     return () => { alive = false; focus.current = null; changeStyle.current = null; redraw.current = null; image.onload = null; image.onerror = null; cloudImage.onload = null; cloudImage.onerror = null; nightImage.onload = null; nightImage.onerror = null; cancelAnimationFrame(frame); resizeObserver.disconnect(); observer.disconnect(); el.removeEventListener("pointerdown", down); el.removeEventListener("pointermove", move); el.removeEventListener("pointerup", up); el.removeEventListener("pointercancel", up); el.removeEventListener("keydown", key); el.removeEventListener("webglcontextlost", lost); document.removeEventListener("visibilitychange", visibility); gl.deleteTexture(texture); gl.deleteTexture(cloudTexture); gl.deleteTexture(nightTexture); gl.deleteBuffer(buffer); gl.deleteProgram(program); gl.deleteShader(vs); gl.deleteShader(fs); };
   }, []);
-  function choose(code: string, lon: number, lat: number) { active.current = code === "CN" ? 8 : researchMarkets.findIndex(p => p.code === code); setSelected(code); setView(focus.current ? code : "CN"); setStudy(cases.findIndex(item => code === "CN" || item.markets.includes(code))); focus.current?.(lon, lat); }
+  function choose(code: string, lon: number, lat: number) { active.current = code === "CN" ? 8 : researchMarkets.findIndex(p => p.code === code); setSelected(code); setView(focus.current ? code : "CN"); setStudy(marketStudyIndex(cases, code)[0].index); focus.current?.(lon, lat); }
+  function exploreFromGlobe(code: string, lon: number, lat: number) {
+    choose(code, lon, lat);
+    requestAnimationFrame(() => {
+      const directory = document.getElementById("rg-market-research");
+      if (directory?.dataset.market !== code) return;
+      directory.scrollIntoView({ behavior: paused ? "auto" : "smooth", block: "start" });
+      document.getElementById("rg-market-heading")?.focus({ preventScroll: true });
+    });
+  }
   function chooseStyle(value: string) { setStyle(value); changeStyle.current?.(value === "network"); }
   function keyboard(e: KeyboardEvent<HTMLDivElement>) { if (e.key === "Escape") { choose("CN", 105, 30); canvas.current?.focus(); } }
   function studyKey(e: KeyboardEvent<HTMLButtonElement>, index: number) {
-    const next = e.key === "Home" ? 0 : e.key === "End" ? related.length - 1 : e.key === "ArrowRight" ? (index + 1) % related.length : e.key === "ArrowLeft" ? (index + related.length - 1) % related.length : -1;
+    const offset = ({ ArrowRight: 1, ArrowLeft: -1, ArrowDown: 2, ArrowUp: -2 } as Record<string, number | undefined>)[e.key];
+    const next = e.key === "Home" ? 0 : e.key === "End" ? related.length - 1 : offset === undefined ? -1 : (index + offset + 2 * related.length) % related.length;
     if (next < 0) return; e.preventDefault(); setStudy(related[next].index); document.getElementById(`rg-study-tab-${related[next].index}`)?.focus();
   }
   return <div className="rg-globe" data-renderer={renderer} data-view={view} data-market-selection={selected} data-style={style} onKeyDown={keyboard}>
     <div className="rg-globe-stage"><div className="rg-globe-shadow"/><Image className="rg-earth-poster" src={`${base}/images/earth-china-poster.webp?v=${earthPosterRevision}`} width={768} height={768} alt={loc("中国视角的地球", "Earth centered on China")} aria-hidden={renderer === "webgl"} unoptimized priority draggable={false}/>
       <canvas ref={canvas} className="rg-globe-canvas" tabIndex={renderer === "webgl" ? 0 : -1} role="img" aria-hidden={renderer !== "webgl"} aria-label={loc("可旋转地球。拖动改变视角，方向键旋转，Home返回中国。", "Interactive globe. Drag or use arrow keys to rotate. Home centers China.")} onDragStart={e => e.preventDefault()}/>
-      <div className="rg-globe-nodes" ref={labels}>{researchMarkets.map(p => <button type="button" data-market={p.code} key={p.code} hidden disabled={renderer !== "webgl"} aria-label={loc(`选择${p.zh}研究市场`, `Select ${p.en} research market`)} aria-pressed={selected === p.code} onClick={() => choose(p.code, p.lon, p.lat)}><span>{p.code}</span></button>)}</div>
+      <div className="rg-globe-nodes" ref={labels}>{researchMarkets.map(p => <button type="button" data-market={p.code} key={p.code} hidden disabled={renderer !== "webgl"} aria-label={loc(`查看${p.zh}研究项目`, `View research in ${p.en}`)} aria-controls="rg-market-research" aria-pressed={selected === p.code} onClick={() => exploreFromGlobe(p.code, p.lon, p.lat)}><span>{p.code}</span></button>)}</div>
       <span className="rg-globe-note" role="status">{renderer === "fallback" ? loc("地球旋转暂不可用", "INTERACTIVE VIEW UNAVAILABLE") : renderer === "loading" ? loc("正在准备地球交互", "PREPARING INTERACTIVE VIEW") : loc("拖动旋转 · 选择市场", "DRAG TO ROTATE · SELECT A MARKET")}</span>
     </div>
     <div className="rg-globe-toolbar"><div className="rg-globe-styles" role="group" aria-label={loc("地球显示方式", "Globe display style")}><button type="button" disabled={renderer !== "webgl"} aria-pressed={style === "earth"} onClick={() => chooseStyle("earth")}><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8"/><ellipse cx="12" cy="12" rx="4" ry="8"/><path d="M4 12h16"/></svg>{loc("卫星", "Satellite")}</button><button type="button" disabled={renderer !== "webgl"} aria-pressed={style === "network"} onClick={() => chooseStyle("network")}><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 6 12 2-5 10L6 6l12 2M6 6l7 12"/><circle cx="6" cy="6" r="2"/><circle cx="18" cy="8" r="2"/><circle cx="13" cy="18" r="2"/></svg>{loc("研究网络", "Research network")}</button></div>
@@ -131,11 +139,23 @@ export default function InteractiveGlobe({ language, paused, onExplore }: { lang
       {researchMarkets.map(p => <button type="button" key={p.code} data-country={p.code} title={p[language]} aria-label={loc(`查看${p.zh}研究`, `Explore ${p.en} research`)} aria-pressed={selected === p.code} aria-controls="rg-market-research" onClick={() => p.code === "US" ? choose("US",-98,37) : choose(p.code, p.lon, p.lat)}><Image src={`${base}/images/flags/${p.flag}.svg`} alt="" width={21} height={16} unoptimized draggable={false}/><span><strong>{p.code}</strong><small>{p[language]}</small></span></button>)}
     </div>
     <section className="rg-market-research" id="rg-market-research" aria-labelledby="rg-market-heading" data-market={selected}>
-      <header><div><span>{loc("研究经历", "RESEARCH BY MARKET")}</span><h3 id="rg-market-heading">{selectedPlace ? selectedPlace[language] : loc("多国研究", "Multi-country studies")}</h3></div><p aria-live="polite">{related.length}{loc(" 项研究", " studies")}</p></header>
-      <div className="rg-study-tabs" role="tablist" aria-label={loc("选择该市场的研究", "Choose a study in this market")}>{related.map(({ index }, i) => <button type="button" role="tab" key={index} id={`rg-study-tab-${index}`} aria-selected={currentStudy.index === index} aria-controls="rg-study-panel" tabIndex={currentStudy.index === index ? 0 : -1} onClick={() => setStudy(index)} onKeyDown={e => studyKey(e, i)}>{studyLabels[index][language]}</button>)}</div>
-      <div className="rg-study-detail" id="rg-study-panel" role="tabpanel" aria-labelledby={`rg-study-tab-${currentStudy.index}`} data-study={currentStudy.index}>
-        <h4>{currentStudy.item.title[language]}</h4><p className="rg-study-role">{currentStudy.item.role[language]}</p><p>{currentStudy.item.approach[language]}</p>
-        {workIndex === null ? <p className="rg-study-delivery">{currentStudy.item.value[language]}</p> : <button className="rg-study-explore" type="button" onClick={() => onExplore(workIndex)} aria-controls={`pf-work-panel-${workIndex}`}>{loc("查看项目贡献", "Explore my contribution")}<span aria-hidden="true">↗</span></button>}
+      <header><div><span>{loc("研究经历", "RESEARCH BY MARKET")}</span><h3 id="rg-market-heading" tabIndex={-1}>{selectedPlace ? selectedPlace[language] : loc("多国研究", "Multi-country studies")}</h3></div><p role="status">{related.length}{loc(" 项研究", related.length === 1 ? " study" : " studies")}</p></header>
+      <div className="rg-study-tabs" role="tablist" aria-label={loc("选择该市场的研究", "Choose a study in this market")}>
+        {related.map(({ item, index }, i) => {
+          const card = marketStudyPresentation[index];
+          return <button type="button" role="tab" key={index} id={`rg-study-tab-${index}`} aria-selected={currentStudy.index === index} aria-controls="rg-study-panel" tabIndex={currentStudy.index === index ? 0 : -1} onClick={() => setStudy(index)} onKeyDown={e => studyKey(e, i)}>
+            <span className="rg-study-kind">{card.scope[language]}</span><strong>{card.shortTitle[language]}</strong><span className="rg-study-ownership">{responsibilityLabel(item.role[language])}</span>
+          </button>;
+        })}
+      </div>
+      <div className="rg-study-detail" id="rg-study-panel" role="tabpanel" aria-labelledby={`rg-study-tab-${currentStudy.index}`} tabIndex={0} data-study={currentStudy.index}>
+        <h4>{currentStudy.item.title[language]}</h4><p className="rg-study-role">{currentStudy.item.role[language]}</p>
+        <dl className="rg-study-proof">
+          <div><dt>{loc("我的工作", "My contribution")}</dt><dd>{(presentation.contribution ?? currentStudy.item.approach)[language]}</dd></div>
+          {presentation.ai && <div className="rg-study-ai"><dt>{loc("AI 用法", "How I used AI")}</dt><dd>{presentation.ai[language]}</dd></div>}
+          <div><dt>{loc("研究交付", "Deliverables")}</dt><dd>{(presentation.delivery ?? currentStudy.item.value)[language]}</dd></div>
+        </dl>
+        {workIndex !== null && <button className="rg-study-explore" type="button" onClick={() => onExplore(workIndex, { market: selected, studyIndex: currentStudy.index })} aria-controls={`pf-work-panel-${workIndex}`}>{loc("查看工作案例", "View the work case")}<span aria-hidden="true">↗</span></button>}
       </div>
     </section>
   </div>;

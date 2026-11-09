@@ -507,7 +507,7 @@ test("renders a genuinely rotatable globe with a China-centered default", async 
   assert.match(source,/choose\("US",-98,37\)/);
   assert.doesNotMatch(source,/research-globe\.png|torus|ringGeometry/);
   assert.match(source,/earthFragment.*earthMaterial.*earthVertex/);
-  assert.match(source,/researchForMarket\(cases, selected\)/);
+  assert.match(source,/marketStudyIndex\(cases, selected\)/);
   for(const locale of ["","en/"]){const html=await readFile(new URL(`out/${locale}index.html`,root),"utf8");assert.match(html,/data-view="CN"/);assert.match(html,/class="rg-globe-canvas"/);assert.match(html,/lenovo-horizontal.png/);assert.match(html,/uoft-signature.webp/);assert.match(html,/Exhibition-sector acquisition research|展会企业并购前期研究/);}
 });
 
