@@ -4,6 +4,7 @@ import { createRequire } from "node:module";
 import { access, readFile } from "node:fs/promises";
 import test from "node:test";
 import { resumeDocuments, resumeHref, resumePreviewHref } from "../content/resume-documents.ts";
+import { personalProjectStories, personalProjectStory } from "../content/personal-projects.ts";
 
 const root = new URL("../", import.meta.url);
 const sitesBuild = process.env.RUI_SITES_BUILD_DIR ?? "dist/client";
@@ -108,12 +109,93 @@ test("links each language to the available public Atlas on both hosting targets"
     const assetBase = exported.match(/src="([^"]*)\/_next\/static\//)?.[1];
     assert.notEqual(assetBase, undefined, "The static export must identify its asset prefix");
     const suffix = `${locale ? "/en" : ""}/overseas/`;
-    const link = exported.match(/<a\b[^>]*class="pf-atlas-feature"[^>]*href="([^"]+)"/);
+    const link = exported.match(/<a\b[^>]*class="pf-text-link pf-atlas-entry"[^>]*href="([^"]+)"/);
     assert.equal(link?.[1], `${assetBase || canonical}${suffix}`);
     if (process.env.NEXT_PUBLIC_BASE_PATH) {
       const sites = await readFile(new URL(`${sitesBuild}/${locale}index.html`, root), "utf8");
-      const sitesLink = sites.match(/<a\b[^>]*class="pf-atlas-feature"[^>]*href="([^"]+)"/);
+      const sitesLink = sites.match(/<a\b[^>]*class="pf-text-link pf-atlas-entry"[^>]*href="([^"]+)"/);
       assert.equal(sitesLink?.[1], `${canonical}${suffix}`);
+    }
+  }
+});
+
+const projectDestinations = [
+  { path: "/overseas/", id: "atlas", actions: ["比较发展指标", "Compare development indicators"], statuses: ["公开数据查询", "Public data explorer"] },
+  { path: "/projects/resume/", id: "resume", actions: ["查看双语履历", "View the bilingual résumé"], statuses: ["已上线", "Live"] },
+  { path: "/projects/photo-workbench/", id: "photo-workbench", actions: ["体验图片调色", "Try the photo editor"], statuses: ["交互原型", "Interactive prototype"] },
+  { path: "/projects/dinner-notes/", id: "dinner-notes", actions: ["试选今晚的餐厅", "Pick a place for dinner"], statuses: ["交互原型", "Interactive prototype"] },
+];
+
+function projectSection(html) {
+  const section = html.match(/<section\b[^>]*id="projects"[^>]*>[\s\S]*?<\/section>/)?.[0];
+  assert.ok(section, "Personal projects must be present in initial HTML");
+  return section;
+}
+
+test("binds project stories and artwork to the public routes, not titles or array positions", async () => {
+  const { creativeCategories } = await import("../content/resume.ts");
+  const paths = projectDestinations.map(item => item.path).sort();
+  assert.deepEqual(Object.keys(personalProjectStories).sort(), paths);
+  assert.deepEqual(creativeCategories.find(c => c.id === "web").items.map(item => item.liveUrl).sort(), paths);
+  assert.deepEqual(["resume", "photo-workbench", "dinner-notes"].map(slug => personalProjectStory(`/projects/${slug}/`)?.preview), [0, 1, 2]);
+  for (const invalid of [undefined, "/projects/private/", "constructor", "__proto__"]) assert.equal(personalProjectStory(invalid), undefined);
+  for (const story of Object.values(personalProjectStories)) for (const language of ["zh", "en"]) {
+    assert.ok(story.summary[language].length > 15 && story.contribution[language].length > 15);
+    assert.notEqual(story.summary[language], story.contribution[language]);
+  }
+});
+
+test("renders one actionable same-tab entry, accurate status and distinct credit for each exhibit", async () => {
+  const targets = process.env.NEXT_PUBLIC_BASE_PATH ? ["out", sitesBuild] : ["out"];
+  const canonical = "https://bruc3wang.github.io/rui-wang-resume";
+  for (const target of targets) for (const [i, language] of ["zh", "en"].entries()) {
+    const prefix = target === "out" ? process.env.NEXT_PUBLIC_BASE_PATH || "" : "";
+    const localePath = language === "en" ? "/en" : "";
+    const html = await readFile(new URL(`${target}${localePath}/index.html`, root), "utf8");
+    const section = projectSection(html);
+    assert.doesNotMatch(section, /View live|在线体验|已脱敏|anonymized|localStorage|自动订位|revenue|付费用户/i);
+    assert.equal([...section.matchAll(/class="pf-project-contribution"/g)].length, 4);
+    const links = [...section.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)];
+    assert.equal(links.length, 5, "Four exhibit entries plus the existing source link");
+    assert.equal(links.filter(([, attrs]) => /target="_blank"/.test(attrs)).length, 1);
+    for (const { path, id, actions, statuses } of projectDestinations) {
+      const expectedHref = `${id === "atlas" && !prefix ? canonical : prefix}${localePath}${path}`;
+      const [link] = links.filter(([, attrs]) => attrs.includes(`href="${expectedHref}"`));
+      assert.ok(link, `${target} ${language} missing ${path}`);
+      assert.equal(links.filter(([, attrs]) => attrs.includes(`href="${expectedHref}"`)).length, 1);
+      assert.doesNotMatch(link[1], /target=/);
+      const actionId = id === "atlas" ? "pf-atlas-action" : `pf-project-action-${id}`;
+      const titleId = id === "atlas" ? "pf-atlas-title" : `pf-project-title-${id}`;
+      assert.ok(link[1].includes(`aria-describedby="${titleId}"`));
+      if (id === "atlas") {
+        assert.ok(link[1].includes(`id="${actionId}"`));
+        assert.ok(link[2].startsWith(actions[i]));
+      } else {
+        assert.ok(link[1].includes(`aria-labelledby="${actionId}"`));
+        assert.ok(link[2].includes(`id="${actionId}">${actions[i]}`));
+      }
+      const item = section.match(new RegExp(`<article\\b[^>]*aria-labelledby="${titleId}"[^>]*>[\\s\\S]*?<\\/article>`))?.[0];
+      assert.ok(item?.includes(`id="${titleId}"`));
+      assert.ok(item.includes(`>${statuses[i]}<`));
+      assert.ok(item.includes(`class="pf-project-description">${personalProjectStories[path].summary[language]}</p>`));
+      assert.ok(item.includes(`class="pf-project-contribution">${personalProjectStories[path].contribution[language]}</p>`));
+      await access(new URL(`${target}${localePath}${path}index.html`, root));
+    }
+  }
+});
+
+test("keeps non-public creative work descriptive, with no play or visit link", async () => {
+  const targets = process.env.NEXT_PUBLIC_BASE_PATH ? ["out", sitesBuild] : ["out"];
+  for (const target of targets) for (const [i, locale] of ["", "en/"].entries()) {
+    const section = projectSection(await readFile(new URL(`${target}/${locale}index.html`, root), "utf8"));
+    assert.match(section, /id="pf-project-tab-web"[^>]*aria-selected="true"/);
+    const panels = { video: [["已导出短片", "Exported film"], ["创作探索", "Creative exploration"]], games: [["可玩原型 · 持续开发", "Playable prototype · In development"]] };
+    for (const [id, statuses] of Object.entries(panels)) {
+      const panel = section.match(new RegExp(`<div\\b[^>]*id="pf-project-panel-${id}"[^>]*>([\\s\\S]*?)<\\/article><\\/div>`));
+      assert.ok(panel, `${id} panel missing from initial HTML`);
+      assert.match(panel[0].split(">")[0], /\bhidden(?:="")?(?:\s|$)/);
+      assert.doesNotMatch(panel[1], /<a\b|<button\b/);
+      for (const status of statuses) assert.ok(panel[1].includes(`>${status[i]}<`));
     }
   }
 });

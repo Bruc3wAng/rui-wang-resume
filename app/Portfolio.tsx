@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore, type KeyboardEvent, type PointerEvent, type CSSProperties } from "react";
 import Image from "next/image";
 import NavigationAvatar from "./NavigationAvatar";
-import { profile, selectedWork, experiences, aiPractice, creativeCategories, capabilities, education, type Language } from "../content/resume";
+import { profile, selectedWork, experiences, aiPractice, creativeCategories, capabilities, education, type CreativeItem, type Language } from "../content/resume";
 import details from "../content/ai-details.json";
 import release from "../content/resume-release.json";
 import ResumeDownload from "./ResumeDownload";
@@ -13,14 +13,15 @@ import ShareLocale from "./ShareLocale";
 import ResearchLab from "./ResearchLab";
 import { internshipProjects } from "../content/portfolio-exhibits";
 import { folioDescriptionsFor, responsibilityLabel } from "../content/work-folios";
+import { atlasProjectPath, personalProjectHref, personalProjectStories, personalProjectStory } from "../content/personal-projects";
 import "./portfolio.css";
 import "./portfolio-refinement.css";
 import "./work-value.css";
 import "./work-navigation.css";
 import "./research-folios.css";
+import "./personal-projects.css";
 
 const base = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
-const atlasBase = base || "https://bruc3wang.github.io/rui-wang-resume";
 const local = (l: Language, zh: string, en: string) => l === "zh" ? zh : en;
 const chapters = ["work", "method", "projects", "capabilities", "contact"];
 const compactAIQuery = "(max-width: 767px)";
@@ -197,15 +198,63 @@ function ProjectMark({ kind, index }: { kind: string; index: number }) {
 }
 
 function WebProjectPreview({ index, language }: { index: number; language: Language }) {
-  return <div className={`pf-web-preview preview-${index}`} aria-hidden="true">{index===0?<div className="pf-preview-resume"><div><span>RUI WANG</span><span>RÉSUMÉ / 01</span></div><strong>王睿<span>Research Executive</span></strong><p>Ipsos · Research & Analysis</p><i/><i/><i/><span className="pf-preview-footer">EXPERIENCE / INSIGHTS / AI</span></div>:index===1?<div className="pf-preview-photo"><Image src={`${base}/images/still-life.svg`} alt="" width={1200} height={900} unoptimized draggable={false}/><span className="pf-preview-photo-grade"/><span className="pf-preview-photo-line"/><span className="pf-preview-photo-label">LIGHT & COLOR</span></div>:<div className="pf-preview-dinner"><strong>Dinner<br/>Notes.</strong><div><span>ParkSide 园景</span><span>CANAL</span><span>一坐一忘</span></div><span className="pf-preview-dinner-note">{local(language,"今晚，吃点什么？","SOMETHING GOOD FOR TONIGHT.")}</span></div>}<span className="pf-preview-open">↗</span></div>;
+  return <div className={`pf-web-preview preview-${index}`} aria-hidden="true">{index===0?<div className="pf-preview-resume"><div><span>RUI WANG</span><span>RÉSUMÉ / 01</span></div><strong>王睿<span>Research Executive</span></strong><p>Ipsos · Research & Analysis</p><i/><i/><i/><span className="pf-preview-footer">EXPERIENCE / INSIGHTS / AI</span></div>:index===1?<div className="pf-preview-photo"><Image src={`${base}/images/still-life.svg`} alt="" width={1200} height={900} unoptimized draggable={false}/><span className="pf-preview-photo-grade"/><span className="pf-preview-photo-line"/><span className="pf-preview-photo-label">LIGHT & COLOR</span></div>:<div className="pf-preview-dinner"><strong>Dinner<br/>Notes.</strong><div><span>ParkSide 园景</span><span>CANAL</span><span>一坐一忘</span></div><span className="pf-preview-dinner-note">{local(language,"今晚，吃点什么？","SOMETHING GOOD FOR TONIGHT.")}</span></div>}</div>;
+}
+
+const webCategory = creativeCategories.find(category => category.id === "web")!;
+const projectCategories = [webCategory, ...creativeCategories.filter(category => category.id !== "web")];
+const atlasProject = webCategory.items.find(item => item.liveUrl === atlasProjectPath)!;
+
+function WebProjectCard({ item, language, order }: { item: CreativeItem; language: Language; order: number }) {
+  const story = personalProjectStory(item.liveUrl);
+  if (!item.liveUrl || !story || story.preview === undefined) return null;
+  const titleId = `pf-project-title-${story.id}`;
+  const actionId = `pf-project-action-${story.id}`;
+  return <article aria-labelledby={titleId} style={{ "--project-order": order } as CSSProperties}>
+    <a className="pf-web-preview-link" href={personalProjectHref(item.liveUrl, language, base)} aria-labelledby={actionId} aria-describedby={titleId}>
+      <WebProjectPreview index={story.preview} language={language}/>
+      <span className="pf-project-action" id={actionId}>{story.action[language]}<Arrow/></span>
+    </a>
+    <div className="pf-project-body">
+      <span className="pf-project-status">{item.status[language]}</span>
+      <h4 id={titleId}>{item.title[language]}</h4>
+      <p className="pf-project-description">{story.summary[language]}</p>
+      <p className="pf-project-contribution">{story.contribution[language]}</p>
+      {item.sourceUrl && <a className="pf-project-source" href={item.sourceUrl} target="_blank" rel="noreferrer">{local(language, "查看网站源码", "View site source")} <span aria-hidden="true">↗</span></a>}
+    </div>
+  </article>;
 }
 
 function Projects({ language }: { language: Language }) {
-  const [category, setCategory] = useState("web");
-  return <section className="pf-projects pf-section" id="projects" data-tone="light"><div className="pf-wrap"><div className="pf-section-head"><div><p className="pf-eyebrow">03 / PERSONAL PROJECTS</p><h2>{local(language, "把想法做成可以体验的作品。", "Ideas made tangible.")}</h2></div><p>{local(language, "研究之外，继续探索数据、交互与视觉表达。", "Exploring data, interaction, and visual expression beyond research.")}</p></div>
-    <a className="pf-atlas-feature" href={`${atlasBase}${language === "en" ? "/en" : ""}/overseas/`}><div className="pf-atlas-copy"><p className="pf-eyebrow">GLOBAL DEVELOPMENT ATLAS</p><h3>{local(language, "全球发展数据查询", "Global Development Atlas")}</h3><p>{local(language, "围绕国家、指标与年份探索世界银行公开数据，进行多国同年比较、年度趋势、来源查看与 CSV 导出。", "Explore World Bank public data with country, indicator, and year filters, same-year comparisons, trends, source references, and CSV exports.")}</p><span className="pf-text-link">{local(language, "进入数据网站", "Explore the data website")}<Arrow/></span></div><div className="pf-atlas-art" aria-hidden="true"><div className="pf-atlas-rings"><i/><i/><i/></div><span className="pf-atlas-word">WORLD<br/>IN VIEW.</span><div className="pf-atlas-coordinates"><span>COUNTRY</span><span>INDICATOR</span><span>YEAR</span></div><span className="pf-atlas-corner">↗</span></div></a>
-    <div className="pf-creative-heading"><h3>{local(language, "个人作品", "More personal projects")}</h3><div role="tablist" aria-label={local(language, "作品类型", "Project categories")}>{creativeCategories.map((c, i) => <button role="tab" key={c.id} id={`pf-project-tab-${c.id}`} aria-controls={`pf-project-panel-${c.id}`} aria-selected={c.id === category} tabIndex={c.id === category ? 0 : -1} onClick={() => setCategory(c.id)} onKeyDown={e => tabs(e, i, creativeCategories.length, n => setCategory(creativeCategories[n].id))}>{c.title[language]}</button>)}</div></div>
-    {creativeCategories.map(c => <div key={c.id} id={`pf-project-panel-${c.id}`} role="tabpanel" hidden={c.id !== category} aria-labelledby={`pf-project-tab-${c.id}`} className={`pf-project-list collection-${c.id}`}>{c.items.filter(i => i.title.en !== "Global Development Atlas").map((item, i) => <article key={item.title.en} style={{ "--project-order": i } as CSSProperties}>{c.id==="web"?<a className="pf-web-preview-link" href={`${base}${language==="en"?"/en":""}${item.liveUrl}`} aria-label={local(language,`打开${item.title.zh}`,`Open ${item.title.en}`)}><WebProjectPreview index={i} language={language}/></a>:<ProjectMark kind={c.id} index={i}/>} <div><h4>{item.title[language]}</h4><p>{item.description[language]}</p></div><div className="pf-project-meta"><span>{item.status[language]}</span>{item.liveUrl && <a href={item.liveUrl.startsWith("/") ? `${base}${language === "en" ? "/en" : ""}${item.liveUrl}` : item.liveUrl} target="_blank" rel="noreferrer">{local(language, "在线体验", "View live")} ↗</a>}{item.sourceUrl && <a href={item.sourceUrl} target="_blank" rel="noreferrer">GitHub ↗</a>}</div></article>)}</div>)}
+  const [category, setCategory] = useState<(typeof creativeCategories)[number]["id"]>("web");
+  const atlasStory = personalProjectStories[atlasProjectPath];
+  return <section className="pf-projects pf-section" id="projects" data-tone="light" aria-labelledby="pf-projects-title"><div className="pf-wrap">
+    <div className="pf-section-head"><div><p className="pf-eyebrow">03 / PERSONAL PROJECTS</p><h2 id="pf-projects-title">{local(language, "个人作品", "Personal projects")}</h2></div><p>{local(language, "公开数据查询、交互网站与创作实验。", "Data tools, interactive websites, and creative experiments.")}</p></div>
+    <article className="pf-atlas-feature" aria-labelledby="pf-atlas-title">
+      <div className="pf-atlas-copy">
+        <p className="pf-eyebrow pf-project-status">{atlasProject.status[language]}</p>
+        <h3 id="pf-atlas-title">{atlasProject.title[language]}</h3>
+        <p className="pf-project-description">{atlasStory.summary[language]}</p>
+        <p className="pf-project-contribution">{atlasStory.contribution[language]}</p>
+        <a className="pf-text-link pf-atlas-entry" href={personalProjectHref(atlasProjectPath, language, base)} id="pf-atlas-action" aria-describedby="pf-atlas-title">{atlasStory.action[language]}<Arrow/></a>
+      </div>
+      <div className="pf-atlas-art" aria-hidden="true"><div className="pf-atlas-rings"><i/><i/><i/></div><span className="pf-atlas-word">WORLD<br/>IN VIEW.</span><div className="pf-atlas-coordinates"><span>COUNTRY</span><span>INDICATOR</span><span>YEAR</span></div></div>
+    </article>
+    <div className="pf-creative-heading">
+      <h3>{local(language, "作品目录", "Project index")}</h3>
+      <div role="tablist" aria-label={local(language, "作品类型", "Project categories")}>
+        {projectCategories.map((c, i) => <button type="button" role="tab" key={c.id} id={`pf-project-tab-${c.id}`} aria-controls={`pf-project-panel-${c.id}`} aria-selected={c.id === category} tabIndex={c.id === category ? 0 : -1} onClick={() => setCategory(c.id)} onKeyDown={e => tabs(e, i, projectCategories.length, n => setCategory(projectCategories[n].id))}>{c.title[language]}</button>)}
+      </div>
+    </div>
+    {projectCategories.map(c => <div key={c.id} id={`pf-project-panel-${c.id}`} role="tabpanel" hidden={c.id !== category} tabIndex={c.id === "web" ? undefined : 0} aria-labelledby={`pf-project-tab-${c.id}`} className={`pf-project-list collection-${c.id}`}>
+      {c.items.filter(item => item.liveUrl !== atlasProjectPath).map((item, i) => c.id === "web"
+        ? <WebProjectCard key={item.liveUrl} item={item} language={language} order={i}/>
+        : <article key={item.title.en} style={{ "--project-order": i } as CSSProperties}>
+          <ProjectMark kind={c.id} index={i}/>
+          <div><h4>{item.title[language]}</h4><p>{item.description[language]}</p></div>
+          <div className="pf-project-meta"><span className="pf-project-status">{item.status[language]}</span></div>
+        </article>)}
+    </div>)}
     <p className="pf-creative-note">{local(language, "AI 辅助设计与创作：交互网站、网页动效与视频；Blender / Three.js 三维视觉探索。本站以 React 与原生 WebGL 实现。", "AI-assisted Design & Creation: interactive websites, motion, and video; 3D exploration with Blender and Three.js. This site uses React and native WebGL.")}</p>
   </div></section>;
 }

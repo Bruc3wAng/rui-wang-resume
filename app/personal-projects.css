@@ -1,0 +1,109 @@
+.pf-projects .pf-creative-heading [role="tablist"] {
+  flex-wrap: wrap;
+  column-gap: clamp(14px, 2.2vw, 26px);
+  row-gap: 0;
+}
+
+.pf-projects .pf-project-status {
+  display: inline-block;
+  color: #496376;
+  font-size: 11px;
+  line-height: 1.6;
+  font-weight: 500;
+}
+
+.pf-projects .pf-project-body h4 {
+  margin-top: 5px;
+  overflow-wrap: anywhere;
+}
+
+.pf-projects .pf-atlas-copy > p.pf-project-description,
+.pf-projects .pf-project-list.collection-web p.pf-project-description {
+  color: #496376;
+  min-height: 0;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.pf-projects .pf-atlas-copy > p.pf-project-contribution,
+.pf-projects .pf-project-list.collection-web p.pf-project-contribution {
+  border-inline-start: 2px solid #a3b8c5;
+  color: #2e4c66;
+  padding-inline-start: 12px;
+  margin-top: 15px;
+  min-height: 0;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.pf-projects .pf-atlas-copy .pf-text-link {
+  min-height: 44px;
+  padding-bottom: 0;
+  margin-top: 16px;
+  color: #2e4c66;
+  white-space: nowrap;
+}
+
+.pf-projects .pf-atlas-entry:is(:hover, :focus-visible) {
+  color: #203b57;
+  border-color: currentColor;
+}
+
+.pf-projects .pf-project-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 9px;
+  min-height: 44px;
+  padding: 0 13px;
+  border: solid #c2ccd2;
+  border-width: 0 1px 1px;
+  background: #eef1f1;
+  color: #2e4c66;
+  font-size: 13px;
+  line-height: 1.4;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: color .2s, background .2s;
+}
+
+.pf-projects .pf-project-action .pf-arrow {
+  width: 19px;
+  height: 19px;
+  flex: none;
+}
+
+.pf-projects .pf-web-preview-link:is(:hover, :focus-visible) .pf-project-action {
+  background: #e1e8ec;
+  color: #203b57;
+}
+
+.pf-projects .pf-project-source {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  margin-top: 4px;
+  color: #3f648c;
+  font-size: 12px;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.pf-projects :is(.pf-atlas-entry, .pf-web-preview-link, .pf-project-source, [role="tabpanel"], [role="tab"]):focus-visible {
+  outline: 2px solid #3f648c;
+  outline-offset: 3px;
+}
+
+@media (700px <= width <= 899px) {
+  .pf-projects .pf-web-preview-link { grid-row: auto; }
+}
+.pf-projects.pf-section { padding-block: clamp(56px, 6.5vw, 96px); }
+.pf-projects .pf-section-head { margin-bottom: clamp(26px, 3.2vw, 48px); }
+.pf-projects .pf-atlas-feature { min-height: 320px; }
+
+
+@media (max-width: 699px) {
+  .pf-projects .pf-atlas-art { min-height: 215px; }
+  .pf-projects .pf-project-list.collection-web > article { align-items: stretch; }
+}
