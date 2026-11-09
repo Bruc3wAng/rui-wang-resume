@@ -548,7 +548,7 @@ test("separates cloud height, cloud shadows and a thin atmospheric shell without
   assert.ok([...clear,...overcast,...shadeAtmosphere([0,0,earthMaterial.atmosphereRadius])].every(v=>Number.isFinite(v)&&v>=0&&v<=1));
   assert.match(earthFragment,/cloudAt\(shellPoint\(n,light\)\)/);
   assert.match(earthFragment,/cloudPoint=shellPoint\(n,v\)/);
-  assert.match(earthFragment,/if\(picked<\.5&&networkView<\.01\)discard/);
+  assert.match(earthFragment,/if\(networkView<\.01\)discard/);
   assert.doesNotMatch(earthFragment,/torus|saturn|ringGeometry/i);
   const ui=await readFile(new URL("app/InteractiveGlobe.tsx",root),"utf8");
   assert.match(ui,/1200 \/ Math\.max/);assert.match(ui,/LINEAR_MIPMAP_LINEAR/);

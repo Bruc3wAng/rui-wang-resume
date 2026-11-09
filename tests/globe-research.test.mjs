@@ -3,8 +3,8 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { cases, selectedWork } from "../content/resume.ts";
 import { caseWorkIndices, marketStudyIndex, researchForMarket } from "../app/globe-research.ts";
-import { networkMesh, researchMarkets } from "../app/globe-geometry.ts";
-import { earthFragment, earthVertex, shadeEarth } from "../app/earth-material.ts";
+import { networkMesh, researchMarkets, researchRouteShape } from "../app/globe-geometry.ts";
+import { earthFragment, earthMaterial, earthVertex, shadeEarth } from "../app/earth-material.ts";
 import { marketStudyPresentation } from "../content/market-studies.ts";
 
 test("filters every verified study without attributing brand tracking to an overseas market", () => {
@@ -23,7 +23,7 @@ test("filters every verified study without attributing brand tracking to an over
 
 test("builds visible surface ribbons and light packets only between verified co-study markets", () => {
   const groups=cases.slice(0,2).map(item=>item.markets),mesh=networkMesh(groups);
-  assert.equal(mesh.edges.length,35);assert.equal(mesh.points,9);assert.equal(mesh.particles,70);
+  assert.equal(mesh.edges.length,35);assert.equal(mesh.points,9);assert.equal(mesh.particles,105);
   assert.equal(mesh.triangles,35*48*6);
   assert.equal(mesh.data.length/8,mesh.triangles+mesh.points+mesh.particles);
   assert.ok(mesh.data.every(Number.isFinite));
@@ -32,14 +32,20 @@ test("builds visible surface ribbons and light packets only between verified co-
     assert.ok(a!==b);assert.ok(a===8||groups.some(group=>group.includes(researchMarkets[a].code)&&group.includes(researchMarkets[b].code)));
   }
   for(let i=0;i<mesh.triangles*8;i+=8) {
-    const r=Math.hypot(...mesh.data.slice(i,i+3));assert.ok(r>1.014&&r<1.057);
+    const r=Math.hypot(...mesh.data.slice(i,i+3));assert.ok(r>1.009&&r<1.041);
     assert.equal(mesh.data[i+6],1);assert.ok(mesh.data[i+3]>=0&&mesh.data[i+3]<=1);
     assert.ok(Math.abs(mesh.data[i+4])===1);
   }
+  const routePackets=new Map();
   for(let i=(mesh.triangles+mesh.points)*8;i<mesh.data.length;i+=8){
     assert.ok(Math.abs(Math.hypot(...mesh.data.slice(i,i+3))-1)<1e-6);
     assert.ok(Math.abs(Math.hypot(...mesh.data.slice(i+3,i+6))-1)<1e-6);
-    assert.ok([4,4.5].includes(mesh.data[i+6]));
+    const code=mesh.data[i+7];routePackets.set(code,[...(routePackets.get(code)??[]),mesh.data[i+6]-4]);
+  }
+  assert.equal(routePackets.size,mesh.edges.length);
+  for(const [a,b] of mesh.edges){
+    const phases=routePackets.get(a*16+b);assert.equal(phases.length,3);
+    phases.forEach((phase,i)=>assert.ok(Math.abs(phase-researchRouteShape.phases[i])<1e-6));
   }
   assert.match(earthVertex,/clock\*\.14/);assert.match(earthFragment,/edgeDistance/);
   assert.match(earthFragment,/dots=.*\(1\.-water\)/);
@@ -53,6 +59,23 @@ test("keeps the styled satellite surface deterministic for both live and first-p
   assert.ok(land.every(v=>Number.isFinite(v)&&v>=0&&v<=1));
   assert.ok(sea.every(v=>Number.isFinite(v)&&v>=0&&v<=1));
   assert.ok(land[0]>sea[0]&&land[1]>sea[1]);
+  assert.ok(land[0]>land[2]&&sea[2]>sea[0]);
+  assert.ok(earthMaterial.cloudOpacity<.4);
+  assert.match(earthFragment,/cloud\*0\.35/);
+});
+
+test("uses actual route shape for the moving lights and distinguishes mode from camera", async () => {
+  const ui=await readFile(new URL("../app/InteractiveGlobe.tsx",import.meta.url),"utf8");
+  assert.match(earthVertex,/routeShape\.x\+routeShape\.y\*sin/);
+  assert.match(ui,/researchRouteShape\.baseRadius, researchRouteShape\.lift/);
+  assert.match(earthFragment,/if\(networkView<\.01\)discard/);
+  assert.match(earthFragment,/alpha\*limb\*networkView/);
+  assert.match(earthFragment,/smoothstep\(\.12,\.36,normalize\(point\)\.z\)/);
+  assert.match(earthFragment,/smoothstep\(silhouette-\.012,silhouette,screenDistance\)/);
+  assert.match(ui,/aria-pressed=\{view === "US"\}[^>]*aria-label=\{loc\("美国视角", "U\.S\. view"\)\}/);
+  assert.match(ui,/className="rg-network-key" hidden=\{style !== "network"\}/);
+  assert.match(ui,/if \(el!\.width !== width \|\| el!\.height !== height\)/);
+  assert.match(ui,/cancelAnimationFrame\(frame\); lastFrame = 0; draw\(performance\.now\(\)\)/);
 });
 
 test("keeps market filtering usable when rotation is unavailable and preserves scope during manual rotation", async () => {
