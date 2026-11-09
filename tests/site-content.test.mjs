@@ -149,9 +149,12 @@ test("renders one actionable same-tab entry, accurate status and distinct credit
   const targets = process.env.NEXT_PUBLIC_BASE_PATH ? ["out", sitesBuild] : ["out"];
   const canonical = "https://bruc3wang.github.io/rui-wang-resume";
   for (const target of targets) for (const [i, language] of ["zh", "en"].entries()) {
-    const prefix = target === "out" ? process.env.NEXT_PUBLIC_BASE_PATH || "" : "";
     const localePath = language === "en" ? "/en" : "";
     const html = await readFile(new URL(`${target}${localePath}/index.html`, root), "utf8");
+    // GitHub Actions sets the base path on the build step, not the test step.
+    // Read the export's asset prefix independently of the links being checked.
+    const prefix = target === "out" ? html.match(/src="([^"]*)\/_next\/static\//)?.[1] : "";
+    assert.notEqual(prefix, undefined, "The static export must identify its asset prefix");
     const section = projectSection(html);
     assert.doesNotMatch(section, /View live|在线体验|已脱敏|anonymized|localStorage|自动订位|revenue|付费用户/i);
     assert.equal([...section.matchAll(/class="pf-project-contribution"/g)].length, 4);
