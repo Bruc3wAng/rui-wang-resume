@@ -1,9 +1,26 @@
-#pf-work-index,.pf-work-panel{scroll-margin-top:100px}
+#pf-work-index{scroll-margin-top:100px}
+.pf-work-panel{position:relative;scroll-margin-top:16px}
+.pf-study-anchor{position:absolute;inset:0 auto auto 0;width:1px;height:1px;scroll-margin-top:16px;pointer-events:none}
+.pf-work-layout[data-study-url-ready=false] .pf-work-panel[data-selected=false]{display:none}
+.pf-work-layout[data-study-url-ready=false]:has(.pf-study-anchor:target) .pf-work-panel:not(:has(.pf-study-anchor:target)){display:none}
+.pf-work-layout[data-study-url-ready=false] .pf-work-panel:has(.pf-study-anchor:target){display:grid}
+.pf-work-layout[data-study-url-ready=false] .pf-study-copy{visibility:hidden}
 .pf-work-return{display:none}
 .pf-market-return{display:inline-flex;align-items:center;gap:12px;min-height:44px;margin:0 0 14px;padding:8px 0;border:0;border-bottom:1px solid #bbc8d1;background:none;color:#365a7a;font-size:12px;white-space:nowrap}
 .pf-market-return .pf-arrow{width:16px;height:16px;rotate:180deg}
 .pf-market-return:focus-visible{outline:2px solid currentColor;outline-offset:4px}
-.pf-work-story .pf-market-work-title{margin:0 0 6px;font-size:13px;line-height:1.5;font-weight:600;color:#344f69}
+.pf-study-header{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px 14px;align-items:start;margin:0 0 17px;padding-bottom:13px;border-bottom:1px solid #c7d0d4}
+.pf-study-meta{min-width:0;align-self:center}
+.pf-work-story .pf-study-name{font-size:14px;line-height:1.5;font-weight:600;color:#344f69;text-wrap:pretty}
+.pf-study-header .pf-role{margin:4px 0 0!important;font-size:11px;color:#325e62;text-wrap:pretty}
+.pf-study-copy{position:relative}
+.portfolio-v17 .pf-copy-study{display:inline-flex;align-items:center;gap:7px;justify-content:center;min-height:44px;padding:8px 9px;background:transparent;border:1px solid #a9b8c2;color:#315673;font-size:11px;white-space:nowrap}
+.portfolio-v17 .pf-copy-study:hover{background:#e4e9e9;border-color:#7890a3}
+.portfolio-v17 .pf-copy-study:focus-visible,.pf-study-copy-field input:focus-visible{outline:2px solid #315673;outline-offset:3px}
+.pf-copy-study svg{width:16px;height:16px;flex:none;stroke:currentColor;stroke-width:1.55;stroke-linecap:round;stroke-linejoin:round}
+.pf-study-copy-status{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.pf-study-copy-field{grid-column:1/-1;display:grid;gap:6px;min-width:0;color:#385367;font-size:12px;line-height:1.5}
+.pf-study-copy-field input{width:100%;min-width:0;min-height:44px;padding:8px 10px;border:1px solid #a9b8c2;background:#fbfaf5;color:#223d53;font-family:Arial,"Microsoft YaHei",sans-serif;font-size:16px}
 .pf-ai-project{display:flex;align-items:center;justify-content:space-between;gap:24px;margin:-4px 0 30px;padding:17px 0 20px;border-bottom:1px solid #354155}
 .pf-ai-project>div{min-width:0}
 .pf-ai-project>div>span{font-size:9px;letter-spacing:.08em;color:#c4ac85}
@@ -11,7 +28,9 @@
 .pf-ai-project>button{display:inline-flex;align-items:center;gap:18px;min-height:44px;flex-shrink:0;border:0;border-bottom:1px solid #647485;padding:8px 0;color:#d5e1e6;background:none;font-size:12px;white-space:nowrap}
 .pf-ai-project>button .pf-arrow{width:17px;height:17px;rotate:-135deg}
 .pf-ai-project>button:focus-visible,.pf-work-return:focus-visible{outline:2px solid currentColor;outline-offset:4px}
-.pf-work-story h3:focus-visible{outline:1px solid #4c6e8b;outline-offset:6px}
+.pf-work-story h3{position:relative}
+.pf-work-story h3:focus-visible{outline:none}
+.pf-work-story h3:focus-visible::before{content:"";position:absolute;inset:5px auto 5px -8px;width:2px;background:currentColor}
 @media(max-width:699px){
   .portfolio-v17 .pf-work-nav{flex-direction:column;overflow:visible;gap:0;padding:0;border-top:1px solid #c6d0d8;scroll-snap-type:none}
   .portfolio-v17 .pf-work-nav button{flex:0 0 auto;align-items:center;width:100%;min-width:0;min-height:72px;padding:16px 12px;border:0;border-bottom:1px solid #c6d0d8;gap:12px;scroll-snap-align:none}
