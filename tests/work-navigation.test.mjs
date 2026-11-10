@@ -4,6 +4,7 @@ import test from "node:test";
 import { runInNewContext } from "node:vm";
 import { selectedWork } from "../content/resume.ts";
 import { siteUrl } from "../content/site.ts";
+import { folioDescriptionsFor } from "../content/work-folios.ts";
 import { outputFragment, portfolioLocaleHref, studyFragment, studyHistoryInitializer, studyIndexFromFragment } from "../app/study-location.ts";
 import { heroBrief, heroCases } from "../app/hero-brief.ts";
 import { directoryFragment, normalizeLookup, searchPortfolio } from "../app/portfolio-lookup.ts";
@@ -124,6 +125,88 @@ test("static pages contain one native target and explicit case header for every 
   const css=await read("app/work-navigation.css");
   assert.match(css,/data-study-url-ready=false[^\n]+:has\(\.pf-study-anchor:target\)[^\n]+display:grid/);
   assert.match(css,/data-study-url-ready=false[^\n]+:has\(\.pf-output-brief:target\)[^\n]+display:grid/);
+});
+
+const sharedCases = {
+  "content-tracking": ["cross-market-report", "#example-relative-weights", "主要负责", "Primary responsibility"],
+  "brand-tracking": ["wave-reports", "#practice-tracking-delivery", "深度参与", "Key contribution"],
+  "us-content": ["preferences-and-habits", null, "独立负责", "Independent project responsibility"],
+  "search-tracking": ["market-comparisons", "#example-table-check", "深度参与", "Key contribution"],
+  qualitative: ["needs-and-decisions", null, "深度参与", "Key contribution"],
+};
+const htmlText = value => value.replace(/&(?:amp|quot|apos|lt|gt);|&#(?:x[\da-f]+|\d+);/gi, match => {
+  const named = { "&amp;": "&", "&quot;": '"', "&apos;": "'", "&lt;": "<", "&gt;": ">" };
+  return named[match] ?? String.fromCodePoint(match[2].toLowerCase() === "x" ? parseInt(match.slice(3, -1), 16) : parseInt(match.slice(2, -1), 10));
+});
+const attributes = tag => Object.fromEntries([...tag.matchAll(/([\w:-]+)="([^"]*)"/g)].map(([, key, value]) => [key.toLowerCase(), htmlText(value)]));
+
+test("publishes case-specific bilingual pages with exact roles, evidence links and independent share metadata",async()=>{
+  assert.deepEqual(selectedWork.map(work=>work.id),Object.keys(sharedCases));
+  const targets=process.env.NEXT_PUBLIC_BASE_PATH?["out",process.env.RUI_SITES_BUILD_DIR??"dist/client"]:["out"];
+  for(const target of targets) for(const lang of ["zh","en"]){
+    const en=lang==="en", locale=en?"en/":"", other=en?"":"en/";
+    const home=await read(`${target}/${locale}index.html`);
+    const base=target==="out"?home.match(/src="([^"]*)\/_next\/static\//)?.[1]:"";
+    assert.notEqual(base,undefined,"expected a known build prefix");
+    const homeLinks=[...home.matchAll(/<a class="pf-case-reader-link" href="([^"]+)"/g)].map(([, href])=>href);
+    const workBase=`${base}/${locale}`;
+    assert.deepEqual(homeLinks,Object.keys(sharedCases).map(id=>`${workBase}research/${id}/`));
+    for(const [id,[outputId,example,zhRole,enRole]] of Object.entries(sharedCases)){
+      const work=selectedWork.find(w=>w.id===id), story=workStudyCopyFor(id);
+      const html=await read(`${target}/${locale}research/${id}/index.html`);
+      const head=html.match(/<head\b[^>]*>([\s\S]*?)<\/head>/)?.[1];
+      assert.ok(head,id);
+      const meta=[...head.matchAll(/<meta\b[^>]*>/g)].map(([tag])=>attributes(tag));
+      const headLinks=[...head.matchAll(/<link\b[^>]*>/g)].map(([tag])=>attributes(tag));
+      const value=name=>{
+        const matches=meta.filter(a=>a.name===name||a.property===name);
+        assert.equal(matches.length,1,`${target}/${locale}${id}: ${name}`);
+        return matches[0].content;
+      };
+      const route=`${siteUrl}/${locale}research/${id}/`;
+      const title=`${work.title[lang]} — ${en?"Rui Wang":"王睿"}`;
+      assert.equal(htmlText(head.match(/<title>([^<]*)<\/title>/)?.[1]??""),title);
+      assert.equal(value("og:title"),title);
+      assert.equal(value("twitter:title"),title);
+      assert.equal(value("description"),story.action[lang]+(en?" ":"")+story.context[lang]);
+      assert.equal(value("og:description"),value("description"));
+      assert.equal(value("twitter:description"),value("description"));
+      assert.equal(value("og:type"),"article");
+      assert.equal(value("og:url"),route);
+      assert.equal(value("og:locale"),en?"en_US":"zh_CN");
+      assert.equal(value("og:locale:alternate"),en?"zh_CN":"en_US");
+      assert.equal(value("og:image"),value("twitter:image"));
+      assert.match(value("og:image"),new RegExp(`/social/profile-${lang}-[a-f0-9]+\\.png$`));
+      assert.deepEqual(headLinks.filter(a=>a.rel==="canonical").map(a=>a.href),[route]);
+      assert.deepEqual(Object.fromEntries(headLinks.filter(a=>a.rel==="alternate").map(a=>[a.hreflang,a.href])),{
+        "zh-CN":`${siteUrl}/research/${id}/`,en:`${siteUrl}/en/research/${id}/`,
+      });
+      assert.match(html,new RegExp(`<html lang="${en?"en":"zh-CN"}"`));
+      const reader=html.match(/<div class="study-reader">([\s\S]*?)<\/footer>/)?.[1];
+      assert.ok(reader?.includes(`data-research-case="${id}"`));
+      const body=htmlText(reader);
+      assert.ok(body.includes(`<h1 id="study-reader-title">${work.title[lang]}</h1>`));
+      assert.ok(body.includes(`<dd>${work.role[lang]}</dd>`));
+      assert.ok(work.role[lang].startsWith(en?enRole:zhRole));
+      assert.ok(body.includes(`<dd>${work.scope[lang]}</dd>`));
+      assert.ok(body.includes(story.context[lang]) && body.includes(story.action[lang]) && body.includes(story.contribution[lang]));
+      assert.equal(story.outputs[story.output].id,outputId);
+      assert.ok(body.includes(story.outputs[story.output][lang]));
+      assert.ok(body.includes(folioDescriptionsFor(id)[story.output].purpose[lang]));
+      const readerLinks=[...reader.matchAll(/<a\b[^>]*>/g)].map(([tag])=>attributes(tag));
+      const routes=readerLinks.map(a=>a.href);
+      assert.deepEqual(routes,["#study-reader-main",workBase,`${base}/${other}research/${id}/`,`${workBase}#output-${id}--${outputId}`,
+        ...(example?[`${workBase}${example}`]:[]),`${workBase}#study-${id}`,`${workBase}projects/resume/`]);
+      assert.ok(home.includes(`id="study-${id}"`) && home.includes(`id="output-${id}--${outputId}"`));
+      if(example)assert.ok(story.ai && body.includes(story.ai[lang]));
+      else assert.doesNotMatch(body,/id="study-reader-ai"/);
+      assert.doesNotMatch(html,/rg-globe|pf-hero|Senior Research Executive|ByteDance|Lenovo|字节跳动|联想|Dreamina|TT生活服务|\bBHT\b|已脱敏|公开边界|anonymized|public profile|\+86[-\s]?137|@hotmail\.com/i);
+    }
+  }
+  const sitemap=await read("out/sitemap.xml");
+  for(const id of Object.keys(sharedCases)) for(const locale of ["","en/"]){
+    assert.ok(sitemap.includes(`<loc>${siteUrl}/${locale}research/${id}/</loc>`));
+  }
 });
 
 test("gives both homepages a native overview of three supported work studies before the globe",async()=>{

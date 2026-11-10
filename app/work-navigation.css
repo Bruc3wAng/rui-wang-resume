@@ -23,6 +23,9 @@
 .pf-study-copy-status{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 .pf-study-copy-field{grid-column:1/-1;display:grid;gap:6px;min-width:0;color:#385367;font-size:12px;line-height:1.5}
 .pf-study-copy-field input{width:100%;min-width:0;min-height:44px;padding:8px 10px;border:1px solid #a9b8c2;background:#fbfaf5;color:#223d53;font-family:Arial,"Microsoft YaHei",sans-serif;font-size:16px}
+.pf-case-paths .pf-case-reader-link{display:inline-flex;align-items:center;gap:8px;min-height:44px;color:#315673;font-size:12px;white-space:nowrap}
+.pf-case-reader-link .pf-arrow{width:14px;height:14px;flex:none}
+.pf-case-reader-link:hover{text-decoration:underline;text-underline-offset:4px}
 .pf-ai-project{display:flex;align-items:center;justify-content:space-between;gap:24px;margin:-4px 0 30px;padding:17px 0 20px;border-bottom:1px solid #354155}
 .pf-ai-project>div{min-width:0}
 .pf-ai-project>div>span{font-size:9px;letter-spacing:.08em;color:#c4ac85}

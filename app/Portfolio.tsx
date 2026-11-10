@@ -28,7 +28,7 @@ import { tableCheckFragment, tableCheckOutput } from "./table-check";
 import { PlatformQuestionGuide, ResearchPlatformStory, platformGuideFragment, platformGuideTitle, platformPractice, platformStoryFragment, platformStoryTitle } from "./ResearchPlatform";
 import PortfolioLookup, { LookupIcon, PortfolioDirectory, type PortfolioLookupHandle } from "./PortfolioLookup";
 import { directoryFragment } from "./portfolio-lookup";
-import { browserPortfolioFragment, mapFragment, mapIndexFromFragment, outputFragment, outputFromFragment, portfolioLocaleHref, practiceFragment, practiceIndexFromFragment, staticPortfolioFragment, studyFragment, studyHistoryInitializer, studyIndexFromFragment, subscribePortfolioFragment, updatePortfolioFragment, type HistoryMode } from "./study-location";
+import { browserPortfolioFragment, mapFragment, mapIndexFromFragment, outputFragment, outputFromFragment, portfolioLocaleHref, practiceFragment, practiceIndexFromFragment, staticPortfolioFragment, studyFragment, studyHistoryInitializer, studyIndexFromFragment, studyPageHref, subscribePortfolioFragment, updatePortfolioFragment, type HistoryMode } from "./study-location";
 import "./portfolio.css";
 import "./portfolio-refinement.css";
 import "./work-value.css";
@@ -226,7 +226,7 @@ function WorkStudyPanel({ index, selected, ready, compact, language, paused, tab
         </a>
       </div>
       {story.ai && <div className="pf-contribution pf-case-ai-note"><h4>{local(language, "AI 用法", "How I used AI")}</h4><p>{story.ai[language]}</p></div>}
-      {(aiPracticeIndex >= 0 || mapIndex >= 0 || index === tableCheckWorkIndex) && <div className="pf-case-paths">
+      <div className="pf-case-paths">
         {index === tableCheckWorkIndex && <TableCheckExampleLink language={language} className="tc-case-link"/>}
         {aiPracticeIndex >= 0 && <a className="pf-case-ai-link" data-ai-practice={aiPracticeIndex} href={practiceFragment(aiPractice[aiPracticeIndex].id)} onClick={event => {
           if (!isPlainLinkActivation(event)) return;
@@ -238,7 +238,8 @@ function WorkStudyPanel({ index, selected, ready, compact, language, paused, tab
           event.preventDefault();
           onViewMap(mapIndex);
         }}>{local(language, "查看案例地图", "View study map")}<svg aria-hidden="true" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8"/><ellipse cx="12" cy="12" rx="4" ry="8"/><path d="M4 12h16"/></svg></a>}
-      </div>}
+        <a className="pf-case-reader-link" href={studyPageHref(base, language, item.id)}>{local(language, "单页阅读", "Read case brief")}<Arrow/></a>
+      </div>
     </div>
     <div className="pf-object-stage"><ResearchObject ref={folio} active={index} language={language} paused={paused} ready={ready} outputIndex={outputIndex} onSelect={onSelectOutput} onClose={onCloseOutput}/></div>
     {index === tableCheckWorkIndex && <TableCheckExample language={language} active={tableCheck} ready={ready}/>}

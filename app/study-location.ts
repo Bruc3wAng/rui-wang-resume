@@ -41,6 +41,10 @@ export function portfolioLocaleHref(base: string, language: Language, fragment =
   return base + (language === "en" ? "/en/" : "/") + fragment;
 }
 
+export function studyPageHref(base: string, language: Language, id: string) {
+  return `${portfolioLocaleHref(base, language)}research/${id}/`;
+}
+
 // Emit this fixed, data-free initializer in the static document before the
 // hosting adapter boots. Even a repeated native visit to the same anchor can
 // emit popstate; it must not start a page fetch that can restore an older hash.

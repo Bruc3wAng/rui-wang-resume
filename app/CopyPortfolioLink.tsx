@@ -3,13 +3,21 @@
 import { useEffect, useRef, useState } from "react";
 import type { Language } from "../content/resume";
 import { siteUrl } from "../content/site";
-import { portfolioLocaleHref } from "./study-location";
+import { portfolioLocaleHref, studyPageHref } from "./study-location";
 
-export default function CopyPortfolioLink({ fragment, kind, language }: { fragment: `#${string}`; kind: "study" | "practice" | "map" | "output"; language: Language }) {
+type CopyLinkProps = { language: Language } & (
+  | { kind: "study"; studyId: string }
+  | { kind: "practice" | "map" | "output"; fragment: `#${string}` }
+);
+
+export default function CopyPortfolioLink(props: CopyLinkProps) {
+  const { kind, language } = props;
   const [state, setState] = useState<"idle" | "copied" | "manual">("idle");
   const input = useRef<HTMLInputElement>(null), button = useRef<HTMLButtonElement>(null);
   const en = language === "en";
-  const url = portfolioLocaleHref(siteUrl, language, fragment);
+  const url = props.kind === "study"
+    ? studyPageHref(siteUrl, language, props.studyId)
+    : portfolioLocaleHref(siteUrl, language, props.fragment);
   const copyLabel = {
     study: en ? "Copy case link" : "复制案例链接",
     practice: en ? "Copy link" : "复制链接",
