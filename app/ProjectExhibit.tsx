@@ -1,10 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState, type ChangeEvent, type PointerEvent } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, type ChangeEvent, type PointerEvent } from "react";
 import Image from "next/image";
 import ShareLocale from "./ShareLocale";
 import { profile, experiences, education, type Language } from "../content/resume";
 import { resumeDocuments, resumeHref, resumePreviewHref } from "../content/resume-documents";
+import ResumeWorkEvidence, { ResumeJumpLinks } from "./ResumeWorkEvidence";
+import { resumeDownloadFragment, resumeSectionFragment } from "./resume-work";
+import { browserPortfolioFragment, staticPortfolioFragment, studyHistoryInitializer, subscribePortfolioFragment } from "./study-location";
 import "./resume-downloads.css";
 import { dinnerPlaces, type DinnerPlace } from "../content/portfolio-exhibits";
 import "./project-exhibits.css";
@@ -15,24 +18,29 @@ const slugs={resume:"resume",photo:"photo-workbench",dinner:"dinner-notes"};
 const title={resume:{zh:"个人履历",en:"Bilingual Résumé"},photo:{zh:"光影工坊",en:"Photo Workbench"},dinner:{zh:"Dinner Notes",en:"Dinner Notes"}};
 function saveText(text:string,name:string){const url=URL.createObjectURL(new Blob([text],{type:"text/plain;charset=utf-8"}));const a=document.createElement("a");a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 
+function ResumeExhibitLanguage({language}:{language:Language}){
+  const fragment=useSyncExternalStore(subscribePortfolioFragment,browserPortfolioFragment,staticPortfolioFragment);
+  const other=language==="zh"?"en":"zh-CN";
+  return <a className="exhibit-language" href={`${base}${language==="zh"?"/en":""}/projects/resume/${resumeSectionFragment(fragment)}`} hrefLang={other} lang={other} aria-label={language==="zh"?"English":"中文"}>{language==="zh"?"EN":"中文"}</a>;
+}
+
 export default function ProjectExhibit({kind,language}:{kind:Kind;language:Language}){
   const l=(zh:string,en:string)=>language==="zh"?zh:en;
   return <main className={`exhibit exhibit-${kind}`} lang={language==="zh"?"zh-CN":"en"}>
+    {kind==="resume"&&<script id="resume-section-history" dangerouslySetInnerHTML={{__html:studyHistoryInitializer}}/>}
     <ShareLocale language={language}/>
-    <header className="exhibit-header"><a href={`${base}${language==="en"?"/en":""}/#projects`} className="exhibit-back">← {l("返回作品集","Back to portfolio")}</a><span>{title[kind][language]}</span><a className="exhibit-language" href={`${base}${language==="zh"?"/en":""}/projects/${slugs[kind]}/`} hrefLang={language==="zh"?"en":"zh-CN"} lang={language==="zh"?"en":"zh-CN"} aria-label={l("English","中文")}>{language==="zh"?"EN":"中文"}</a></header>
+    <header className="exhibit-header"><a href={`${base}${language==="en"?"/en":""}/#projects`} className="exhibit-back">← {l("返回作品集","Back to portfolio")}</a><span>{title[kind][language]}</span>{kind==="resume"?<ResumeExhibitLanguage language={language}/>:<a className="exhibit-language" href={`${base}${language==="zh"?"/en":""}/projects/${slugs[kind]}/`} hrefLang={language==="zh"?"en":"zh-CN"} lang={language==="zh"?"en":"zh-CN"} aria-label={l("English","中文")}>{language==="zh"?"EN":"中文"}</a>}</header>
     {kind==="resume"?<ResumeCollection key={language} language={language}/>:kind==="photo"?<PhotoWorkbench language={language}/>:<DinnerNotes language={language}/>}
     <footer className="exhibit-footer"><a href={`${base}${language==="en"?"/en":""}/#projects`}>RUI WANG / SELECTED PROJECTS</a><span>{l("设计与 AI 辅助实现","DESIGN & AI-ASSISTED DEVELOPMENT")}</span></footer>
   </main>;
 }
 
 function ResumeCollection({language}:{language:Language}){
-  const [focus,setFocus]=useState(0),[reading,setReading]=useState(false),[documentLanguage,setDocumentLanguage]=useState<Language>(language),[zoomed,setZoomed]=useState(false),[previewError,setPreviewError]=useState(false);
+  const [reading,setReading]=useState(false),[documentLanguage,setDocumentLanguage]=useState<Language>(language),[zoomed,setZoomed]=useState(false),[previewError,setPreviewError]=useState(false);
   const reader=useRef<HTMLElement>(null);
   useEffect(()=>{if(reading){reader.current?.focus({preventScroll:true});reader.current?.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth",block:"start"});}},[reading,documentLanguage]);
   function chooseDocument(value:Language){setDocumentLanguage(value);setZoomed(false);setPreviewError(false);}
   const l=(zh:string,en:string)=>language==="zh"?zh:en;
-  const tracks=[{zh:"市场研究",en:"Market research"},{zh:"数据分析",en:"Data analysis"},{zh:"研究运营",en:"Research operations"}];
-  const focusCopy=[{zh:"从研究问题、比较条件到结果解释，理解不同市场中用户如何选择和评价产品。",en:"Define research questions and comparison criteria, then interpret how people choose and experience products across markets."},{zh:"用相对权重、相关分析、用户分层和跨期比较解释差异，让数据与研究问题对应。",en:"Use relative weights, correlation, segmentation and wave comparisons to connect observed differences with research questions."},{zh:"协调多市场执行与交付，将研究规则写入可复用工具，让批量处理与重点复核有序衔接。",en:"Coordinate multi-market execution and delivery, embedding research rules in reusable tools that connect batch processing with targeted review."}];
   const document=resumeDocuments[documentLanguage],pdf=resumeHref(documentLanguage,base);
   return <div className="resume-collection exhibit-wrap">
     <div className="resume-collection-intro">
@@ -40,13 +48,15 @@ function ResumeCollection({language}:{language:Language}){
       <h1>{profile.name[language]}<span>{language==="zh"?"RUI WANG":"王睿"}</span></h1>
       <p className="resume-collection-role">Ipsos · Research Executive</p><p>{profile.summary[language]}</p>
     </div>
+    <ResumeJumpLinks language={language}/>
     <div className="resume-collection-grid">
-      <section className="resume-perspective">
-        <h2>{l("从不同工作视角，认识我的经历。","Different perspectives on the work.")}</h2>
-        <div className="resume-focus" role="group" aria-label={l("职业方向","Career perspective")}>{tracks.map((t,i)=><button type="button" key={t.en} aria-pressed={focus===i} onClick={()=>setFocus(i)}>{t[language]}</button>)}</div>
-        <p className="resume-focus-copy" key={focus}>{focusCopy[focus][language]}</p>
+      <div>
+        <ResumeWorkEvidence language={language}/>
+        <section className="resume-timeline-section" aria-labelledby="resume-timeline-title">
+        <h2 id="resume-timeline-title">{l("任职与教育","Experience & education")}</h2>
         <ol className="resume-mini-timeline">{experiences.map(e=><li key={e.company.en}><span>{e.period[language]}</span><h3>{e.company[language]}</h3><p>{e.title[language]}</p></li>)}<li><span>{education.period}</span><h3>{education.institution[language]}</h3><p>{education.focus[language]}</p></li></ol>
-      </section>
+        </section>
+      </div>
       <section className="resume-document-shelf" data-document-language={documentLanguage}>
         <div className="resume-sheet-preview">
           <div><span>RÉSUMÉ</span><span>01 / A4</span></div>
@@ -55,7 +65,7 @@ function ResumeCollection({language}:{language:Language}){
           <ol><li>Ipsos / Research Executive</li><li>Meritco / Research & Analysis</li><li>University of Toronto</li></ol>
           <span className="resume-sheet-signature">{profile.name[language]}</span>
         </div>
-        <div className="resume-document-languages" role="group" aria-label={l("简历语言","Résumé language")}>
+        <div className="resume-document-languages" id={resumeDownloadFragment.slice(1)} tabIndex={-1} role="group" aria-label={l("简历语言","Résumé language")}>
           <button type="button" aria-pressed={documentLanguage==="zh"} onClick={()=>chooseDocument("zh")}>中文</button>
           <button type="button" aria-pressed={documentLanguage==="en"} onClick={()=>chooseDocument("en")}>English</button>
         </div>
@@ -66,7 +76,11 @@ function ResumeCollection({language}:{language:Language}){
     </div>
     <section id="resume-pdf-reader" className="resume-pdf-reader" ref={reader} tabIndex={-1} hidden={!reading} aria-label={l(document.title.zh+"预览",document.title.en+" preview")}>
       <div className="resume-reader-header"><h2>{document.title[language]}</h2><div className="resume-reader-actions"><button type="button" disabled={previewError} aria-pressed={zoomed} aria-controls="resume-preview-page" onClick={()=>setZoomed(value=>!value)}>{zoomed?l("适合宽度","Fit width"):l("放大阅读","Zoom in")}</button><a href={pdf} target="_blank" rel="noreferrer">{l("打开 PDF","Open PDF")}<span aria-hidden="true">↗</span></a><a href={pdf} download={document.fileName}>{l("下载 PDF","Download PDF")}<span aria-hidden="true">↓</span></a></div></div>
-      {reading&&(previewError?<p className="exhibit-error" role="alert">{l("预览暂不可用，请打开或下载 PDF 阅读。","Preview unavailable. Open or download the PDF to read it.")}</p>:<div id="resume-preview-page" className="resume-preview-page" data-zoomed={zoomed} tabIndex={0} role="region" aria-label={l("简历页面", "Résumé page")}><Image key={documentLanguage} src={resumePreviewHref(documentLanguage,base)} width={document.preview.width} height={document.preview.height} alt={l("王睿的"+document.title.zh,"Rui Wang’s "+document.title.en)} unoptimized loading="eager" draggable={false} onError={()=>setPreviewError(true)}/></div>)}
+      {reading&&(previewError?<p className="exhibit-error" role="alert">{l("预览暂不可用，请打开或下载 PDF 阅读。","Preview unavailable. Open or download the PDF to read it.")}</p>:<div id="resume-preview-page" className="resume-preview-page" data-zoomed={zoomed} tabIndex={0} role="region" aria-label={l("简历页面", "Résumé page")}>
+        {/* The fixed-resolution page already has a pre-rendered asset; width variants would misstate its pixel density. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img key={documentLanguage} src={resumePreviewHref(documentLanguage,base)} width={document.preview.width} height={document.preview.height} alt={l("王睿的"+document.title.zh,"Rui Wang’s "+document.title.en)} loading="eager" draggable={false} onError={()=>setPreviewError(true)}/>
+      </div>)}
     </section>
   </div>;
 }

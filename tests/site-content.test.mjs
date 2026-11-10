@@ -5,6 +5,10 @@ import { access, readFile } from "node:fs/promises";
 import test from "node:test";
 import { resumeDocuments, resumeHref, resumePreviewHref } from "../content/resume-documents.ts";
 import { personalProjectStories, personalProjectStory } from "../content/personal-projects.ts";
+import { selectedWork } from "../content/resume.ts";
+import { responsibilityLabel } from "../content/work-folios.ts";
+import { resumeDownloadFragment, resumeSectionFragment, resumeWorkEntries, resumeWorkFragment } from "../app/resume-work.ts";
+import { workStudyCopyFor } from "../app/work-study-copy.ts";
 
 const root = new URL("../", import.meta.url);
 const sitesBuild = process.env.RUI_SITES_BUILD_DIR ?? "dist/client";
@@ -371,9 +375,52 @@ test("ships source-bound high-resolution previews without requiring a PDF plug-i
   const ui = await readFile(new URL("app/ProjectExhibit.tsx", root), "utf8");
   const collection = ui.slice(ui.indexOf("function ResumeCollection("), ui.indexOf("const looks="));
   assert.doesNotMatch(collection, /<iframe/);
+  assert.match(collection, /<img key=\{documentLanguage\} src=\{resumePreviewHref\(documentLanguage,base\)\}/);
+  assert.doesNotMatch(collection, /srcSet=/i);
   assert.match(collection, /resumePreviewHref\(documentLanguage,base\)/);
   assert.match(collection, /data-zoomed=\{zoomed\}/);
   assert.match(collection, /Preview unavailable/);
+});
+
+test("connects each résumé case to the exact bilingual deliverable description", async () => {
+  const builds = process.env.NEXT_PUBLIC_BASE_PATH ? ["out", sitesBuild] : ["out"];
+  const expected = [
+    ["content-tracking", "cross-market-report"],
+    ["brand-tracking", "wave-reports"],
+    ["us-content", "preferences-and-habits"],
+  ];
+  assert.deepEqual(resumeWorkEntries.map(e => e.id), expected.map(e => e[0]));
+  for (const build of builds) for (const lang of ["zh", "en"]) {
+    const locale = lang === "en" ? "en/" : "";
+    const page = await readFile(new URL(`${build}/${locale}projects/resume/index.html`, root), "utf8");
+    const home = await readFile(new URL(`${build}/${locale}index.html`, root), "utf8");
+    const region = page.match(/<section id="resume-work"[^>]*>[\s\S]*?<\/section>/)?.[0];
+    assert.ok(region);
+    const base = build === "out" ? home.match(/src="([^"]*)\/_next\/static\//)?.[1] : "";
+    assert.notEqual(base, undefined);
+    assert.equal((region.match(/class="resume-case-output"/g)??[]).length, 3);
+    assert.match(page, /class="resume-jump"[^>]*>[\s\S]*?href="#resume-work"[\s\S]*?href="#resume-downloads"/);
+    assert.equal((page.match(/id="resume-downloads"/g)??[]).length,1);
+    assert.match(page, /id="resume-section-history"/);
+    assert.doesNotMatch(page, /class="resume-focus"|Different perspectives on the work/);
+    for (const [i, [id, outputId]] of expected.entries()) {
+      const work = selectedWork.find(item => item.id === id), story = workStudyCopyFor(id);
+      const output = story.outputs[story.output];
+      assert.equal(output.id, outputId);
+      const row = region.match(new RegExp(`<li data-resume-case="${id}"[^>]*>[\\s\\S]*?<\\/li>`))?.[0];
+      assert.ok(row?.includes(work.title[lang]) && row.includes(responsibilityLabel(work.role[lang])));
+      assert.ok(row.includes(resumeWorkEntries[i].contribution[lang]));
+      assert.ok(row.includes(output[lang]));
+      assert.ok(row.includes(`href="${base}/${locale}#output-${id}--${outputId}"`));
+      assert.ok(home.includes(`class="pf-output-brief" id="output-${id}--${outputId}"`));
+      assert.doesNotMatch(row, /target=|download=|Senior|负责人.*全部|已脱敏|anonymized|ByteDance|Lenovo|字节|联想/u);
+    }
+  }
+});
+
+test("retains only the two résumé anchors when switching page language", () => {
+  for (const fragment of [resumeWorkFragment,resumeDownloadFragment]) assert.equal(resumeSectionFragment(fragment),fragment);
+  for (const other of [null,"","#resume-pdf-reader","#resume-work?private","#output-us-content--preferences-and-habits"]) assert.equal(resumeSectionFragment(other),"");
 });
 
 test("keeps the script font contract", async () => {
