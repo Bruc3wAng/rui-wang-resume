@@ -1,0 +1,96 @@
+.portfolio-v17 .pc-contact {
+  --pc-ink: #223a50;
+  --pc-muted: #536674;
+  --pc-line: #b8c6cc;
+  --pc-fill: #edf0ee;
+  --pc-light: #f9f9f4;
+  --pc-columns: minmax(0,1.14fr) minmax(0,.86fr);
+  --pc-gutter: clamp(28px,5vw,72px);
+  padding: clamp(31px,3.4vw,47px) 0 0;
+  background: var(--pc-fill);
+  border-block-start: 1px solid #cbd2d0;
+  color: var(--pc-ink);
+  scroll-margin-block-start: 74px;
+}
+.pc-head,.pc-grid { display: grid; grid-template-columns: var(--pc-columns); gap: var(--pc-gutter); }
+.pc-head { align-items: end; padding-block-end: 18px; }
+.pc-contact .pf-eyebrow { color: var(--pc-muted); margin-block-end: 10px; }
+.pc-contact h2 { font-size: clamp(27px,2.8vw,37px); font-weight: 500; line-height: 1.16; }
+.pc-intro { font-size: 14px; line-height: 1.65; color: var(--pc-ink); max-width: 52ch; }
+.pc-intro .pc-location { margin-block-start: 3px; font-size: 12px; color: var(--pc-muted); }
+.pc-grid { padding-block: 7px 16px; border-block-start: 1px solid var(--pc-line); }
+.pc-channels,.pc-channel-text,.pc-credentials,.pc-resume-label { min-width: 0; }
+.pc-channel { padding-block-start: 13px; }
+.pc-channel + .pc-channel { border-block-start: 1px solid var(--pc-line); }
+.pc-channel-head { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: center; gap: 8px 16px; }
+.pc-contact .pc-channel-label {
+  display: flex; align-items: center; gap: 6px; margin-block-end: 3px;
+  font-size: 12px; line-height: 1.4; font-weight: 600; letter-spacing: 0; color: var(--pc-muted);
+}
+.pc-channel-value { font-size: clamp(17px,1.75vw,23px); line-height: 1.34; overflow-wrap: anywhere; user-select: text; }
+.pc-contact svg { width: 16px; height: 16px; flex: none; stroke: currentColor; stroke-width: 1.45; stroke-linecap: round; stroke-linejoin: round; }
+.pc-copy,.pc-manual-actions button {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; min-width: 66px;
+  padding: 5px 10px; border: 1px solid #a3b4bd; border-radius: 3px; background: var(--pc-light);
+  color: var(--pc-ink); font: inherit; font-size: 12px; font-weight: 600; white-space: nowrap;
+}
+.pc-copy:hover,.pc-manual-actions button:hover { background: #dfe8e9; border-color: #758e9d; }
+.pc-copy[aria-busy=true] { background: #e1e8ea; }
+.pc-channel-actions { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; column-gap: 10px; }
+.pc-launch { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; gap: 5px; color: #345a72; font-size: 12px; }
+.pc-launch:hover,.pc-footer a:hover { text-decoration: underline; text-underline-offset: 4px; }
+.pc-launch svg { width: 12px; height: 12px; }
+.pc-feedback { color: var(--pc-muted); font-size: 12px; line-height: 1.5; }
+.pc-channel[data-copy-state=copied] .pc-feedback { color: #276351; font-weight: 600; }
+.pc-channel[data-copy-state=manual] .pc-feedback { color: #6c5229; }
+.pc-manual { margin-block: 0 11px; padding: 9px 10px 10px; border-inline-start: 2px solid #a57b39; background: #f8f4e8; }
+.pc-contact .pc-manual > p { margin-block-end: 7px; font-size: 12px; line-height: 1.5; color: #5c503c; }
+.pc-manual-actions { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 8px; }
+.pc-manual input {
+  width: 100%; min-width: 0; min-height: 44px; padding: 8px; border: 1px solid #9dabb3; border-radius: 3px;
+  background: var(--pc-light); color: var(--pc-ink); font: inherit; font-size: 14px;
+}
+.pc-manual-actions button { min-width: 54px; }
+.pc-credentials { align-self: start; padding: 14px 0 3px; }
+.pc-contact .pc-credentials > h3 { font-size: 13px; font-weight: 600; color: var(--pc-muted); letter-spacing: 0; }
+.pc-resume-online {
+  display: grid; grid-template-columns: auto minmax(0,1fr) auto; gap: 11px; align-items: center;
+  min-height: 57px; margin-block: 9px 10px; padding: 8px 11px; border: 1px solid var(--pc-line); border-radius: 3px;
+  color: var(--pc-ink); background: var(--pc-light);
+}
+.pc-resume-online:hover { background: #e0e8e9; border-color: #879fac; }
+.pc-resume-icon { display: grid; place-items: center; width: 34px; height: 34px; background: #e1e8e9; color: #35546a; border-radius: 3px; }
+.pc-resume-label { display: grid; gap: 3px; }
+.pc-resume-label strong { font-size: 14px; line-height: 1.3; }
+.pc-resume-label small { font-size: 12px; line-height: 1.4; color: var(--pc-muted); }
+.pc-resume-downloads { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
+.pc-resume-pdf {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px;
+  padding: 6px 11px; border: 1px solid #a7b9c2; border-radius: 3px; color: var(--pc-ink); font-size: 12px; font-weight: 600;
+}
+.pc-resume-pdf:hover { background: #dfe8e9; border-color: #7891a0; }
+.pc-resume-pdf:first-child { background: var(--pc-ink); color: #f9f9f4; border-color: var(--pc-ink); }
+.pc-resume-pdf:first-child:hover { background: #315268; border-color: #315268; }
+.pc-resume-pdf > span { font-size: 16px; line-height: 1; }
+.portfolio-v17 .pc-contact .pc-footer {
+  display: grid; grid-template-columns: auto minmax(0,1fr) auto; align-items: center; gap: 3px 20px;
+  width: 100%; max-width: none; min-height: 0; height: auto; margin: 0; padding: 8px 0;
+  border-block-start: 1px solid var(--pc-line); font-size: 11px; line-height: 1.5; color: var(--pc-muted);
+}
+.pc-footer > span:nth-child(2) { text-align: center; }
+.pc-footer a { display: inline-flex; align-items: center; gap: 5px; min-height: 44px; white-space: nowrap; color: var(--pc-ink); }
+.portfolio-v17 .pc-contact :is(a,button,input):focus-visible { outline: 2px solid #8a632d; outline-offset: 3px; }
+
+@media (max-width:699px) {
+  .portfolio-v17 .pc-contact { padding-block-start: 28px; scroll-margin-block-start: 64px; }
+  .pc-head,.pc-grid { grid-template-columns: minmax(0,1fr); gap: 10px; }
+  .pc-head { padding-block-end: 14px; }
+  .pc-contact .pf-eyebrow { margin-block-end: 7px; }
+  .pc-intro { font-size: 13px; }
+  .pc-grid { padding-block: 0 12px; }
+  .pc-channel-head { gap: 8px; }
+  .pc-credentials { padding-block-start: 12px; border-block-start: 1px solid var(--pc-line); }
+  .portfolio-v17 .pc-contact .pc-footer { grid-template-columns: minmax(0,1fr) auto; }
+  .pc-footer > span:nth-child(2) { grid-column: 1/-1; grid-row: 2; text-align: start; }
+  .pc-footer a { grid-column: 2; grid-row: 1; }
+}

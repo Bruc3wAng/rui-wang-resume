@@ -5,8 +5,8 @@ import Image from "next/image";
 import NavigationAvatar from "./NavigationAvatar";
 import { profile, selectedWork, experiences, aiPractice, creativeCategories, capabilities, education, type CreativeItem, type Language } from "../content/resume";
 import details from "../content/ai-details.json";
-import release from "../content/resume-release.json";
 import ResumeDownload from "./ResumeDownload";
+import ContactPanel from "./ContactPanel";
 import PortfolioLight from "./PortfolioLight";
 import InteractiveGlobe from "./InteractiveGlobe";
 import { caseWorkIndices, mapStudyIds, type MarketStudyOrigin } from "./globe-research";
@@ -435,7 +435,7 @@ function Projects({ language }: { language: Language }) {
 }
 
 export function Portfolio({ language }: { language: Language }) {
-  const [lastWork, setLastWork] = useState(0), [paused, setPaused] = useState(false), [activeSection, setActiveSection] = useState("top"), [tone, setTone] = useState("light"), [copied, setCopied] = useState("");
+  const [lastWork, setLastWork] = useState(0), [paused, setPaused] = useState(false), [activeSection, setActiveSection] = useState("top"), [tone, setTone] = useState("light");
   const [marketContext, setMarketContext] = useState<WorkMarketContext | null>(null);
   const [aiView, setAIView] = useState({ practice: 0, stage: 0 });
   const lookup = useRef<PortfolioLookupHandle>(null), shell = useRef<HTMLElement>(null);
@@ -456,9 +456,9 @@ export function Portfolio({ language }: { language: Language }) {
     : linkedWork >= 0 ? studyFragment(selectedWork[linkedWork].id)
     : linkedPractice >= 0 ? practiceFragment(aiPractice[linkedPractice].id)
     : linkedMap >= 0 ? mapFragment(mapStudyIds[linkedMap])
-    : fragment === "#method" || fragment === directoryFragment ? fragment : "";
+    : fragment === "#method" || fragment === "#contact" || fragment === directoryFragment ? fragment : "";
   const handledFragment = useRef<string | null>(null);
-  const nav = [local(language, "重点工作", "Work"), local(language, "AI 提效实践", "AI practice"), local(language, "个人作品", "Projects"), local(language, "专业能力", "Capabilities")];
+  const nav = [local(language, "重点工作", "Work"), local(language, "AI 提效实践", "AI practice"), local(language, "个人作品", "Projects"), local(language, "专业能力", "Capabilities"), local(language, "联系", "Contact")];
   useEffect(() => { const m = matchMedia("(prefers-reduced-motion: reduce)"); const sync = () => setPaused(m.matches); sync(); m.addEventListener("change", sync); return () => m.removeEventListener("change", sync); }, []);
   useEffect(() => {
     const handled = handledFragment.current === fragment;
@@ -484,18 +484,18 @@ export function Portfolio({ language }: { language: Language }) {
     function update() {
       frame = 0; const y = (document.querySelector(".pf-header")?.getBoundingClientRect().bottom ?? 74) + 16; let next = "top", nextTone = "light";
       document.querySelectorAll<HTMLElement>(".portfolio-v17 [data-tone]").forEach(el => { const r = el.getBoundingClientRect(); if (r.top <= y && r.bottom > y) { next = el.id || "top"; nextTone = el.dataset.tone || "light"; } });
+      const scrollExtent = Math.max(1, document.documentElement.scrollHeight - innerHeight);
+      if (scrollExtent - scrollY < 2) {
+        const contact = document.getElementById("contact");
+        if (contact && contact.getBoundingClientRect().top < innerHeight) next = "contact";
+      }
       setActiveSection(next); setTone(nextTone);
-      shell.current?.style.setProperty("--pf-progress", `${Math.min(1, Math.max(0, scrollY / Math.max(1, document.documentElement.scrollHeight - innerHeight)))}`);
+      shell.current?.style.setProperty("--pf-progress", `${Math.min(1, Math.max(0, scrollY / scrollExtent))}`);
     }
     const schedule = () => { if (!frame) frame = requestAnimationFrame(update); };
     addEventListener("scroll", schedule, { passive: true }); addEventListener("resize", schedule); addEventListener("hashchange", schedule); update();
     return () => { cancelAnimationFrame(frame); removeEventListener("scroll", schedule); removeEventListener("resize", schedule); removeEventListener("hashchange", schedule); };
   }, []);
-  async function copy(value: string, label: string) {
-    try { await navigator.clipboard.writeText(value); setCopied(label); }
-    catch { setCopied(local(language, "请长按或选中下方文字复制", "Select the address below to copy it")); }
-    window.setTimeout(() => setCopied(""), 4000);
-  }
   function jump(id: string, focusId?: string) { window.setTimeout(() => { document.getElementById(id)?.scrollIntoView({ behavior: paused ? "auto" : "smooth" }); if (focusId) document.getElementById(focusId)?.focus({ preventScroll: true }); }, 0); }
   function setWorkLocation(index: number, mode: HistoryMode) {
     const next = studyFragment(selectedWork[index].id);
@@ -595,7 +595,7 @@ export function Portfolio({ language }: { language: Language }) {
     <AIPractice language={language} practice={activeAIPractice} stage={aiStage} ready={fragment !== null} weightExample={weightExample} setPractice={setPracticeLocation} setStage={stage => setAIView({ practice: activeAIPractice, stage })} onExploreWork={index => { if (marketContext?.workIndex !== index) setMarketContext(null); showWork(index); }}/>
     <Projects language={language}/>
     <section className="pf-capabilities pf-section" id="capabilities" data-tone="light"><div className="pf-wrap"><div className="pf-section-head"><div><p className="pf-eyebrow">04 / CAPABILITIES</p><h2>{local(language, "研究方法与实现能力。", "Research methods and practical implementation.")}</h2></div></div><div className="pf-capability-list">{capabilities.map((c, i) => <article key={c.title.en}><span>0{i + 1}</span><h3>{c.title[language]}</h3><p>{c.items[language]}</p></article>)}</div><div className="pf-education"><div className="pf-university-image"><Image src={`${base}/images/uoft-signature.webp`} width={690} height={302} alt="University of Toronto" unoptimized/></div><div className="pf-education-body"><p className="pf-eyebrow">EDUCATION</p><h3>{education.institution[language]}</h3><p>{education.degree[language]}</p><strong>{education.focus[language]}</strong><span className="pf-education-period">{education.period}</span><p>{education.coursework[language]}</p><p>{local(language,"英语 TOEFL 110 · 普通话 母语","English TOEFL 110 · Mandarin Chinese Native")}</p></div></div></div></section>
-    <section id="contact" className="pf-contact pf-section" data-tone="light"><div className="pf-wrap"><p className="pf-eyebrow">05 / CONTACT</p><div className="pf-contact-layout"><div><h2>{local(language, "一起把问题研究清楚。", "Let’s work through the questions.")}</h2><p>{local(language, "欢迎交流市场研究、用户洞察、数据分析与 AI 研究工作流。北京优先，也可接受上海、杭州与深圳。", "Open to conversations about market research, user insights, data analytics, and AI research workflows. Beijing preferred; open to Shanghai, Hangzhou, and Shenzhen.")}</p></div><div className="pf-contact-details"><a href={`mailto:${profile.email}`}>{profile.email}<Arrow/></a><div><button type="button" onClick={() => copy(profile.email, local(language, "邮箱已复制", "Email copied"))}>{local(language, "复制邮箱", "Copy email")}</button><a href={`tel:${profile.phone.href}`}>{profile.phone.display}</a><button type="button" onClick={() => copy(profile.phone.href, local(language, "电话已复制", "Phone copied"))}>{local(language, "复制电话", "Copy phone")}</button></div><p role="status" aria-live="polite" className="pf-copy-status">{copied || " "}</p><div className="pf-resume-downloads"><ResumeDownload language={language} className="pf-contact-resume"/><ResumeDownload language={language} documentLanguage={language === "zh" ? "en" : "zh"} className="pf-resume-alternative" compact/></div></div></div><footer><span>© {new Date(release.updatedAt).getFullYear()} {profile.name[language]}</span><span>{local(language, "定量研究 · 数据分析 · 多市场洞察 · AI 研究工作流", "QUANTITATIVE RESEARCH · DATA ANALYTICS · MULTI-MARKET INSIGHT · AI WORKFLOWS")}</span><a href="#top">{local(language, "返回顶部", "Back to top")} ↑</a></footer></div></section>
+    <ContactPanel language={language} ready={fragment !== null}/>
     <PortfolioLookup ref={lookup} language={language}/>
   </main>;
 }

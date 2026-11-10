@@ -5,7 +5,7 @@ import { access, readFile } from "node:fs/promises";
 import test from "node:test";
 import { resumeDocuments, resumeHref, resumePreviewHref } from "../content/resume-documents.ts";
 import { personalProjectStories, personalProjectStory } from "../content/personal-projects.ts";
-import { selectedWork } from "../content/resume.ts";
+import { profile, selectedWork } from "../content/resume.ts";
 import { responsibilityLabel } from "../content/work-folios.ts";
 import { resumeDownloadFragment, resumeSectionFragment, resumeWorkEntries, resumeWorkFragment } from "../app/resume-work.ts";
 import { workStudyCopyFor } from "../app/work-study-copy.ts";
@@ -264,6 +264,37 @@ test("publishes approved contact details without internal project codes", async 
   const publicText = files.join("\n");
   assert.match(publicText, /137\s*1880\s*1573/);
   assert.doesNotMatch(publicText, /Dreamina|BHT|TT生活服务|短剧项目/i);
+});
+
+test("exposes native contact and résumé routes in both locales without scripting", async () => {
+  const builds = process.env.NEXT_PUBLIC_BASE_PATH ? ["out", sitesBuild] : ["out"];
+  const attrs = tag => Object.fromEntries([...tag.matchAll(/([\w-]+)="([^"]*)"/g)].map(([, key, value]) => [key, value.replace(/&amp;/g, "&")]));
+  for (const build of builds) for (const language of ["zh", "en"]) {
+    const prefix = language === "en" ? "en/" : "";
+    const html = await readFile(new URL(`${build}/${prefix}index.html`, root), "utf8");
+    const start = html.indexOf('<section id="contact"');
+    const end = html.indexOf('<footer class="pc-footer">', start);
+    assert.ok(start >= 0 && end > start, "Missing contact section");
+    const section = html.slice(start, end);
+    const heroPdf = [...html.slice(0, start).matchAll(/<a\b[^>]*>/g)].map(([tag]) => attrs(tag)).find(a => a.class === "pf-download");
+    assert.ok(heroPdf);
+    const heroPath = new URL(heroPdf.href, "https://example.test").pathname;
+    const base = heroPath.slice(0, -resumeDocuments[language].path.length);
+    assert.ok(["", "/rui-wang-resume"].includes(base));
+    const links = [...section.matchAll(/<a\b[^>]*>/g)].map(([tag]) => attrs(tag));
+    assert.equal(links.filter(a => a.href === `mailto:${profile.email}`).length, 1);
+    assert.equal(links.filter(a => a.href === `tel:${profile.phone.href}`).length, 1);
+    assert.equal(links.find(a => a.class === "pc-resume-online")?.href, `${base}/${prefix}projects/resume/${resumeWorkFragment}`);
+    assert.ok(html.slice(0,start).includes('href="#contact"'));
+    const downloads = links.filter(a => a.class === "pc-resume-pdf");
+    assert.deepEqual(downloads.map(a => a["data-document-language"]), [language, language === "en" ? "zh" : "en"]);
+    for (const a of downloads) {
+      const key = a["data-document-language"];
+      assert.equal(a.href, resumeHref(key, base));
+      assert.equal(a.download, resumeDocuments[key].fileName);
+    }
+    assert.doesNotMatch(section, /<button\b|<form\b|<input\b/);
+  }
 });
 
 test("keeps internal disclosure language out of the visitor experience", async () => {
