@@ -4,7 +4,7 @@ import test from "node:test";
 import { runInNewContext } from "node:vm";
 import { selectedWork } from "../content/resume.ts";
 import { siteUrl } from "../content/site.ts";
-import { folioDescriptionsFor } from "../content/work-folios.ts";
+import { folioDescriptionsFor, responsibilityLabel } from "../content/work-folios.ts";
 import { outputFragment, portfolioLocaleHref, studyFragment, studyHistoryInitializer, studyIndexFromFragment } from "../app/study-location.ts";
 import { heroBrief, heroCases } from "../app/hero-brief.ts";
 import { directoryFragment, normalizeLookup, searchPortfolio } from "../app/portfolio-lookup.ts";
@@ -13,6 +13,7 @@ import { audienceOverlapExample, audienceOverlapTarget } from "../app/audience-o
 
 const root=new URL("../",import.meta.url);
 const read=path=>readFile(new URL(path,root),"utf8");
+const caseCovers=JSON.parse(await read("content/research-case-images.json"));
 
 test("finds bilingual and mixed-script terms without confusing US with user",()=>{
   assert.equal(normalizeLookup("  Ｕ．Ｓ．   RÉSUMÉ — ５０％ "), "us resume 50%");
@@ -176,8 +177,18 @@ test("publishes case-specific bilingual pages with exact roles, evidence links a
       assert.equal(value("og:url"),route);
       assert.equal(value("og:locale"),en?"en_US":"zh_CN");
       assert.equal(value("og:locale:alternate"),en?"zh_CN":"en_US");
-      assert.equal(value("og:image"),value("twitter:image"));
-      assert.match(value("og:image"),new RegExp(`/social/profile-${lang}-[a-f0-9]+\\.png$`));
+      const cover=caseCovers[`${id}-${lang}`];
+      assert.ok(cover);
+      assert.equal(value("og:image"),siteUrl+cover.path);
+      assert.equal(value("twitter:image"),siteUrl+cover.path);
+      assert.equal(value("og:image:type"),"image/png");
+      assert.equal(value("og:image:width"),"1200");
+      assert.equal(value("og:image:height"),"630");
+      assert.equal(value("twitter:card"),"summary_large_image");
+      const coverAlt=[title,responsibilityLabel(work.role[lang]),story.outputs[story.output][lang]].join(" · ");
+      assert.equal(value("og:image:alt"),coverAlt);
+      assert.equal(value("twitter:image:alt"),coverAlt);
+      assert.deepEqual(await readFile(new URL(`${target}${cover.path}`,root)),await readFile(new URL(`public${cover.path}`,root)));
       assert.deepEqual(headLinks.filter(a=>a.rel==="canonical").map(a=>a.href),[route]);
       assert.deepEqual(Object.fromEntries(headLinks.filter(a=>a.rel==="alternate").map(a=>[a.hreflang,a.href])),{
         "zh-CN":`${siteUrl}/research/${id}/`,en:`${siteUrl}/en/research/${id}/`,

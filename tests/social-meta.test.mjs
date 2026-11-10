@@ -4,6 +4,7 @@ import { readFile, readdir } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import { createRequire } from "node:module";
 import { socialCards } from "../content/social-cards.ts";
+import { selectedWork } from "../content/resume.ts";
 import { siteUrl } from "../content/site.ts";
 
 const root = new URL("../", import.meta.url), require = createRequire(import.meta.url);
@@ -38,6 +39,41 @@ test("has ten distinct localized, opaque social images with content-hashed paths
   }
   assert.deepEqual(await readFile(new URL("public/social-preview.png", root)), await readFile(new URL(`public${images["profile-zh"].path}`, root)));
   assert.ok((await readdir(new URL("public/social/", root))).every(name => !/\.(?:ttf|otf|ttc|woff2?)$/i.test(name)));
+});
+
+test("has ten exact case covers with five different illustrations and no extra source assets", async () => {
+  const caseImages = JSON.parse(await readFile(new URL("content/research-case-images.json", root), "utf8"));
+  const expectedKeys = selectedWork.flatMap(work=>["zh","en"].map(language=>`${work.id}-${language}`));
+  assert.deepEqual(Object.keys(caseImages).sort(),expectedKeys.sort());
+  assert.equal(Object.keys(caseImages).length,10);
+  assert.equal(new Set(Object.values(caseImages).map(image=>image.sha256)).size,10);
+  const artHashes = new Set();
+  for(const work of selectedWork){
+    const art=[];
+    for(const lang of ["zh","en"]){
+      const key=`${work.id}-${lang}`, image=caseImages[key];
+      const bytes=await readFile(new URL(`public${image.path}`,root));
+      const hash=createHash("sha256").update(bytes).digest("hex");
+      assert.equal(hash,image.sha256,key);
+      assert.equal(bytes.length,image.bytes,key);
+      assert.ok(bytes.length<=125000,key);
+      assert.equal(image.path,`/social/cases/${key}-${hash.slice(0,12)}.png`);
+      const metadata=await sharp(bytes).metadata();
+      assert.deepEqual([metadata.format,metadata.width,metadata.height],["png",1200,630]);
+      assert.deepEqual([metadata.width,metadata.height],[image.width,image.height]);
+      assert.equal((await sharp(bytes).stats()).isOpaque,true,key);
+      assert.equal(metadata.exif,undefined);
+      assert.equal(metadata.xmp,undefined);
+      assert.equal(metadata.icc,undefined);
+      const drawing=await sharp(bytes).extract({left:728,top:60,width:412,height:510}).raw().toBuffer();
+      art.push(createHash("sha256").update(drawing).digest("hex"));
+    }
+    assert.equal(art[0],art[1],"localized covers must keep the same case illustration");
+    artHashes.add(art[0]);
+  }
+  assert.equal(artHashes.size,5);
+  const listed=(await readdir(new URL("public/social/cases/",root))).sort();
+  assert.deepEqual(listed,Object.values(caseImages).map(image=>image.path.split("/").at(-1)).sort());
 });
 
 test("keeps share copy factual, language-specific and free of internal production labels", async () => {

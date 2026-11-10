@@ -1,0 +1,72 @@
+{
+  "content-tracking-zh": {
+    "path": "/social/cases/content-tracking-zh-efb0633efe9f.png",
+    "sha256": "efb0633efe9f71b41cad766edc4f42124bedd497004c267c405266e6b1b1d7ff",
+    "width": 1200,
+    "height": 630,
+    "bytes": 92011
+  },
+  "content-tracking-en": {
+    "path": "/social/cases/content-tracking-en-70d235b704a2.png",
+    "sha256": "70d235b704a201b85fc81f3457d0540985ce18e18b239680e56bae0d8791f13c",
+    "width": 1200,
+    "height": 630,
+    "bytes": 95327
+  },
+  "brand-tracking-zh": {
+    "path": "/social/cases/brand-tracking-zh-cc47d56651d6.png",
+    "sha256": "cc47d56651d670eeccc0dc24c61c35849e1af818fd02084702f7d8f0b01a2e86",
+    "width": 1200,
+    "height": 630,
+    "bytes": 67802
+  },
+  "brand-tracking-en": {
+    "path": "/social/cases/brand-tracking-en-c57baaeef626.png",
+    "sha256": "c57baaeef626695c6df1f47b9dc0dd6ac4a0241eabf9d3d63fd63f7882d4a12f",
+    "width": 1200,
+    "height": 630,
+    "bytes": 76279
+  },
+  "us-content-zh": {
+    "path": "/social/cases/us-content-zh-a9494873b929.png",
+    "sha256": "a9494873b929684dacf5fc8dc4c77f943130ea218666be1b298104f511127d34",
+    "width": 1200,
+    "height": 630,
+    "bytes": 93154
+  },
+  "us-content-en": {
+    "path": "/social/cases/us-content-en-b43ef06bdf74.png",
+    "sha256": "b43ef06bdf746622c7bf9ddd43dbbd6da8e573a75e5986f9c1b7886635575635",
+    "width": 1200,
+    "height": 630,
+    "bytes": 101103
+  },
+  "search-tracking-zh": {
+    "path": "/social/cases/search-tracking-zh-78ef71c809e9.png",
+    "sha256": "78ef71c809e914d4511c95b2b997643ff20e3010647f6dfb3028b5b7ce1f0c28",
+    "width": 1200,
+    "height": 630,
+    "bytes": 91672
+  },
+  "search-tracking-en": {
+    "path": "/social/cases/search-tracking-en-6e125be7b32e.png",
+    "sha256": "6e125be7b32efa6eb759deb5808ba62af8a5f8789e585d84ec6525cc010b5a01",
+    "width": 1200,
+    "height": 630,
+    "bytes": 97205
+  },
+  "qualitative-zh": {
+    "path": "/social/cases/qualitative-zh-fbf7664eff0b.png",
+    "sha256": "fbf7664eff0b71b536271265a40768267d91f6c3b2e6c7654a4fe35a196de62d",
+    "width": 1200,
+    "height": 630,
+    "bytes": 86639
+  },
+  "qualitative-en": {
+    "path": "/social/cases/qualitative-en-de6b5180b6ec.png",
+    "sha256": "de6b5180b6eccc879780f2823ec735a43959653c6d108dcbc1f62a89f93f5961",
+    "width": 1200,
+    "height": 630,
+    "bytes": 92634
+  }
+}

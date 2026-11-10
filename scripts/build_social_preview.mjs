@@ -10,7 +10,12 @@ const graphicsRequire = process.env.RUI_GRAPHICS_MODULES
   : require;
 const { createCanvas, GlobalFonts, loadImage } = graphicsRequire("@napi-rs/canvas");
 const sharp = createRequire(require.resolve("next/package.json"))("sharp");
-const root = new URL("../", import.meta.url), output = new URL("public/social/", root);
+const casesOnly = process.argv.includes("--research-cases");
+const caseRenderer = casesOnly ? await import("./research-case-art.mjs") : null;
+const cards = caseRenderer?.researchCaseCards ?? socialCards;
+const root = new URL("../", import.meta.url);
+const publicDirectory = casesOnly ? "/social/cases/" : "/social/";
+const output = new URL(`public${publicDirectory}`, root);
 const width = 1200, height = 630;
 const sha = bytes => createHash("sha256").update(bytes).digest("hex");
 const fonts = [
@@ -20,7 +25,9 @@ const fonts = [
 ];
 const han = /[\p{Script=Han}\u3000-\u303f\uff00-\uffef]/u;
 const glyphs = { han: new Set(), latin: new Set() };
-const textUsed = ["王睿", "Rui Wang", "MARKET & USER RESEARCH", "Research Executive at Ipsos", "BEIJING / CHINA", "PERSONAL PROJECT", "DATA PROJECT", "ZH / EN PDF", "研究经历", "数据分析", "AI 研究工作流", "RESEARCH", "ANALYTICS", "AI WORKFLOWS", "COUNTRY", "INDICATOR", "YEAR", "LIGHT", "COLOR", "BEIJING", ...Object.values(socialCards).flatMap(c => [...c.heading, c.subtitle, c.footer])];
+const textUsed = casesOnly
+  ? Object.values(cards).flatMap(c => [c.owner,c.series,c.scope,...c.heading,c.role,c.output])
+  : ["王睿", "Rui Wang", "MARKET & USER RESEARCH", "Research Executive at Ipsos", "BEIJING / CHINA", "PERSONAL PROJECT", "DATA PROJECT", "ZH / EN PDF", "研究经历", "数据分析", "AI 研究工作流", "RESEARCH", "ANALYTICS", "AI WORKFLOWS", "COUNTRY", "INDICATOR", "YEAR", "LIGHT", "COLOR", "BEIJING", ...Object.values(socialCards).flatMap(c => [...c.heading, c.subtitle, c.footer])];
 for (const value of textUsed) for (const character of value) {
   if (/\s/u.test(character)) continue;
   glyphs[han.test(character) ? "han" : "latin"].add(character.codePointAt(0));
@@ -84,8 +91,8 @@ for (const font of fonts) {
   fontAudit.push(auditFont(bytes, font, font.family === "Microsoft YaHei" ? glyphs.han : glyphs.latin));
   if (!GlobalFonts.registerFromPath(font.path, font.alias)) throw Error(`Could not register ${font.family}`);
 }
-const earth = await loadImage(fileURLToPath(new URL("public/images/earth-china-poster.webp", root)));
-const stillLife = await loadImage(await sharp(fileURLToPath(new URL("public/images/still-life.svg", root))).png().toBuffer());
+const earth = casesOnly ? null : await loadImage(fileURLToPath(new URL("public/images/earth-china-poster.webp", root)));
+const stillLife = casesOnly ? null : await loadImage(await sharp(fileURLToPath(new URL("public/images/still-life.svg", root))).png().toBuffer());
 const palette = { paper: "#f5f5ef", ink: "#182d42", muted: "#506879", rule: "#c9d1d4", night: "#132539", wine: "#702c3d" };
 const measures = [];
 
@@ -147,36 +154,58 @@ function atlasArt(ctx) {
   }
 }
 
+function researchCover(ctx, card) {
+  const english = card.language === "en";
+  ctx.fillStyle = "#f4f1e9";ctx.fillRect(0,0,width,height);
+  caseRenderer.drawResearchCaseArt(ctx,card.id);
+  text(ctx,card.owner,72,105,31,"#102d3d",610,english);
+  line(ctx,72,125,676,125,"#bbc8c5");
+  text(ctx,card.scope,72,166,english?21:23,"#405962",610);
+  const baseline=card.heading.length===1?285:245;
+  const size=english?(card.id==="content-tracking"?52:56):66;
+  card.heading.forEach((value,index)=>text(ctx,value,70,baseline+index*76,size,"#102d3d",621,english));
+  line(ctx,72,370,676,370,"#bbc8c5");
+  text(ctx,card.role,72,429,english?27:30,"#205a5f",610,english);
+  text(ctx,card.output,72,490,english?34:35,"#102d3d",610,english);
+  text(ctx,card.series,72,554,19,"#526a72",610,english);
+}
+
 await mkdir(output, { recursive: true });
-const manifest = {};
-for (const [key, card] of Object.entries(socialCards)) {
+const manifest = {}, measuredCards = {};
+for (const [key, card] of Object.entries(cards)) {
+  const firstMeasure = measures.length;
   const canvas = createCanvas(width, height), ctx = canvas.getContext("2d");
-  ctx.fillStyle = palette.paper; ctx.fillRect(0, 0, width, height);
-  if (card.kind === "profile") profileArt(ctx);
-  else if (card.kind === "resume") resumeArt(ctx, card.language);
-  else if (card.kind === "photo-workbench") photoArt(ctx);
-  else if (card.kind === "dinner-notes") dinnerArt(ctx);
-  else atlasArt(ctx);
-  const owner = card.language === "zh" ? "王睿 / RUI WANG" : "RUI WANG";
-  text(ctx, card.kind === "profile" ? "MARKET & USER RESEARCH" : owner, 74, 83, 19, palette.muted, 640);
-  if (card.kind === "profile") {
-    text(ctx, card.language === "zh" ? "王睿" : "Rui Wang", 70, 174, 68, palette.ink, 630, card.language === "en");
-    heading(ctx, card, 263, card.language === "zh" ? 40 : 38, 54);
-    text(ctx, card.subtitle, 75, 373, card.language === "zh" ? 24 : 23, palette.muted, 635);
-    line(ctx, 75, 438, 673, 438);
-    text(ctx, "Research Executive at Ipsos", 75, 482, 25, palette.ink, 635);
+  if (casesOnly) {
+    researchCover(ctx,card);
+    measuredCards[key] = measures.slice(firstMeasure);
   } else {
-    text(ctx, card.kind === "atlas" ? "DATA PROJECT" : "PERSONAL PROJECT", 75, 132, 15, palette.muted, 630);
-    const size = card.kind === "photo-workbench" ? 64 : card.kind === "atlas" && card.language === "en" ? 54 : 57;
-    heading(ctx, card, card.heading.length === 1 ? 298 : 250, size, 73);
-    text(ctx, card.subtitle, 75, 410, card.language === "zh" ? 24 : 25, palette.muted, 635);
-    line(ctx, 75, 475, 673, 475);
+    ctx.fillStyle = palette.paper; ctx.fillRect(0, 0, width, height);
+    if (card.kind === "profile") profileArt(ctx);
+    else if (card.kind === "resume") resumeArt(ctx, card.language);
+    else if (card.kind === "photo-workbench") photoArt(ctx);
+    else if (card.kind === "dinner-notes") dinnerArt(ctx);
+    else atlasArt(ctx);
+    const owner = card.language === "zh" ? "王睿 / RUI WANG" : "RUI WANG";
+    text(ctx, card.kind === "profile" ? "MARKET & USER RESEARCH" : owner, 74, 83, 19, palette.muted, 640);
+    if (card.kind === "profile") {
+      text(ctx, card.language === "zh" ? "王睿" : "Rui Wang", 70, 174, 68, palette.ink, 630, card.language === "en");
+      heading(ctx, card, 263, card.language === "zh" ? 40 : 38, 54);
+      text(ctx, card.subtitle, 75, 373, card.language === "zh" ? 24 : 23, palette.muted, 635);
+      line(ctx, 75, 438, 673, 438);
+      text(ctx, "Research Executive at Ipsos", 75, 482, 25, palette.ink, 635);
+    } else {
+      text(ctx, card.kind === "atlas" ? "DATA PROJECT" : "PERSONAL PROJECT", 75, 132, 15, palette.muted, 630);
+      const size = card.kind === "photo-workbench" ? 64 : card.kind === "atlas" && card.language === "en" ? 54 : 57;
+      heading(ctx, card, card.heading.length === 1 ? 298 : 250, size, 73);
+      text(ctx, card.subtitle, 75, 410, card.language === "zh" ? 24 : 25, palette.muted, 635);
+      line(ctx, 75, 475, 673, 475);
+    }
+    text(ctx, card.footer, 75, 566, card.kind === "profile" && card.language === "en" ? 21 : 22, palette.muted, 635);
   }
-  text(ctx, card.footer, 75, 566, card.kind === "profile" && card.language === "en" ? 21 : 22, palette.muted, 635);
   const bytes = await sharp(await canvas.encode("png")).png({ compressionLevel: 9, adaptiveFiltering: true }).toBuffer();
-  const hash = sha(bytes), path = `/social/${key}-${hash.slice(0, 12)}.png`;
+  const hash = sha(bytes), path = `${publicDirectory}${key}-${hash.slice(0, 12)}.png`;
   await writeFile(fileURLToPath(new URL(`public${path}`, root)), bytes);
   if (key === "profile-zh") await writeFile(fileURLToPath(new URL("public/social-preview.png", root)), bytes);
   manifest[key] = { path, sha256: hash, width, height, bytes: bytes.length };
 }
-process.stdout.write(JSON.stringify({ images: manifest, audit: { fonts: fontAudit, fontBinariesPublished: false, typography: "Microsoft YaHei for Chinese; Arial for Latin and numerals", measuredText: measures } }) + "\n");
+process.stdout.write(JSON.stringify({ images: manifest, audit: { fonts: fontAudit, fontBinariesPublished: false, typography: "Microsoft YaHei for Chinese; Arial for Latin and numerals", measuredText: measures, ...(casesOnly ? { measuredCards } : {}) } }) + "\n");
