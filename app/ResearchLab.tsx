@@ -3,9 +3,11 @@
 import { useEffect, useImperativeHandle, useRef, useState, type Ref } from "react";
 import type { Language } from "../content/resume";
 import {
-  buildResearchArtifact, compareConditions, planTrackingUpdate, queryLibrary,
+  buildResearchArtifact, comparableAudienceMix, compareConditions, planTrackingUpdate, queryLibrary,
   researchExampleFor, researchOutputLabels, researchResultSummary, serializeResearchArtifact, trackingImpactForChange,
+  type MixReference,
 } from "./research-lab";
+import AudienceMixView from "./AudienceMixView";
 import "./research-artifacts.css";
 
 export type ResearchLabHandle = { runExample: () => void };
@@ -52,6 +54,7 @@ function TrackingImpact({ values, language, settings }: { values: boolean[]; lan
 export default function ResearchLab({ practice, stage, language, onStageChange, ref }: LabProps) {
   const [values, setValues] = useState(practice === 1 ? [true, false, false] : [true, true, true]);
   const [category, setCategory] = useState("all"), [executed, setExecuted] = useState(false), [artifact, setArtifact] = useState(0);
+  const [reference, setReference] = useState<MixReference>(0);
   const [focusVersion, setFocusVersion] = useState(0);
   const pendingFocus = useRef<FocusTarget | null>(null);
   const body = useRef<HTMLDivElement>(null), criteriaLead = useRef<HTMLParagraphElement>(null), resultHeading = useRef<HTMLHeadingElement>(null);
@@ -82,17 +85,19 @@ export default function ResearchLab({ practice, stage, language, onStageChange, 
       const example = researchExampleFor(practice);
       setValues(example.values);
       setCategory(example.category);
+      setReference(0);
       execute();
     },
   }));
 
   const l = (zh: string, en: string) => text(language, zh, en);
   const comparisons = compareConditions(values), records = queryLibrary(category);
+  const mix = practice === 0 && executed ? comparableAudienceMix(values, reference) : null;
   const outputLabels = researchOutputLabels(practice, language);
-  const outputDocument = buildResearchArtifact(practice, artifact, values, category, language);
+  const outputDocument = buildResearchArtifact(practice, artifact, values, category, language, reference);
   const titles = [l("跨期比较检查器", "Comparison checker"), l("多期更新规划器", "Update planner"), l("研究资料查询器", "Research library explorer")];
   const settings = practice === 0
-    ? [l("分析方法", "Analysis method"), l("目标人群", "Target audience"), l("指标定义", "Measure definition")]
+    ? comparisons.map(item => item[language])
     : [l("新增研究期次", "New research wave"), l("调整指标口径", "Revised measure definitions"), l("变更图表模板", "Changed chart template")];
   const categories = [
     { value: "all", name: l("全部品类", "All categories") },
@@ -101,7 +106,12 @@ export default function ResearchLab({ practice, stage, language, onStageChange, 
   ];
   const runLabel = practice === 2 ? l("查询资料", "Run query") : l("执行当前检查", "Run current checks");
   const editLabel = practice === 2 ? l("调整品类", "Change category") : l("调整条件", "Edit criteria");
-  const summary = researchResultSummary(practice, values, category, language);
+  const summary = researchResultSummary(practice, values, category, language, reference);
+  const findings = practice === 0 ? <ol className="rlab-findings">
+    {comparisons.map(item => <li key={item.key} data-aligned={item.aligned}><span aria-hidden="true">{item.aligned ? "✓" : "↗"}</span>
+      <div><strong>{item[language]}</strong><p>{item.aligned ? l("定义一致，保留比较依据。", "Definitions align. Retain the comparison criteria.") : item[language === "zh" ? "actionZh" : "actionEn"]}</p></div>
+    </li>)}
+  </ol> : null;
 
   function toggle(i: number) {
     setValues(current => current.map((value, index) => index === i ? !value : value));
@@ -124,7 +134,7 @@ export default function ResearchLab({ practice, stage, language, onStageChange, 
     <div className="rlab-body" ref={body}>
       {stage === 0 ? <div className="rlab-settings">
         <p className="rlab-lead" ref={criteriaLead} tabIndex={-1}>
-          {practice === 0 ? l("如果比较条件变了，研究判断也应该跟着变。", "A change in comparison criteria should change the interpretation.")
+          {practice === 0 ? l("先核对两期的定义。定义一致时，再看样本构成会不会影响解读。", "Check that the definitions match before assessing how the sample mix affects the comparison.")
             : practice === 1 ? l("选出本次变化，看看哪些内容需要一起更新。", "Select a change to see what needs to update with it.")
             : l("从问题出发，找到对应的资料、定义与来源。", "Start with a question, then find the matching material, definitions and sources.")}
         </p>
@@ -151,12 +161,10 @@ export default function ResearchLab({ practice, stage, language, onStageChange, 
         <p>{l("结果会根据本次选择生成。", "Results are based on your current selection.")}</p>
         <button className="rlab-primary" type="button" onClick={execute}>{runLabel}<span aria-hidden="true">↗</span></button>
       </div> : stage === 1 ? <div className="rlab-execution">
-        <div className="rlab-result-banner"><span>{l("当前结果", "CURRENT RESULT")}</span><h5 ref={resultHeading} tabIndex={-1} id="rlab-result-title">{summary}</h5></div>
-        {practice === 0 ? <ol className="rlab-findings">
-          {comparisons.map(item => <li key={item.key} data-aligned={item.aligned}><span aria-hidden="true">{item.aligned ? "✓" : "↗"}</span>
-            <div><strong>{item[language]}</strong><p>{item.aligned ? l("定义一致，保留比较依据。", "Definitions align. Retain the comparison criteria.") : item[language === "zh" ? "actionZh" : "actionEn"]}</p></div>
-          </li>)}
-        </ol> : practice === 1 ? <TrackingImpact key={focusVersion} values={values} language={language} settings={settings}/>
+        <div className="rlab-result-banner"><span>{mix ? l("样例数据", "EXAMPLE DATA") : l("当前结果", "CURRENT RESULT")}</span><h5 ref={resultHeading} tabIndex={-1} id="rlab-result-title">{summary}</h5></div>
+        {practice === 0 ? mix ? <AudienceMixView comparison={mix} language={language} criteria={settings} onReference={setReference}/>
+          : <><p className="rlab-mix-held">{l("比较条件有变化，暂不计算两期差异。", "A criterion has changed, so the wave comparison is on hold.")}</p>{findings}</>
+          : practice === 1 ? <TrackingImpact key={focusVersion} values={values} language={language} settings={settings}/>
           : <div className="rlab-table"><table>
             <caption>{categories.find(item => item.value === category)?.name ?? l("查询样例", "Example query")}</caption>
             <thead><tr><th>{l("品类", "Category")}</th><th>{l("研究主题", "Topic")}</th><th>{l("来源类型", "Source type")}</th></tr></thead>

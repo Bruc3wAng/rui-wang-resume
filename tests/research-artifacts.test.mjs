@@ -7,16 +7,63 @@ const expectedUpdates=[[],["wave-data","charts","copy"],["metric-map","charts","
 
 test("each guided example is bilingual and runs the intended conditions",()=>{
   const comparison=lab.researchExampleFor(0), reporting=lab.researchExampleFor(1), library=lab.researchExampleFor(2);
-  assert.deepEqual(comparison.values,[false,true,true]);
-  assert.deepEqual(lab.compareConditions(comparison.values).filter(item=>!item.aligned).map(item=>item.key),["method"]);
+  assert.deepEqual(comparison.values,[true,true,true]);
+  assert.ok(lab.comparableAudienceMix(comparison.values,0));
   assert.deepEqual(reporting.values,[true,true,false]);
   assert.deepEqual(lab.planTrackingUpdate(reporting.values).updates.map(item=>item.id),expectedUpdates[3]);
   assert.equal(library.category,"pet");
   assert.deepEqual(lab.queryLibrary(library.category).map(item=>item.topicEn),["Categories & products","Source & collection date"]);
   for(const sample of [comparison,reporting,library])for(const language of ["zh","en"]){assert.ok(sample.title[language]);assert.ok(sample.prompt[language]);}
-  comparison.values[0]=true;
-  assert.equal(lab.researchExampleFor(0).values[0],false);
+  comparison.values[0]=false;
+  assert.equal(lab.researchExampleFor(0).values[0],true);
   assert.throws(()=>lab.researchExampleFor(3),RangeError);
+});
+
+test("calculates observed and fixed-mix rates independently for both reference waves",()=>{
+  const one=lab.calculateAudienceMix(0),two=lab.calculateAudienceMix(1);
+  const near=(actual,expected)=>assert.ok(Math.abs(actual-expected)<1e-12,`${actual} != ${expected}`);
+  for(const run of [one,two]){
+    assert.deepEqual(run.waves.map(({satisfied,total})=>[satisfied,total]),[[110,200],[149,250]]);
+    assert.deepEqual(run.groups.map(group=>group.waves.map(({satisfied,total})=>[satisfied,total])),[[[70,100],[130,200]],[[40,100],[19,50]]]);
+    near(run.waves[0].observed,110/200);
+    near(run.waves[1].observed,149/250);
+    near(run.change.observed,.046);
+    near(run.groups.reduce((sum,group)=>sum+group.weight,0),1);
+  }
+  assert.deepEqual(one.groups.map(g=>g.weight),[.5,.5]);
+  assert.deepEqual(two.groups.map(g=>g.weight),[.8,.2]);
+  near(one.waves[0].adjusted,.55);near(one.waves[1].adjusted,.515);near(one.change.adjusted,-.035);
+  near(two.waves[0].adjusted,.64);near(two.waves[1].adjusted,.596);near(two.change.adjusted,-.044);
+  assert.equal(lab.mixDelta(one.change.observed,"en"),"+4.6 pp");
+  assert.equal(lab.mixDelta(two.change.adjusted,"zh"),"−4.4 个百分点");
+  assert.equal(lab.mixDeltaValue(-1e-9),"0.0");
+  assert.equal(lab.audienceMixFormula(one,1),"65.0% × 50.0% + 38.0% × 50.0% = 51.5%");
+  assert.equal(lab.audienceMixFormula(two,0),"70.0% × 80.0% + 40.0% × 20.0% = 64.0%");
+  assert.throws(()=>lab.calculateAudienceMix(2),RangeError);
+});
+
+test("holds back wave differences for every failed criterion and exports the actual selected calculation",()=>{
+  for(const lang of ["zh","en"])for(const ref of [0,1])for(let mask=0;mask<8;mask++){
+    const conditions=[0,1,2].map(i=>Boolean(mask&(1<<i)));
+    const run=lab.comparableAudienceMix(conditions,ref);
+    const doc=lab.buildResearchArtifact(0,0,conditions,"all",lang,ref), content=lab.serializeResearchArtifact(doc,lang);
+    if(mask!==7){
+      assert.equal(run,null);
+      assert.equal(doc.sections.length,2);
+      assert.match(content,/暂不计算两期差异|Comparison on hold/);
+      assert.doesNotMatch(content,/%|组内样本|Group counts|same audience mix/);
+      continue;
+    }
+    assert.ok(run);
+    assert.match(content,/样例数据：满意占比|Example data: satisfaction rates/);
+    assert.ok(content.includes(lab.mixReferenceLabel(ref,lang)));
+    assert.ok(content.includes(lab.audienceMixFormula(run,0)));
+    assert.ok(content.includes(lab.audienceMixFormula(run,1)));
+    assert.ok(content.includes(lab.mixDelta(run.change.observed,lang)));
+    assert.ok(content.includes(lab.mixDelta(run.change.adjusted,lang)));
+    assert.match(content,/70\/100.*130\/200/);
+    assert.match(content,/110\/200.*149\/250/);
+  }
 });
 
 test("the impact trace reveals only real dependencies without changing the combined plan",()=>{
@@ -122,7 +169,7 @@ test("rejects invalid output selections instead of substituting another practice
 
 test("the viewer and download consume the same output object and invalidate changed inputs",async()=>{
   const ui=await readFile(new URL("../app/ResearchLab.tsx",import.meta.url),"utf8");
-  assert.match(ui,/buildResearchArtifact\(practice, artifact, values, category, language\)/);
+  assert.match(ui,/buildResearchArtifact\(practice, artifact, values, category, language, reference\)/);
   assert.match(ui,/serializeResearchArtifact\(outputDocument, language\)/);
   assert.match(ui,/a\.download\s*=\s*outputDocument\.filename/);
   assert.match(ui,/outputDocument\.sections\.map/);

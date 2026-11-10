@@ -1,7 +1,7 @@
 export type Check = { key: string; aligned: boolean; zh: string; en: string; actionZh: string; actionEn: string };
 const criteria = [
   ["method", "分析方法", "Analysis method", "用同一方法重算，再比较结果与排序。", "Recalculate with the same method before comparing results and rankings."],
-  ["audience", "目标人群", "Target audience", "限定共同目标人群，并说明样本范围的变化。", "Restrict the comparison to a common audience and explain sample-scope changes."],
+  ["audience", "目标人群定义", "Target-audience definition", "限定共同目标人群，并说明样本范围的变化。", "Restrict the comparison to a common audience and explain sample-scope changes."],
   ["measure", "指标定义", "Measure definition", "先统一指标定义；无法统一时分开报告。", "Align measure definitions first; report separately if they cannot be reconciled."],
 ];
 export function compareConditions(values: boolean[]): Check[] {
@@ -9,6 +9,76 @@ export function compareConditions(values: boolean[]): Check[] {
 }
 type ResearchLanguage = "zh" | "en";
 type Bilingual = { zh: string; en: string };
+export type MixReference = 0 | 1;
+type WaveCount = { satisfied: number; total: number };
+
+// Constructed counts only. Each wave uses the same group and satisfaction
+// definitions, but the share of frequent users differs between waves.
+const mixExample: readonly { id: string; label: Bilingual; waves: readonly [WaveCount, WaveCount] }[] = [
+  { id: "frequent", label: { zh: "高频用户", en: "Frequent users" }, waves: [{ satisfied: 70, total: 100 }, { satisfied: 130, total: 200 }] },
+  { id: "occasional", label: { zh: "低频用户", en: "Occasional users" }, waves: [{ satisfied: 40, total: 100 }, { satisfied: 19, total: 50 }] },
+];
+
+export function calculateAudienceMix(reference: MixReference) {
+  if (reference !== 0 && reference !== 1) throw new RangeError("Unknown reference wave");
+  const totals = (wave: MixReference) => mixExample.reduce((sum, group) => ({
+    satisfied: sum.satisfied + group.waves[wave].satisfied,
+    total: sum.total + group.waves[wave].total,
+  }), { satisfied: 0, total: 0 });
+  const referenceTotal = totals(reference).total;
+  const groups = mixExample.map(group => ({
+    id: group.id, label: { ...group.label }, weight: group.waves[reference].total / referenceTotal,
+    waves: [{ ...group.waves[0] }, { ...group.waves[1] }] as const,
+  }));
+  const summarize = (wave: MixReference) => {
+    const count = totals(wave);
+    return { ...count, observed: count.satisfied / count.total, adjusted: groups.reduce((sum, group) => {
+      const row = group.waves[wave];
+      return sum + group.weight * (row.satisfied / row.total);
+    }, 0) };
+  };
+  const waves = [summarize(0), summarize(1)] as const;
+  return { reference, groups, waves, change: { observed: waves[1].observed - waves[0].observed, adjusted: waves[1].adjusted - waves[0].adjusted } };
+}
+
+export type AudienceMixComparison = ReturnType<typeof calculateAudienceMix>;
+export function comparableAudienceMix(values: boolean[], reference: MixReference) {
+  return compareConditions(values).every(item => item.aligned) ? calculateAudienceMix(reference) : null;
+}
+export function mixRate(rate: number) { return `${(rate * 100).toFixed(1)}%`; }
+export function mixDeltaValue(change: number) {
+  const points = change * 100;
+  const magnitude = Math.abs(points).toFixed(1);
+  const sign = Number(magnitude) === 0 ? "" : points < 0 ? "−" : "+";
+  return `${sign}${magnitude}`;
+}
+export function mixDelta(change: number, language: ResearchLanguage) {
+  return `${mixDeltaValue(change)}${language === "zh" ? " 个百分点" : " pp"}`;
+}
+export function mixReferenceLabel(reference: MixReference, language: ResearchLanguage) {
+  return language === "zh" ? `第 ${reference + 1} 期构成` : `Wave ${reference + 1} mix`;
+}
+export function audienceMixHeadline(comparison: AudienceMixComparison, language: ResearchLanguage) {
+  if (comparison.change.observed > 0 && comparison.change.adjusted < 0) {
+    return language === "zh" ? "总体满意度上升，同构成复算后下降" : "Overall satisfaction rose. At the same mix, it fell.";
+  }
+  return language === "zh" ? "对照总体结果与同构成结果" : "Compare observed and same-mix satisfaction";
+}
+export function audienceMixFormula(comparison: AudienceMixComparison, wave: MixReference) {
+  return comparison.groups.map(group => {
+    const row = group.waves[wave];
+    return `${mixRate(row.satisfied / row.total)} × ${mixRate(group.weight)}`;
+  }).join(" + ") + ` = ${mixRate(comparison.waves[wave].adjusted)}`;
+}
+export function audienceMixLabels(language: ResearchLanguage) {
+  return language === "zh" ? { observed: "按实际构成", adjusted: "统一人群构成", wave: ["第 1 期", "第 2 期"] } : { observed: "As observed", adjusted: "Same mix", wave: ["Wave 1", "Wave 2"] };
+}
+export function audienceMixNote(comparison: AudienceMixComparison, language: ResearchLanguage) {
+  const [first, second] = comparison.waves.map((wave, i) => mixRate(comparison.groups[0].waves[i].total / wave.total));
+  return language === "zh" ? `第 2 期高频用户占 ${second}，第 1 期占 ${first}。统一构成只用于比较，不是实际总体结果。`
+    : `Frequent users made up ${second} of Wave 2, versus ${first} of Wave 1. Same-mix rates are for comparison, not observed totals.`;
+}
+
 export type UpdatePlanItem = Bilingual & { id: string; action: Bilingual };
 type UpdateRule = UpdatePlanItem & { when: number[] };
 const updateRules: UpdateRule[] = [
@@ -53,9 +123,9 @@ export type ResearchArtifact = { title: string; summary: string; filename: strin
 function validPractice(practice: number) { if (!Number.isInteger(practice)||practice<0||practice>2) throw new RangeError("Unknown research practice"); }
 const examples: readonly { title: Bilingual; prompt: Bilingual; values: readonly [boolean,boolean,boolean]; category: "all" | "pet" }[] = [
   {
-    title: {zh:"分析方法变了，两期结果还能直接比吗？",en:"The method changed. Can we still compare waves?"},
-    prompt: {zh:"人群和指标保持一致，看看比较前需要先做什么。",en:"The audience and measure are unchanged. See what to check before comparing."},
-    values: [false,true,true], category: "all",
+    title: {zh:"总体满意度上升，分人群看还是这样吗？",en:"Satisfaction rose overall. Does it hold across groups?"},
+    prompt: {zh:"用同一人群构成复算两期，看看变化方向是否一致。",en:"Recalculate both waves with the same audience mix and see whether the direction holds."},
+    values: [true,true,true], category: "all",
   },
   {
     title: {zh:"新增一期、指标也变了，报告要改哪里？",en:"A new wave and a revised measure: what needs updating?"},
@@ -78,14 +148,14 @@ export function researchOutputLabels(practice: number, language: ResearchLanguag
   const labels = language==="zh" ? [["判断","处理","复用"],["范围","复核","规则"],["资料","来源","比较"]] : [["Findings","Actions","Reuse"],["Scope","Review","Rules"],["Records","Sources","Compare"]];
   return labels[practice];
 }
-export function researchResultSummary(practice: number, values: boolean[], category: string, language: ResearchLanguage) {
+export function researchResultSummary(practice: number, values: boolean[], category: string, language: ResearchLanguage, reference: MixReference = 0) {
   validPractice(practice);
   const l=(zh:string,en:string)=>language==="zh"?zh:en;
-  if(practice===0){const count=compareConditions(values).filter(item=>!item.aligned).length;return count?l(`${count}项比较条件需要先处理`,count===1?"1 comparison criterion needs attention":`${count} comparison criteria need attention`):l("比较条件一致，可以进入分析","Comparison criteria align; proceed to analysis");}
+  if(practice===0){const count=compareConditions(values).filter(item=>!item.aligned).length;return count?l(`${count}项比较条件需要先处理`,count===1?"1 comparison criterion needs attention":`${count} comparison criteria need attention`):audienceMixHeadline(calculateAudienceMix(reference),language);}
   if(practice===1){const count=planUpdates(values).length;return count?l(`${count}类内容需要更新`,`${count} areas to update`):l("本次未选择变更","No changes selected");}
   const count=queryLibrary(category).length;return l(`${count}条样例记录`,`${count} example records`);
 }
-export function buildResearchArtifact(practice: number, artifact: number, values: boolean[], category: string, language: ResearchLanguage): ResearchArtifact {
+export function buildResearchArtifact(practice: number, artifact: number, values: boolean[], category: string, language: ResearchLanguage, reference: MixReference = 0): ResearchArtifact {
   validPractice(practice);
   if(!Number.isInteger(artifact)||artifact<0||artifact>2)throw new RangeError("Unknown research output");
   const l=(zh:string,en:string)=>language==="zh"?zh:en;
@@ -95,9 +165,24 @@ export function buildResearchArtifact(practice: number, artifact: number, values
   const plan=planTrackingUpdate(values),comparisons=compareConditions(values),records=queryLibrary(category);
   const row=(item:UpdatePlanItem)=>({label:item[language],text:item.action[language]});
   if(practice===0){
-    if(artifact===0)sections.push({title:l("比较条件","Comparison criteria"),rows:comparisons.map(item=>({label:item[language],text:item.aligned?l("一致","Aligned"):l("有变化","Changed")}))});
-    else if(artifact===1){const changed=comparisons.filter(item=>!item.aligned);sections.push({title:l("需要先处理的差异","Differences to resolve first"),points:changed.length?changed.map(item=>item[language==="zh"?"actionZh":"actionEn"]):[l("比较条件一致，但仍需复核数据质量并解释研究结果。","Criteria align; data quality and interpretation still require review.")]});}
-    else sections.push({title:l("下次分析沿用的依据","Basis for the next analysis"),points:[l("记录比较市场、人群、指标定义与分析方法。","Record the markets, audiences, measure definitions, and analysis method."),l("保留计算规则、检查结果与需要解释的差异。","Retain calculation rules, check results, and differences requiring interpretation."),l("条件变化后重新运行，不直接沿用旧判断。","Rerun when criteria change rather than carrying forward an old assessment.")]});
+    if(artifact===0){
+      sections.push({title:l("比较条件","Comparison criteria"),rows:comparisons.map(item=>({label:item[language],text:item.aligned?l("一致","Aligned"):l("有变化","Changed")}))});
+      const comparison = comparableAudienceMix(values, reference);
+      if (comparison) {
+        const labels = audienceMixLabels(language);
+        const periodRates = (kind: "observed" | "adjusted") => comparison.waves.map((wave, i) => `${labels.wave[i]} ${mixRate(wave[kind])}`).join(" → ") + ` · ${mixDelta(comparison.change[kind],language)}`;
+        sections.push({title:l("样例数据：满意占比","Example data: satisfaction rates"),rows:[
+          {label:labels.observed,text:periodRates("observed")},
+          {label:`${labels.adjusted} · ${mixReferenceLabel(reference, language)}`,text:periodRates("adjusted")},
+        ],points:[audienceMixNote(comparison,language)]},
+        {title:l("分组人数与复算","Group counts and calculation"),rows:[
+          ...comparison.groups.map(group=>({label:group.label[language],text:group.waves.map((wave,i)=>`${labels.wave[i]} ${wave.satisfied}/${wave.total}`).join(" · ") + l(` · 参照占比 ${mixRate(group.weight)}`,` · Reference share ${mixRate(group.weight)}`)})),
+          {label:l("合计","Total"),text:comparison.waves.map((wave,i)=>`${labels.wave[i]} ${wave.satisfied}/${wave.total}`).join(" · ")},
+        ],points:([0,1] as const).map(i=>`${labels.wave[i]}: ${audienceMixFormula(comparison,i)}`)});
+      } else sections.push({title:l("暂不计算两期差异","Comparison on hold"),points:[l("先处理变化的比较条件，再复算两期。","Resolve the changed comparison criteria before recalculating the two waves.")]});
+    }
+    else if(artifact===1){const changed=comparisons.filter(item=>!item.aligned);sections.push({title:l("比较前的检查","Checks before comparison"),points:changed.length?changed.map(item=>item[language==="zh"?"actionZh":"actionEn"]):[l("同时看总体比例和按相同人群构成重算的比例；变化方向不同时，先回到分组检查。","Review the overall rate alongside the same-mix rate. If the directions differ, check the groups first."),l("解读真实研究结果前，仍需核对抽样、数据质量及不确定性。","Check sampling, data quality, and uncertainty before interpreting real study results.")]});}
+    else sections.push({title:l("下次分析沿用的依据","Basis for the next analysis"),points:[l("记录比较市场、人群、指标定义与分析方法。","Record the markets, audiences, measure definitions, and analysis method."),l("保留每组分子、分母和两期共用的参照构成。","Retain each group’s numerator and denominator and the shared reference mix."),l("条件变化后重新运行，不直接沿用旧判断。","Rerun when criteria change rather than carrying forward an old assessment.")]});
   } else if(practice===1){
     if(artifact===0)sections.push(
       {title:l("需要更新","Update work"),rows:plan.updates.map(row),...(!plan.updates.length?{points:[l("未选择需要批量更新的内容。","No batch-update work selected.")]}:{})},
@@ -111,7 +196,7 @@ export function buildResearchArtifact(practice: number, artifact: number, values
     else if(artifact===1)sections.push({title:l("回到来源核对","Checks against the original source"),points:records.length?[...new Set(records.map(item=>item[language==="zh"?"sourceZh":"sourceEn"]))].map(source=>l(`${source}：核对定义、采集时间及适用范围。`,`${source}: check definitions, collection date, and scope.`)):[l("先补充符合条件的资料，再核对来源与定义。","Add matching material before checking sources and definitions.")]});
     else sections.push({title:l("比较前的准备","Before comparing records"),points:[l("保留当前品类、研究主题与来源类型。","Retain the selected category, research topic, and source type."),l("比较前核对定义、规格、单位与采集时间是否一致。","Check definitions, formats, units, and collection dates before comparing."),l("定义或来源不足时补充资料，不把缺失内容当作已核实结果。","Add missing definitions or sources rather than treating incomplete material as verified.")]});
   }
-  return {title:titleSets[practice][artifact],summary:researchResultSummary(practice,values,category,language),filename:filenames[practice][artifact]+".txt",sections};
+  return {title:titleSets[practice][artifact],summary:researchResultSummary(practice,values,category,language,reference),filename:filenames[practice][artifact]+".txt",sections};
 }
 export function serializeResearchArtifact(document: ResearchArtifact, language: ResearchLanguage) {
   const lines=[document.title,language==="zh"?"研究方法示例":"Research-method example",document.summary,""];
