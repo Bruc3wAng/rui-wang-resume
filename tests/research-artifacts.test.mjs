@@ -12,7 +12,7 @@ test("each guided example is bilingual and runs the intended conditions",()=>{
   assert.deepEqual(reporting.values,[true,true,false]);
   assert.deepEqual(lab.planTrackingUpdate(reporting.values).updates.map(item=>item.id),expectedUpdates[3]);
   assert.equal(library.category,"pet");
-  assert.deepEqual(lab.queryLibrary(library.category).map(item=>item.topicEn),["Categories & products","Source & collection date"]);
+  assert.deepEqual(lab.queryLibrary(library.category).map(item=>item.id),["pet-a","pet-b","pet-c","pet-d","pet-e"]);
   for(const sample of [comparison,reporting,library])for(const language of ["zh","en"]){assert.ok(sample.title[language]);assert.ok(sample.prompt[language]);}
   comparison.values[0]=false;
   assert.equal(lab.researchExampleFor(0).values[0],true);
@@ -220,14 +220,72 @@ test("the report output carries both snapshots, formats, and the exact preview p
   }
 });
 
-test("query outputs retain the selected category and make an empty result explicit",()=>{
-  for(const language of ["zh","en"])for(const category of ["all","health","pet","unknown"]){
-    const doc=lab.buildResearchArtifact(2,0,[true,true,true],category,language),rows=doc.sections[0].rows??[];
-    assert.equal(rows.length,lab.queryLibrary(category).length);
-    if(category==="unknown")assert.match(lab.serializeResearchArtifact(doc,language),/未找到|No matching/);
-    if(category==="health")assert.doesNotMatch(lab.serializeResearchArtifact(doc,language),/宠物食品|Pet food/);
-    if(category==="pet")assert.doesNotMatch(lab.serializeResearchArtifact(doc,language),/健康产品|Health products/);
-    for(const artifact of [1,2])assert.ok(lab.buildResearchArtifact(2,artifact,[],category,language).sections.length);
+test("only same-batch same-channel prices with valid net weight enter a per-kilogram comparison",()=>{
+  const online=lab.queryLibraryEvidence("pet","online"), offline=lab.queryLibraryEvidence("pet","offline");
+  const outcome=query=>query.records.map(({record,status,reason,perKgCents})=>[record.id,status,reason,perKgCents]);
+  assert.deepEqual(outcome(online),[
+    ["pet-a","comparable","aligned",4000],["pet-b","comparable","aligned",4900],["pet-c","review","weight",null],
+    ["pet-d","reference","channel",null],["pet-e","reference","batch",null],
+  ]);
+  assert.deepEqual(outcome(offline),[
+    ["pet-a","reference","channel",null],["pet-b","reference","channel",null],["pet-c","reference","channel",null],
+    ["pet-d","comparable","aligned",3500],["pet-e","reference","channel",null],
+  ]);
+  for(const query of [online,offline]){
+    assert.equal(query.comparable,query.groups.flatMap(group=>group.comparable).length);
+    assert.ok(query.held.every(item=>item.perKgCents===null&&lab.libraryEvidenceFormula(item,"en")===null));
+  }
+  assert.equal(lab.libraryEvidenceFormula(online.records[0],"zh"),"¥32.00 ÷ 0.8 kg = 40.00 元/kg");
+  assert.equal(lab.libraryEvidenceFormula(offline.records[3],"en"),"CNY 42.00 ÷ 1.2 kg = CNY 35.00/kg");
+  const all=lab.queryLibraryEvidence("all","online");
+  assert.deepEqual(all.groups.map(group=>[group.category,group.comparable.map(item=>item.perKgCents)]),[["health",[10000,8400]],["pet",[4000,4900]]]);
+  const noMatches=lab.queryLibraryEvidence("health","offline");
+  assert.equal(noMatches.records.length,2);assert.equal(noMatches.comparable,0);assert.deepEqual(noMatches.groups,[]);
+  assert.deepEqual(lab.queryLibraryEvidence("unknown","online").records,[]);
+  assert.throws(()=>lab.queryLibraryEvidence("all","unknown"),RangeError);
+});
+
+test("invalid price or net weight stays on hold instead of producing a numeric substitute",()=>{
+  const [sample]=lab.queryLibrary("pet");
+  for(const bad of [null,0,-1,NaN,Infinity]){
+    const price=lab.assessLibraryRecord({...sample,priceCents:bad},"online");
+    const weight=lab.assessLibraryRecord({...sample,netGrams:bad},"online");
+    assert.equal(price.reason,"price");assert.equal(weight.reason,"weight");
+    assert.ok([price,weight].every(item=>item.status==="review"&&item.perKgCents===null));
+  }
+  const fraction=lab.assessLibraryRecord({...sample,priceCents:3700,netGrams:333},"online");
+  assert.equal(fraction.perKgCents,11111);
+  sample.name.en="Edited outside the fixture";
+  assert.equal(lab.queryLibrary("pet")[0].name.en,"Dry food A");
+});
+
+test("each query export records the selected scope, separates categories, and withholds excluded unit prices",()=>{
+  for(const language of ["zh","en"])for(const category of ["all","health","pet","unknown"])for(const channel of ["online","offline"]){
+    const query=lab.queryLibraryEvidence(category,channel);
+    for(const artifact of [0,1,2]){
+      const doc=lab.buildResearchArtifact(2,artifact,[true,true,true],category,language,0,channel);
+      const text=lab.serializeResearchArtifact(doc,language);
+      assert.equal(doc.sections[0].rows[0].text,lab.libraryCategoryLabel(category,language));
+      assert.ok(doc.sections[0].rows[1].text.includes(lab.libraryChannelLabel(channel,language)));
+      assert.match(text,/不据此推断市场均价|do not establish a market average/);
+      if(category==="unknown")assert.match(text,/未找到|No matching/);
+      if(category==="health")assert.doesNotMatch(text,/宠物食品|Pet food/);
+      if(category==="pet")assert.doesNotMatch(text,/健康产品|Health products/);
+      assert.doesNotMatch(text,/NaN|Infinity|undefined/);
+      const computed=doc.sections.slice(1).flatMap(section=>(section.rows??[]).filter(row=>row.text.includes(" ÷ ")));
+      assert.deepEqual(computed.map(row=>row.text),artifact===1?[]:query.groups.flatMap(group=>group.comparable.map(item=>lab.libraryEvidenceFormula(item,language))));
+      assert.equal(doc.sections.filter(section=>(section.points??[]).includes(lab.librarySingleRecordNote(language))).length,
+        artifact===1?0:query.groups.filter(group=>group.comparable.length===1).length);
+      if(artifact===1&&query.records.length){
+        assert.equal(doc.sections[1].rows.length,query.records.length);
+        for(const [i,item] of query.records.entries())assert.ok(doc.sections[1].rows[i].text.includes(lab.libraryReason(item.reason,language)));
+      }
+      if(artifact===0&&query.held.length){
+        const held=doc.sections.at(-1).rows;
+        assert.equal(held.length,query.held.length);
+        assert.ok(held.every((row,i)=>row.text.includes(lab.libraryReason(query.held[i].reason,language))&&!row.text.includes("/kg")));
+      }
+    }
   }
 });
 
@@ -238,11 +296,12 @@ test("rejects invalid output selections instead of substituting another practice
 
 test("the viewer and download consume the same output object and invalidate changed inputs",async()=>{
   const ui=await readFile(new URL("../app/ResearchLab.tsx",import.meta.url),"utf8");
-  assert.match(ui,/buildResearchArtifact\(practice, artifact, values, category, language, reference\)/);
+  assert.match(ui,/buildResearchArtifact\(practice, artifact, values, category, language, reference, channel\)/);
   assert.match(ui,/serializeResearchArtifact\(outputDocument, language\)/);
   assert.match(ui,/a\.download\s*=\s*outputDocument\.filename/);
   assert.match(ui,/outputDocument\.sections\.map/);
   assert.match(ui,/setExecuted\(false\)/);
+  assert.match(ui,/setChannel\(next\); setExecuted\(false\)/);
   assert.match(ui,/data-plan-kind=/);
 });
 

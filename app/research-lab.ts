@@ -219,13 +219,110 @@ function trackingReportSection(values: boolean[], language: ResearchLanguage): R
   };
 }
 
-export const libraryExamples = [
-  {category:"health",zh:"健康产品",en:"Health products",topicZh:"规格与组合",topicEn:"Formats & bundles",sourceZh:"商品资料",sourceEn:"Product material"},
-  {category:"health",zh:"健康产品",en:"Health products",topicZh:"价格带定义",topicEn:"Price-band definitions",sourceZh:"指标记录",sourceEn:"Measure record"},
-  {category:"pet",zh:"宠物食品",en:"Pet food",topicZh:"品类与单品",topicEn:"Categories & products",sourceZh:"商品资料",sourceEn:"Product material"},
-  {category:"pet",zh:"宠物食品",en:"Pet food",topicZh:"来源与时间",topicEn:"Source & collection date",sourceZh:"来源记录",sourceEn:"Source record"},
+export type LibraryChannel = "online" | "offline";
+export type LibraryEvidence = {
+  id: string; category: "health" | "pet"; name: Bilingual; channel: LibraryChannel;
+  batch: "current" | "other"; priceCents: number | null; netGrams: number | null;
+};
+type LibraryAssessment = { record: LibraryEvidence } & (
+  | { status: "comparable"; reason: "aligned"; perKgCents: number }
+  | { status: "review"; reason: "price" | "weight"; perKgCents: null }
+  | { status: "reference"; reason: "channel" | "batch"; perKgCents: null }
+);
+
+// Constructed product records, not current prices or coverage from a real project.
+const libraryExamples: readonly LibraryEvidence[] = [
+  { id:"health-a", category:"health", name:{zh:"冲饮粉 A",en:"Drink powder A"}, channel:"online", batch:"current", priceCents:2500, netGrams:250 },
+  { id:"health-b", category:"health", name:{zh:"冲饮粉 B",en:"Drink powder B"}, channel:"online", batch:"current", priceCents:4200, netGrams:500 },
+  { id:"pet-a", category:"pet", name:{zh:"干粮 A",en:"Dry food A"}, channel:"online", batch:"current", priceCents:3200, netGrams:800 },
+  { id:"pet-b", category:"pet", name:{zh:"干粮 B",en:"Dry food B"}, channel:"online", batch:"current", priceCents:4900, netGrams:1000 },
+  { id:"pet-c", category:"pet", name:{zh:"干粮 C",en:"Dry food C"}, channel:"online", batch:"current", priceCents:2600, netGrams:null },
+  { id:"pet-d", category:"pet", name:{zh:"干粮 D",en:"Dry food D"}, channel:"offline", batch:"current", priceCents:4200, netGrams:1200 },
+  { id:"pet-e", category:"pet", name:{zh:"干粮 E",en:"Dry food E"}, channel:"online", batch:"other", priceCents:3900, netGrams:1000 },
 ];
-export function queryLibrary(category: string) { return libraryExamples.filter(row=>category==="all"||row.category===category); }
+export function queryLibrary(category: string) {
+  return libraryExamples.filter(row => category === "all" || row.category === category).map(record => ({ ...record, name: { ...record.name } }));
+}
+const positiveInteger = (value: number | null): value is number => typeof value === "number" && Number.isSafeInteger(value) && value > 0;
+export function assessLibraryRecord(record: LibraryEvidence, channel: LibraryChannel): LibraryAssessment {
+  if (record.channel !== channel) return { record, status: "reference", reason: "channel", perKgCents: null };
+  if (record.batch !== "current") return { record, status: "reference", reason: "batch", perKgCents: null };
+  if (!positiveInteger(record.priceCents)) return { record, status: "review", reason: "price", perKgCents: null };
+  if (!positiveInteger(record.netGrams)) return { record, status: "review", reason: "weight", perKgCents: null };
+  return { record, status: "comparable", reason: "aligned", perKgCents: Math.round(record.priceCents * 1000 / record.netGrams) };
+}
+export function queryLibraryEvidence(category: string, channel: LibraryChannel) {
+  if (channel !== "online" && channel !== "offline") throw new RangeError("Unknown comparison channel");
+  const records = queryLibrary(category).map(record => assessLibraryRecord(record, channel));
+  const groups = (["health", "pet"] as const).flatMap(category => {
+    const comparable = records.filter(item => item.record.category === category && item.status === "comparable");
+    return comparable.length ? [{ category, comparable }] : [];
+  });
+  return { category, channel, records, groups, comparable: records.filter(item => item.status === "comparable").length,
+    held: records.filter(item => item.status !== "comparable") };
+}
+export type LibraryEvidenceQuery = ReturnType<typeof queryLibraryEvidence>;
+export function libraryCategoryLabel(category: string, language: ResearchLanguage) {
+  const labels = { health: {zh:"健康产品",en:"Health products"}, pet: {zh:"宠物食品",en:"Pet food"}, all: {zh:"全部品类",en:"All categories"} };
+  return Object.hasOwn(labels, category) ? labels[category as keyof typeof labels][language] : language === "zh" ? "未知品类" : "Unknown category";
+}
+export const libraryChannelLabel = (channel: LibraryChannel, language: ResearchLanguage) => channel === "online"
+  ? (language === "zh" ? "线上商品页" : "Online listings") : (language === "zh" ? "线下货架" : "Store shelves");
+export const libraryBatchLabel = (batch: LibraryEvidence["batch"], language: ResearchLanguage) => batch === "current"
+  ? (language === "zh" ? "本批采集" : "Current batch") : (language === "zh" ? "另一批采集" : "Other batch");
+const libraryBlank = (language: ResearchLanguage) => language === "zh" ? "未记录" : "Not recorded";
+export const libraryPrice = (cents: number | null, language: ResearchLanguage) => positiveInteger(cents)
+  ? (language === "zh" ? `¥${(cents/100).toFixed(2)}` : `CNY ${(cents/100).toFixed(2)}`) : libraryBlank(language);
+export const libraryWeight = (grams: number | null, language: ResearchLanguage) => positiveInteger(grams) ? `${grams} g` : libraryBlank(language);
+export const libraryUnitPrice = (cents: number, language: ResearchLanguage) => language === "zh" ? `${(cents/100).toFixed(2)} 元/kg` : `CNY ${(cents/100).toFixed(2)}/kg`;
+export const libraryEvidenceFormula = (item: LibraryAssessment, language: ResearchLanguage) => item.status === "comparable"
+  ? `${libraryPrice(item.record.priceCents,language)} ÷ ${Number(item.record.netGrams)/1000} kg = ${libraryUnitPrice(item.perKgCents,language)}` : null;
+export const libraryStatus = (status: LibraryAssessment["status"], language: ResearchLanguage) => ({
+  comparable:{zh:"纳入比较",en:"Included"},review:{zh:"待核对",en:"Needs review"},reference:{zh:"仅作参考",en:"Context only"},
+})[status][language];
+export const libraryReason = (reason: LibraryAssessment["reason"], language: ResearchLanguage) => ({
+  aligned:{zh:"来源与本次口径一致",en:"Source matches the selected scope"},
+  price:{zh:"标价缺失或无效",en:"List price is missing or invalid"},
+  weight:{zh:"缺少可用净重",en:"No usable net weight"},
+  channel:{zh:"不在所选渠道",en:"Outside the selected channel"},
+  batch:{zh:"不在同一采集批次",en:"Collected in another batch"},
+})[reason][language];
+export const libraryScopeNote = (language: ResearchLanguage) => language === "zh"
+  ? "按品类分别比较样例标价，不据此推断市场均价或价格带。"
+  : "Compare example list prices within each category. They do not establish a market average or price band.";
+export const librarySingleRecordNote = (language: ResearchLanguage) => language === "zh"
+  ? "只有一条符合口径，可记录单价，暂不能做组内比较。"
+  : "One eligible record: retain its unit price, but there is no within-category comparison yet.";
+export function libraryEvidenceHeadline(query: LibraryEvidenceQuery, language: ResearchLanguage) {
+  if (!query.records.length) return language === "zh" ? "未找到样例资料" : "No matching example records";
+  if (!query.comparable) return language === "zh" ? "本口径暂无可比标价" : "No list prices match this scope";
+  return language === "zh" ? `${query.comparable} 条标价符合口径`
+    : `${query.comparable} ${query.comparable === 1 ? "list price matches" : "list prices match"} this scope`;
+}
+
+function libraryEvidenceSections(query: LibraryEvidenceQuery, artifact: number, language: ResearchLanguage): ResearchArtifactSection[] {
+  const l=(zh:string,en:string)=>language==="zh"?zh:en;
+  const empty = l("本口径没有可纳入比较的标价。","No list prices can be included under this scope.");
+  const scope = { title: l("样例比较口径","Example comparison scope"), rows: [
+    {label:l("品类","Category"),text:libraryCategoryLabel(query.category,language)},
+    {label:l("来源范围","Source scope"),text:`${libraryChannelLabel(query.channel,language)} · ${libraryBatchLabel("current",language)}`},
+    {label:l("比较单位","Comparison unit"),text:l("标价 ÷ 净重（kg）","List price ÷ net weight (kg)")},
+  ], points: [libraryScopeNote(language)] };
+  const name = (record: LibraryEvidence) => `${record.name[language]} · ${libraryCategoryLabel(record.category,language)}`;
+  if (!query.records.length) return [scope,{title:l("查询结果","Query results"),points:[l("未找到符合条件的样例记录。","No matching example records found.")]}];
+  if (artifact===1) return [scope,{title:l("逐条核对来源与用法","Check each source and its use"), rows:query.records.map(item=>({
+    label:name(item.record), text:[libraryChannelLabel(item.record.channel,language),libraryBatchLabel(item.record.batch,language),
+      `${l("标价","List price")} ${libraryPrice(item.record.priceCents,language)}`,`${l("净重","Net weight")} ${libraryWeight(item.record.netGrams,language)}`,
+      `${libraryStatus(item.status,language)}：${libraryReason(item.reason,language)}`].join(" · "),
+  }))}];
+  const included = query.groups.map(group=>({ title:libraryCategoryLabel(group.category,language), rows:group.comparable.map(item=>({
+    label:item.record.name[language],text:libraryEvidenceFormula(item,language) ?? "",
+  })), ...(group.comparable.length===1?{points:[librarySingleRecordNote(language)]}:{}) }));
+  return [scope, ...(included.length ? included : [{title:l("同口径标价","Comparable list prices"),points:[empty]}]),
+    ...(artifact===0 && query.held.length ? [{title:l("未纳入比较","Not included in the comparison"),rows:query.held.map(item=>({
+      label:name(item.record),text:`${libraryStatus(item.status,language)} · ${libraryReason(item.reason,language)}`,
+    }))}] : [])];
+}
 
 export type ResearchArtifactSection = { title: string; rows?: {label: string; text: string}[]; points?: string[] };
 export type ResearchArtifact = { title: string; summary: string; filename: string; sections: ResearchArtifactSection[] };
@@ -242,8 +339,8 @@ const examples: readonly { title: Bilingual; prompt: Bilingual; values: readonly
     values: [true,true,false], category: "all",
   },
   {
-    title: {zh:"想比较宠物食品，先去哪里找资料？",en:"Where would you start a pet-food comparison?"},
-    prompt: {zh:"按品类找到研究主题和来源，再看比较前需要核对什么。",en:"Find relevant topics and sources, then see what to verify before comparing."},
+    title: {zh:"几条宠物食品标价，哪些能放在一起比？",en:"Which pet-food prices can you compare?"},
+    prompt: {zh:"核对渠道、批次和净重，再按每公斤换算；查看哪些记录没有纳入，以及原因。",en:"Check the channel, batch, and net weight before converting to price per kilogram. See which records stay out and why."},
     values: [true,true,true], category: "pet",
   },
 ];
@@ -257,21 +354,21 @@ export function researchOutputLabels(practice: number, language: ResearchLanguag
   const labels = language==="zh" ? [["判断","处理","复用"],["范围","复核","规则"],["资料","来源","比较"]] : [["Findings","Actions","Reuse"],["Scope","Review","Rules"],["Records","Sources","Compare"]];
   return labels[practice];
 }
-export function researchResultSummary(practice: number, values: boolean[], category: string, language: ResearchLanguage, reference: MixReference = 0) {
+export function researchResultSummary(practice: number, values: boolean[], category: string, language: ResearchLanguage, reference: MixReference = 0, channel: LibraryChannel = "online") {
   validPractice(practice);
   const l=(zh:string,en:string)=>language==="zh"?zh:en;
   if(practice===0){const count=compareConditions(values).filter(item=>!item.aligned).length;return count?l(`${count}项比较条件需要先处理`,count===1?"1 comparison criterion needs attention":`${count} comparison criteria need attention`):audienceMixHeadline(calculateAudienceMix(reference),language);}
   if(practice===1){const count=planUpdates(values).length;return count?l(`${count}类内容需要更新`,`${count} areas to update`):l("本次未选择变更","No changes selected");}
-  const count=queryLibrary(category).length;return l(`${count}条样例记录`,`${count} example records`);
+  return libraryEvidenceHeadline(queryLibraryEvidence(category,channel),language);
 }
-export function buildResearchArtifact(practice: number, artifact: number, values: boolean[], category: string, language: ResearchLanguage, reference: MixReference = 0): ResearchArtifact {
+export function buildResearchArtifact(practice: number, artifact: number, values: boolean[], category: string, language: ResearchLanguage, reference: MixReference = 0, channel: LibraryChannel = "online"): ResearchArtifact {
   validPractice(practice);
   if(!Number.isInteger(artifact)||artifact<0||artifact>2)throw new RangeError("Unknown research output");
   const l=(zh:string,en:string)=>language==="zh"?zh:en;
-  const titleSets=language==="zh"?[["跨期比较判断","比较差异处理建议","分析复用清单"],["多期报告更新范围","多期更新复核计划","多期报告复用规则"],["研究资料查询结果","来源核对要点","比较准备清单"]]:[["Cross-wave comparison findings","Actions for comparison differences","Reusable analysis checklist"],["Report update scope","Report update review plan","Reusable update rules"],["Research-material results","Source-verification checklist","Preparation for comparison"]];
+  const titleSets=language==="zh"?[["跨期比较判断","比较差异处理建议","分析复用清单"],["多期报告更新范围","多期更新复核计划","多期报告复用规则"],["研究资料筛选结果","来源复核明细","同口径标价对比"]]:[["Cross-wave comparison findings","Actions for comparison differences","Reusable analysis checklist"],["Report update scope","Report update review plan","Reusable update rules"],["Research evidence results","Source review records","Comparable list prices"]];
   const filenames=[["comparison-findings","comparison-actions","comparison-reuse"],["tracking-update-scope","tracking-update-review","tracking-update-rules"],["research-query-records","research-query-sources","research-query-comparison"]];
   const sections: ResearchArtifactSection[]=[];
-  const plan=planTrackingUpdate(values),comparisons=compareConditions(values),records=queryLibrary(category);
+  const plan=planTrackingUpdate(values),comparisons=compareConditions(values);
   const row=(item:UpdatePlanItem)=>({label:item[language],text:item.action[language]});
   if(practice===0){
     if(artifact===0){
@@ -301,12 +398,8 @@ export function buildResearchArtifact(practice: number, artifact: number, values
     );
     else if(artifact===1){const points:string[]=[];if(values[0])points.push(l("先确认新增期次及比较样本，保留有效历史记录。","Confirm the new wave and comparison sample while retaining valid historical records."));if(values[1])points.push(l("核对新旧指标定义与历史可比性，再决定是否重算或分开报告。","Check old and new definitions and historical comparability before deciding to recalculate or report separately."));if(values[2])points.push(l("确认模板字段与数据来源的对应关系，再调整图表及版式。","Confirm how template fields map to source data before adjusting charts and layout."));if(points.length)points.push(l("按确认范围批量更新，再重点复核数值、图表、文字及保留内容。","Batch-update the agreed scope, then review values, charts, text, and retained content."));else points.push(l("本次没有选中变更，保留现有有效交付；后续范围变化时重新规划。","No changes are selected. Retain valid existing outputs and re-plan when the scope changes."));sections.push({title:l("建议处理顺序","Recommended sequence"),points});}
     else sections.push({title:l("可复用规则","Reusable rules"),points:[l("将来源、期次、指标与报告位置的映射保留在规则中。","Retain mappings between sources, waves, measures, and report locations."),l("按变更选择更新范围，不逐份复制或全量覆盖。","Select update work from the changes rather than copying files or overwriting everything."),l("有效历史与未受影响内容保留；条件变化后重跑并复核。","Preserve valid history and unaffected content; rerun and review when criteria change.")]});
-  } else {
-    if(artifact===0)sections.push({title:l("当前品类的资料","Material for the selected category"),rows:records.map(item=>({label:item[language==="zh"?"topicZh":"topicEn"],text:`${item[language]} · ${item[language==="zh"?"sourceZh":"sourceEn"]}`})),...(!records.length?{points:[l("未找到符合条件的样例记录。","No matching example records found.")]}:{})});
-    else if(artifact===1)sections.push({title:l("回到来源核对","Checks against the original source"),points:records.length?[...new Set(records.map(item=>item[language==="zh"?"sourceZh":"sourceEn"]))].map(source=>l(`${source}：核对定义、采集时间及适用范围。`,`${source}: check definitions, collection date, and scope.`)):[l("先补充符合条件的资料，再核对来源与定义。","Add matching material before checking sources and definitions.")]});
-    else sections.push({title:l("比较前的准备","Before comparing records"),points:[l("保留当前品类、研究主题与来源类型。","Retain the selected category, research topic, and source type."),l("比较前核对定义、规格、单位与采集时间是否一致。","Check definitions, formats, units, and collection dates before comparing."),l("定义或来源不足时补充资料，不把缺失内容当作已核实结果。","Add missing definitions or sources rather than treating incomplete material as verified.")]});
-  }
-  return {title:titleSets[practice][artifact],summary:researchResultSummary(practice,values,category,language,reference),filename:filenames[practice][artifact]+".txt",sections};
+  } else sections.push(...libraryEvidenceSections(queryLibraryEvidence(category,channel),artifact,language));
+  return {title:titleSets[practice][artifact],summary:researchResultSummary(practice,values,category,language,reference,channel),filename:filenames[practice][artifact]+".txt",sections};
 }
 export function serializeResearchArtifact(document: ResearchArtifact, language: ResearchLanguage) {
   const lines=[document.title,language==="zh"?"研究方法示例":"Research-method example",document.summary,""];

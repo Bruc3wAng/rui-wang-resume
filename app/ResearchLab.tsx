@@ -3,13 +3,14 @@
 import { useEffect, useImperativeHandle, useRef, useState, type Ref } from "react";
 import type { Language } from "../content/resume";
 import {
-  buildResearchArtifact, comparableAudienceMix, compareConditions, planTrackingUpdate, queryLibrary,
+  buildResearchArtifact, comparableAudienceMix, compareConditions, planTrackingUpdate, queryLibraryEvidence,
   researchExampleFor, researchOutputLabels, researchResultSummary, serializeResearchArtifact, trackingImpactForChange,
-  trackingReportFor, trackingReportHeadline,
-  type MixReference,
+  trackingReportFor, trackingReportHeadline, libraryCategoryLabel, libraryChannelLabel,
+  type LibraryChannel, type MixReference,
 } from "./research-lab";
 import AudienceMixView from "./AudienceMixView";
 import TrackingReportView from "./TrackingReportView";
+import LibraryEvidenceView from "./LibraryEvidenceView";
 import "./research-artifacts.css";
 
 export type ResearchLabHandle = { runExample: () => void };
@@ -56,6 +57,7 @@ function TrackingImpact({ values, language, settings }: { values: boolean[]; lan
 export default function ResearchLab({ practice, stage, language, onStageChange, ref }: LabProps) {
   const [values, setValues] = useState(practice === 1 ? [true, false, false] : [true, true, true]);
   const [category, setCategory] = useState("all"), [executed, setExecuted] = useState(false), [artifact, setArtifact] = useState(0);
+  const [channel, setChannel] = useState<LibraryChannel>("online");
   const [reference, setReference] = useState<MixReference>(0);
   const [focusVersion, setFocusVersion] = useState(0);
   const pendingFocus = useRef<FocusTarget | null>(null);
@@ -87,29 +89,27 @@ export default function ResearchLab({ practice, stage, language, onStageChange, 
       const example = researchExampleFor(practice);
       setValues(example.values);
       setCategory(example.category);
+      setChannel("online");
       setReference(0);
       execute();
     },
   }));
 
   const l = (zh: string, en: string) => text(language, zh, en);
-  const comparisons = compareConditions(values), records = queryLibrary(category);
+  const comparisons = compareConditions(values);
   const mix = practice === 0 && executed ? comparableAudienceMix(values, reference) : null;
   const report = practice === 1 && executed ? trackingReportFor(values) : null;
+  const library = practice === 2 && executed && stage === 1 ? queryLibraryEvidence(category, channel) : null;
   const outputLabels = researchOutputLabels(practice, language);
-  const outputDocument = buildResearchArtifact(practice, artifact, values, category, language, reference);
-  const titles = [l("跨期比较检查器", "Comparison checker"), l("多期更新规划器", "Update planner"), l("研究资料查询器", "Research library explorer")];
+  const outputDocument = buildResearchArtifact(practice, artifact, values, category, language, reference, channel);
+  const titles = [l("跨期比较检查器", "Comparison checker"), l("多期更新规划器", "Update planner"), l("研究资料查询", "Source review")];
   const settings = practice === 0
     ? comparisons.map(item => item[language])
     : [l("新增研究期次", "New research wave"), l("调整指标口径", "Revised measure definitions"), l("变更图表模板", "Changed chart template")];
-  const categories = [
-    { value: "all", name: l("全部品类", "All categories") },
-    { value: "health", name: l("健康产品", "Health products") },
-    { value: "pet", name: l("宠物食品", "Pet food") },
-  ];
+  const categories = ["all", "health", "pet"] as const;
   const runLabel = practice === 2 ? l("查询资料", "Run query") : l("执行当前检查", "Run current checks");
-  const editLabel = practice === 2 ? l("调整品类", "Change category") : l("调整条件", "Edit criteria");
-  const summary = researchResultSummary(practice, values, category, language, reference);
+  const editLabel = practice === 2 ? l("调整口径", "Edit scope") : l("调整条件", "Edit criteria");
+  const summary = researchResultSummary(practice, values, category, language, reference, channel);
   const findings = practice === 0 ? <ol className="rlab-findings">
     {comparisons.map(item => <li key={item.key} data-aligned={item.aligned}><span aria-hidden="true">{item.aligned ? "✓" : "↗"}</span>
       <div><strong>{item[language]}</strong><p>{item.aligned ? l("定义一致，保留比较依据。", "Definitions align. Retain the comparison criteria.") : item[language === "zh" ? "actionZh" : "actionEn"]}</p></div>
@@ -139,7 +139,7 @@ export default function ResearchLab({ practice, stage, language, onStageChange, 
         <p className="rlab-lead" ref={criteriaLead} tabIndex={-1}>
           {practice === 0 ? l("先核对两期的定义。定义一致时，再看样本构成会不会影响解读。", "Check that the definitions match before assessing how the sample mix affects the comparison.")
             : practice === 1 ? l("选出本次变化，看看哪些内容需要一起更新。", "Select a change to see what needs to update with it.")
-            : l("从问题出发，找到对应的资料、定义与来源。", "Start with a question, then find the matching material, definitions and sources.")}
+            : l("选定品类和渠道，判断哪些标价可以一起比较。", "Choose a category and channel to see which list prices can be compared.")}
         </p>
         {practice < 2 ? <div className="rlab-condition-list">
           {settings.map((name, i) => <button type="button" key={name} onClick={() => toggle(i)} aria-pressed={values[i]}>
@@ -151,11 +151,19 @@ export default function ResearchLab({ practice, stage, language, onStageChange, 
           </button>)}
         </div> : <>
           <label className="rlab-select">{l("研究品类", "Research category")}
-            <select value={category} onChange={e => { setCategory(e.target.value); setExecuted(false); }}>
-              {categories.map(item => <option value={item.value} key={item.value}>{item.name}</option>)}
+            <select id="rlab-library-category" value={category} onChange={e => { setCategory(e.target.value); setExecuted(false); }}>
+              {categories.map(item => <option value={item} key={item}>{libraryCategoryLabel(item, language)}</option>)}
             </select>
           </label>
-          <div className="rlab-query"><span>QUERY</span><p>{l("品类 → 研究主题 → 来源类型", "CATEGORY → TOPIC → SOURCE TYPE")}</p><strong>{l("按定义查询，而不是反复翻文件。", "Query by definition, not by searching through files.")}</strong></div>
+          <label className="rlab-select">{l("来源渠道", "Source channel")}
+            <select id="rlab-library-channel" value={channel} onChange={e => {
+              const next = e.currentTarget.value;
+              if (next === "online" || next === "offline") { setChannel(next); setExecuted(false); }
+            }}>
+              {(["online", "offline"] as const).map(item => <option key={item} value={item}>{libraryChannelLabel(item, language)}</option>)}
+            </select>
+          </label>
+          <p className="rlab-library-criteria-note">{l("只纳入同批采集的标价，按净重换算为每公斤价格。", "Use only list prices from the same collection batch, then convert them to price per kilogram.")}</p>
         </>}
         <button className="rlab-primary" type="button" onClick={execute}>{runLabel}<span aria-hidden="true">↗</span></button>
       </div> : !executed ? <div className="rlab-empty">
@@ -163,8 +171,8 @@ export default function ResearchLab({ practice, stage, language, onStageChange, 
         <h5>{stage === 1 ? l("按你设定的条件，重新检查。", "Run the checks for your selected criteria.") : l("先检查，再查看交付。", "Run the checks before opening the outputs.")}</h5>
         <p>{l("结果会根据本次选择生成。", "Results are based on your current selection.")}</p>
         <button className="rlab-primary" type="button" onClick={execute}>{runLabel}<span aria-hidden="true">↗</span></button>
-      </div> : stage === 1 ? <div className="rlab-execution" data-report-result={report ? true : undefined}>
-        <div className="rlab-result-banner"><span>{report ? l("报告样例", "EXAMPLE REPORT") : mix ? l("样例数据", "EXAMPLE DATA") : l("当前结果", "CURRENT RESULT")}</span><h5 ref={resultHeading} tabIndex={-1} id="rlab-result-title">{report ? trackingReportHeadline(report, language) : summary}</h5></div>
+      </div> : stage === 1 ? <div className="rlab-execution" data-report-result={report ? true : undefined} data-library-result={library ? true : undefined}>
+        <div className="rlab-result-banner"><span>{report ? l("报告样例", "EXAMPLE REPORT") : mix ? l("样例数据", "EXAMPLE DATA") : library ? l("样例资料", "EXAMPLE RECORDS") : l("当前结果", "CURRENT RESULT")}</span><h5 ref={resultHeading} tabIndex={-1} id="rlab-result-title">{report ? trackingReportHeadline(report, language) : summary}</h5></div>
         {practice === 0 ? mix ? <AudienceMixView comparison={mix} language={language} criteria={settings} onReference={setReference}/>
           : <><p className="rlab-mix-held">{l("比较条件有变化，暂不计算两期差异。", "A criterion has changed, so the wave comparison is on hold.")}</p>{findings}</>
           : report ? <>
@@ -174,11 +182,7 @@ export default function ResearchLab({ practice, stage, language, onStageChange, 
               <TrackingImpact values={values} language={language} settings={settings}/>
             </details>
           </>
-          : <div className="rlab-table"><table>
-            <caption>{categories.find(item => item.value === category)?.name ?? l("查询样例", "Example query")}</caption>
-            <thead><tr><th>{l("品类", "Category")}</th><th>{l("研究主题", "Topic")}</th><th>{l("来源类型", "Source type")}</th></tr></thead>
-            <tbody>{records.map(item => <tr key={item.topicEn}><td>{item[language]}</td><td>{item[language === "zh" ? "topicZh" : "topicEn"]}</td><td>{item[language === "zh" ? "sourceZh" : "sourceEn"]}</td></tr>)}</tbody>
-          </table></div>}
+          : library && <LibraryEvidenceView key={focusVersion} query={library} language={language}/>}
         <div className="rlab-result-actions">
           <button type="button" className="rlab-primary" onClick={() => move(2, "output")}>{l("查看本次交付", "See the outputs")}<span aria-hidden="true">↗</span></button>
           <button type="button" className="rlab-edit" onClick={() => move(0, "criteria")}>{editLabel}</button>

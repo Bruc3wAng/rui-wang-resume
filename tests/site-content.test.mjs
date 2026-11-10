@@ -634,7 +634,7 @@ test("research examples compute different findings from changed criteria", async
   assert.equal(planUpdates([false,false,false]).length,0);
   assert.deepEqual(planUpdates([true,false,false]).map(x=>x.id),["wave-data","charts","copy"]);
   assert.deepEqual(planUpdates([true,true,true]).map(x=>x.id),["wave-data","metric-map","charts","copy","layout"]);
-  assert.equal(queryLibrary("all").length,4);
+  assert.equal(queryLibrary("all").length,7);
   assert.equal(queryLibrary("health").length,2);
   assert.ok(queryLibrary("pet").every(r=>r.category==="pet"));
   assert.equal(queryLibrary("unknown").length,0);
