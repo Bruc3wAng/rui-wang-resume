@@ -618,7 +618,8 @@ test("offers a real research-network material while preserving focal view and da
   assert.match(ui,/chooseStyle\("earth"\)/);
   assert.match(ui,/networkTarget = network \? 1 : 0/);
   assert.match(ui,/uniform1f\(un, networkBlend\)/);
-  assert.match(ui,/nightImage\.onerror = \(\) => \{ if \(alive\) el!\.dataset\.nightTexture = "unavailable"/);
+  assert.match(ui,/startOptional\("nightTexture", nightImage, gl!\.TEXTURE2, nightTexture, "earth-night-2016\.jpg"\)/);
+  assert.match(ui,/source\.onerror = \(\) => \{ if \(alive && !failed\) el!\.dataset\[layer\] = "unavailable"/);
   assert.match(ui,/gl\.deleteTexture\(nightTexture\)/);
   assert.match(earthFragment,/mix\(satellite,network,networkView\)/);
   assert.match(earthFragment,/nightMask=1\.-smoothstep\(-\.13,\.20,incidence\)/);
@@ -660,9 +661,9 @@ test("provides a real China Earth image before the interactive view is ready", a
   assert.equal(createHash("sha256").update(poster).digest("hex").slice(0,12),earthPosterRevision);
   assert.match(source,/className="rg-earth-poster"/);assert.match(source,/earth-china-poster\.webp/);
   assert.match(source,/!ready \? ""[^\n]*Loading map/);
-  assert.match(source,/!surfaceReady \|\| !cloudsReady/);
+  assert.match(source,/if \(!upload\(image, gl!\.TEXTURE0, texture\)\) \{ fail\(\); return; \}\s+loaded = true; resize\(\)/);
   assert.match(source,/painted = true; setRenderer\("webgl"\)/);
-  assert.match(source,/image\.onerror = fail/);assert.match(source,/cloudImage\.onerror = fail/);
+  assert.match(source,/image\.onerror = fail/);assert.doesNotMatch(source,/cloudImage\.onerror = fail/);
   assert.match(source,/function lost\(e: Event\) \{ e\.preventDefault\(\); fail\(\); \}/);
   assert.match(css,/rg-globe\[data-renderer=webgl\] \.rg-earth-poster\{opacity:0\}/);
   assert.doesNotMatch(source+css,/rg-earth-placeholder/);

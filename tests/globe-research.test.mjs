@@ -8,6 +8,18 @@ import { allResearchLinks, networkMesh, researchMarkets, researchRouteShape, stu
 import { earthFragment, earthMaterial, earthVertex, shadeEarth } from "../app/earth-material.ts";
 import { marketStudyPresentation } from "../content/market-studies.ts";
 
+test("starts the globe near the viewport and separates the surface from optional layers", async () => {
+  const ui=await readFile(new URL("../app/InteractiveGlobe.tsx",import.meta.url),"utf8");
+  assert.match(ui,/rootMargin: "150px 0px"[\s\S]*?observer\.observe\(element\)/);
+  assert.match(ui,/if \(!activated\) return;\s+const el = canvas\.current/);
+  assert.match(ui,/image\.onload = \(\) => \{[\s\S]*?upload\(image,[^;]+fail\(\)[\s\S]*?loaded = true; resize\(\);/);
+  assert.match(ui,/image\.onerror = fail; image\.src = .*earth-surface\.jpg/);
+  assert.match(ui,/painted = true; setRenderer\("webgl"\); startNight\(\)/);
+  assert.match(ui,/if \(!network\) startClouds\(\)/);
+  assert.match(ui,/source\.onerror = .*dataset\[layer\] = "unavailable"/);
+  assert.doesNotMatch(ui,/cloudImage\.onerror\s*=\s*fail|cloudsReady|nightImage\.onerror\s*=\s*fail/);
+});
+
 test("filters every verified study without attributing brand tracking to an overseas market", () => {
   const expected = { US: [0,1,2,3], UK: [0,1], DE: [0,1], JP: [0,1], ID: [0,1], BR: [0,1], SA: [0], KR: [1] };
   for (const market of researchMarkets) assert.deepEqual(researchForMarket(cases,market.code).map(p=>p.index),expected[market.code]);

@@ -18,12 +18,13 @@ export default function InteractiveGlobe({ language, paused, ready, linkedStudy,
   language: Language; paused: boolean; ready: boolean; linkedStudy: number | null;
   onExplore: (index: number, origin: MarketStudyOrigin) => void; onViewMap: (index: number, mode: HistoryMode) => void;
 }) {
-  const canvas = useRef<HTMLCanvasElement>(null), labels = useRef<HTMLDivElement>(null), motion = useRef(paused);
+  const stage = useRef<HTMLDivElement>(null), canvas = useRef<HTMLCanvasElement>(null), labels = useRef<HTMLDivElement>(null), motion = useRef(paused);
   const caseIndex = useRef<HTMLDivElement>(null), marketHeading = useRef<HTMLHeadingElement>(null);
   const focus = useRef<((lon: number, lat: number) => void) | null>(null), active = useRef(8);
   const changeStyle = useRef<((network: boolean) => void) | null>(null), redraw = useRef<(() => void) | null>(null);
   const renderMask = useRef(allResearchLinks);
   const [renderer, setRenderer] = useState("loading"), [selected, setSelected] = useState("CN"), [requestedStyle, setStyle] = useState("network");
+  const [activated, setActivated] = useState(false);
   const [view, setView] = useState("CN"), [study, setStudy] = useState(0);
   const [caseOnly, setCaseOnly] = useState(false);
   const [lastLinkedStudy, setLastLinkedStudy] = useState<number | null>(null);
@@ -53,6 +54,22 @@ export default function InteractiveGlobe({ language, paused, ready, linkedStudy,
   useEffect(() => { motion.current = paused; redraw.current?.(); }, [paused]);
   useEffect(() => { renderMask.current = mask; redraw.current?.(); }, [mask]);
   useEffect(() => {
+    const element = stage.current;
+    if (!element) return;
+    if (typeof IntersectionObserver !== "function") {
+      const frame = requestAnimationFrame(() => setActivated(true));
+      return () => cancelAnimationFrame(frame);
+    }
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return;
+      observer.disconnect();
+      setActivated(true);
+    }, { rootMargin: "150px 0px" });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+  useEffect(() => {
+    if (!activated) return;
     const el = canvas.current;
     if (!el) return;
     const gl = el.getContext("webgl2", { alpha: true, antialias: true, powerPreference: "low-power", premultipliedAlpha: false });
@@ -84,7 +101,7 @@ export default function InteractiveGlobe({ language, paused, ready, linkedStudy,
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE); gl.uniform1i(gl.getUniformLocation(program, "clouds"), 1);
     const nightTexture = gl.createTexture(); gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, nightTexture); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0]));
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE); gl.uniform1i(gl.getUniformLocation(program, "night"), 2);
-    let frame = 0, alive = true, visible = true, loaded = false, surfaceReady = false, cloudsReady = false, painted = false, failed = false, pointer = -1, lastX = 0, lastY = 0;
+    let frame = 0, alive = true, visible = true, loaded = false, painted = false, failed = false, pointer = -1, lastX = 0, lastY = 0;
     let networkBlend = 0, networkTarget = 0, routeReveal = 1, lastFrame = 0, flowClock = 0, resizePending = false;
     const current=[105,30], target=[105,30];
     let lastProjection = "";
@@ -107,7 +124,7 @@ export default function InteractiveGlobe({ language, paused, ready, linkedStudy,
       gl!.depthMask(false); gl!.drawArrays(gl!.TRIANGLES, globe.length / 8, atmosphere.length / 8);
       gl!.disable(gl!.CULL_FACE); gl!.drawArrays(gl!.TRIANGLES, (globe.length + atmosphere.length) / 8, network.triangles);
       gl!.drawArrays(gl!.POINTS, (globe.length + atmosphere.length) / 8 + network.triangles, network.points + network.particles); gl!.enable(gl!.CULL_FACE); gl!.depthMask(true);
-      if (!painted) { if (gl!.getError() !== gl!.NO_ERROR) { fail(); return; } painted = true; setRenderer("webgl"); }
+      if (!painted) { if (gl!.getError() !== gl!.NO_ERROR) { fail(); return; } painted = true; setRenderer("webgl"); startNight(); }
       const longitude = current[0].toFixed(2), latitude = current[1].toFixed(2), projection = `${longitude}/${latitude}/${el!.width}/${el!.height}`;
       if (projection !== lastProjection) {
         lastProjection = projection;
@@ -131,6 +148,7 @@ export default function InteractiveGlobe({ language, paused, ready, linkedStudy,
     };
     changeStyle.current = network => {
       networkTarget = network ? 1 : 0;
+      if (!network) startClouds();
       if (!painted) networkBlend = networkTarget;
       routeReveal = painted ? 0 : 1; wake();
     };
@@ -149,14 +167,40 @@ export default function InteractiveGlobe({ language, paused, ready, linkedStudy,
       repaintResize();
     }
     function fail() { if (!alive) return; failed = true; loaded = false; cancelAnimationFrame(frame); frame = 0; focus.current = null; changeStyle.current = null; setView("CN"); setStyle("earth"); setRenderer("fallback"); }
-    function prepared() { if (!alive || failed || !surfaceReady || !cloudsReady) return; loaded = true; resize(); }
-    const image = new window.Image();
-    image.onload = () => { if (!alive || failed) return; gl!.activeTexture(gl!.TEXTURE0); gl!.bindTexture(gl!.TEXTURE_2D, texture); gl!.texImage2D(gl!.TEXTURE_2D, 0, gl!.RGB, gl!.RGB, gl!.UNSIGNED_BYTE, image); gl!.generateMipmap(gl!.TEXTURE_2D); gl!.texParameteri(gl!.TEXTURE_2D, gl!.TEXTURE_MIN_FILTER, gl!.LINEAR_MIPMAP_LINEAR); surfaceReady = true; prepared(); };
+    function upload(source: HTMLImageElement, unit: number, destination: WebGLTexture | null) {
+      const max = gl!.getParameter(gl!.MAX_TEXTURE_SIZE);
+      if (!destination || !source.naturalWidth || source.naturalWidth > max || source.naturalHeight > max) return false;
+      try {
+        gl!.activeTexture(unit); gl!.bindTexture(gl!.TEXTURE_2D, destination);
+        gl!.texImage2D(gl!.TEXTURE_2D, 0, gl!.RGB, gl!.RGB, gl!.UNSIGNED_BYTE, source);
+        gl!.generateMipmap(gl!.TEXTURE_2D); gl!.texParameteri(gl!.TEXTURE_2D, gl!.TEXTURE_MIN_FILTER, gl!.LINEAR_MIPMAP_LINEAR);
+        return gl!.getError() === gl!.NO_ERROR;
+      } catch { return false; }
+    }
+    const image = new window.Image(), cloudImage = new window.Image(), nightImage = new window.Image();
+    image.decoding = cloudImage.decoding = nightImage.decoding = "async";
+    image.fetchPriority = cloudImage.fetchPriority = "high";
+    nightImage.fetchPriority = "low";
+    el.dataset.cloudTexture = el.dataset.nightTexture = "deferred";
+    image.onload = () => {
+      if (!alive || failed) return;
+      if (!upload(image, gl!.TEXTURE0, texture)) { fail(); return; }
+      loaded = true; resize();
+    };
     image.onerror = fail; image.src = `${base}/images/earth-surface.jpg`;
-    const cloudImage = new window.Image(); cloudImage.onload = () => { if (!alive || failed) return; gl!.activeTexture(gl!.TEXTURE1); gl!.bindTexture(gl!.TEXTURE_2D, cloudTexture); gl!.texImage2D(gl!.TEXTURE_2D, 0, gl!.RGB, gl!.RGB, gl!.UNSIGNED_BYTE, cloudImage); gl!.generateMipmap(gl!.TEXTURE_2D); gl!.texParameteri(gl!.TEXTURE_2D, gl!.TEXTURE_MIN_FILTER, gl!.LINEAR_MIPMAP_LINEAR); cloudsReady = true; prepared(); }; cloudImage.onerror = fail; cloudImage.src = `${base}/images/earth-clouds.jpg`;
-    const nightImage = new window.Image(); el.dataset.nightTexture = "loading";
-    nightImage.onload = () => { if (!alive || failed) return; if (nightImage.width > gl!.getParameter(gl!.MAX_TEXTURE_SIZE)) { el!.dataset.nightTexture = "unavailable"; return; } gl!.activeTexture(gl!.TEXTURE2); gl!.bindTexture(gl!.TEXTURE_2D, nightTexture); gl!.texImage2D(gl!.TEXTURE_2D, 0, gl!.RGB, gl!.RGB, gl!.UNSIGNED_BYTE, nightImage); gl!.generateMipmap(gl!.TEXTURE_2D); gl!.texParameteri(gl!.TEXTURE_2D, gl!.TEXTURE_MIN_FILTER, gl!.LINEAR_MIPMAP_LINEAR); el!.dataset.nightTexture = "ready"; wake(); };
-    nightImage.onerror = () => { if (alive) el!.dataset.nightTexture = "unavailable"; }; nightImage.src = `${base}/images/earth-night-2016.jpg`;
+    function startOptional(layer: "cloudTexture" | "nightTexture", source: HTMLImageElement, unit: number, destination: WebGLTexture | null, path: string) {
+      if (!alive || failed || el!.dataset[layer] !== "deferred") return;
+      el!.dataset[layer] = "loading";
+      source.onload = () => {
+        if (!alive || failed) return;
+        el!.dataset[layer] = upload(source, unit, destination) ? "ready" : "unavailable";
+        wake();
+      };
+      source.onerror = () => { if (alive && !failed) el!.dataset[layer] = "unavailable"; };
+      source.src = `${base}/images/${path}`;
+    }
+    function startNight() { startOptional("nightTexture", nightImage, gl!.TEXTURE2, nightTexture, "earth-night-2016.jpg"); }
+    function startClouds() { startOptional("cloudTexture", cloudImage, gl!.TEXTURE1, cloudTexture, "earth-clouds.jpg"); }
     function down(e: globalThis.PointerEvent) { if (!loaded || !e.isPrimary || e.button !== 0) return; pointer = e.pointerId; lastX = e.clientX; lastY = e.clientY; el!.setPointerCapture(pointer); el!.dataset.dragging = "true"; }
     function move(e: globalThis.PointerEvent) { if (e.pointerId !== pointer) return; target[0] -= (e.clientX - lastX) * .35; target[1] = Math.max(-65, Math.min(65, target[1] + (e.clientY - lastY) * .24)); lastX = e.clientX; lastY = e.clientY; setView("FREE"); wake(); }
     function up(e: globalThis.PointerEvent) { if (e.pointerId !== pointer) return; if (el!.hasPointerCapture(pointer)) el!.releasePointerCapture(pointer); pointer = -1; el!.dataset.dragging = "false"; }
@@ -165,20 +209,21 @@ export default function InteractiveGlobe({ language, paused, ready, linkedStudy,
       target[0] += (e.key === "ArrowRight" ? 12 : e.key === "ArrowLeft" ? -12 : 0); target[1] = Math.max(-65, Math.min(65, target[1] + (e.key === "ArrowUp" ? 8 : e.key === "ArrowDown" ? -8 : 0))); setView("FREE"); wake();
     }
     const resizeObserver = new ResizeObserver(resize); resizeObserver.observe(el);
-    const observer = new IntersectionObserver(([e]) => { visible = e.isIntersecting; if (visible) repaintResize(); else { cancelAnimationFrame(frame); frame = 0; } }, { rootMargin: "100px" }); observer.observe(el);
+    const observer = typeof IntersectionObserver === "function" ? new IntersectionObserver(([e]) => { visible = e.isIntersecting; if (visible) repaintResize(); else { cancelAnimationFrame(frame); frame = 0; } }, { rootMargin: "100px" }) : null;
+    observer?.observe(el);
     function visibility() { if (document.hidden) { cancelAnimationFrame(frame); frame = 0; } else repaintResize(); }
     function lost(e: Event) { e.preventDefault(); fail(); }
     el.addEventListener("pointerdown", down); el.addEventListener("pointermove", move); el.addEventListener("pointerup", up); el.addEventListener("pointercancel", up); el.addEventListener("keydown", key); el.addEventListener("webglcontextlost", lost); document.addEventListener("visibilitychange", visibility);
-    return () => { alive = false; focus.current = null; changeStyle.current = null; redraw.current = null; image.onload = null; image.onerror = null; cloudImage.onload = null; cloudImage.onerror = null; nightImage.onload = null; nightImage.onerror = null; cancelAnimationFrame(frame); resizeObserver.disconnect(); observer.disconnect(); el.removeEventListener("pointerdown", down); el.removeEventListener("pointermove", move); el.removeEventListener("pointerup", up); el.removeEventListener("pointercancel", up); el.removeEventListener("keydown", key); el.removeEventListener("webglcontextlost", lost); document.removeEventListener("visibilitychange", visibility); gl.deleteTexture(texture); gl.deleteTexture(cloudTexture); gl.deleteTexture(nightTexture); gl.deleteBuffer(buffer); gl.deleteProgram(program); gl.deleteShader(vs); gl.deleteShader(fs); };
-  }, []);
+    return () => { alive = false; focus.current = null; changeStyle.current = null; redraw.current = null; image.onload = null; image.onerror = null; cloudImage.onload = null; cloudImage.onerror = null; nightImage.onload = null; nightImage.onerror = null; cancelAnimationFrame(frame); resizeObserver.disconnect(); observer?.disconnect(); el.removeEventListener("pointerdown", down); el.removeEventListener("pointermove", move); el.removeEventListener("pointerup", up); el.removeEventListener("pointercancel", up); el.removeEventListener("keydown", key); el.removeEventListener("webglcontextlost", lost); document.removeEventListener("visibilitychange", visibility); gl.deleteTexture(texture); gl.deleteTexture(cloudTexture); gl.deleteTexture(nightTexture); gl.deleteBuffer(buffer); gl.deleteProgram(program); gl.deleteShader(vs); gl.deleteShader(fs); };
+  }, [activated]);
   useEffect(() => {
     active.current = selected === "CN" ? 8 : researchMarkets.findIndex(place => place.code === selected);
     const place = researchMarkets.find(place => place.code === view);
     if (view === "CN") focus.current?.(105, 30);
     else if (place) focus.current?.(place.lon, place.lat);
     redraw.current?.();
-  }, [selected, view]);
-  useEffect(() => { changeStyle.current?.(requestedStyle === "network"); }, [requestedStyle]);
+  }, [activated, selected, view]);
+  useEffect(() => { changeStyle.current?.(requestedStyle === "network"); }, [activated, requestedStyle]);
 
   function selectStudy(index: number) {
     setStudy(index);
@@ -229,7 +274,7 @@ export default function InteractiveGlobe({ language, paused, ready, linkedStudy,
         <button type="button" disabled={renderer !== "webgl"} aria-pressed={style === "earth"} aria-label={loc("卫星地形", "Satellite terrain")} onClick={() => chooseStyle("earth")}><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="m5 14 5-6 4 5 2-2 3 4"/></svg>{loc("卫星地形", "Terrain")}</button>
       </div>
     </header>
-    <div className="rg-globe-stage" id="rg-globe-stage" onKeyDown={keyboard}><div className="rg-globe-shadow"/><Image className="rg-earth-poster" src={`${base}/images/earth-china-poster.webp?v=${earthPosterRevision}`} width={768} height={768} alt={loc("中国视角的地球", "Earth centered on China")} aria-hidden={renderer === "webgl" || linkedStudy !== null} unoptimized priority draggable={false}/>
+    <div className="rg-globe-stage" id="rg-globe-stage" ref={stage} onKeyDown={keyboard}><div className="rg-globe-shadow"/><Image className="rg-earth-poster" src={`${base}/images/earth-china-poster.webp?v=${earthPosterRevision}`} width={768} height={768} alt={loc("中国视角的地球", "Earth centered on China")} aria-hidden={renderer === "webgl" || linkedStudy !== null} unoptimized priority draggable={false}/>
       <canvas ref={canvas} className="rg-globe-canvas" tabIndex={renderer === "webgl" ? 0 : -1} role="img" aria-hidden={renderer !== "webgl"} aria-label={loc("可旋转地球。拖动改变视角，方向键旋转，Home返回中国。", "Interactive globe. Drag or use arrow keys to rotate. Home centers China.")} onDragStart={e => e.preventDefault()}/>
       <div className="rg-globe-nodes" ref={labels}>{researchMarkets.map((p, i) => <button type="button" data-market={p.code} data-in-study={Boolean(coverage.mask & (1 << i))} key={p.code} hidden disabled={renderer !== "webgl"} aria-label={loc(`查看${p.zh}研究项目`, `View research in ${p.en}`)} aria-controls="rg-market-research" aria-pressed={selected === p.code} onClick={() => exploreFromGlobe(p.code)}><span>{p.code}</span></button>)}</div>
       <span className="rg-globe-note" role="status">{!ready ? "" : renderer === "fallback" ? loc("选择市场查看案例", "Choose a market to see its cases") : renderer === "loading" ? loc("正在载入地图", "Loading map") : loc("拖动旋转 · 选择市场查看案例", "Drag to rotate · Select a market to see its cases")}</span>
