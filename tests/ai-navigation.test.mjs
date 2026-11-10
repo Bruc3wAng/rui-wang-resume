@@ -4,7 +4,8 @@ import test from "node:test";
 import { aiPractice } from "../content/resume.ts";
 import { researchExampleFor } from "../app/research-lab.ts";
 import { aiWorkflowProofFor, aiWorkflowProofs } from "../app/ai-workflow-proof.ts";
-import { portfolioLocaleHref, practiceFragment, practiceIndexFromFragment } from "../app/study-location.ts";
+import { outputFragment, portfolioLocaleHref, practiceFragment, practiceIndexFromFragment } from "../app/study-location.ts";
+import { johnsonRelativeWeights, relativeWeightFragment, relativeWeightOutput, satisfactionCorrelations, weightScenarios } from "../app/relative-weight.ts";
 
 const root=new URL("../",import.meta.url);
 test("exports complete AI practice labels and decorative-only selection indicators",async()=>{
@@ -105,5 +106,78 @@ test("both exports have actual native practice destinations and no-script case a
       if(index<2) assert.ok(body.includes(`href="#study-${["content-tracking","brand-tracking"][index]}"`));
       else assert.doesNotMatch(body,/href="#study-|RELATED STUDY/);
     }
+  }
+});
+
+const near=(actual,expected)=>assert.ok(Math.abs(actual-expected)<1e-11,`${actual} ≠ ${expected}`);
+
+test("the relative-weight example changes exactly one predictor pair and keeps outcome correlations fixed",()=>{
+  const [low,high]=weightScenarios;
+  assert.deepEqual(weightScenarios.map(s=>s.overlap),[.15,.82]);
+  assert.deepEqual(low.rows.map(r=>r.factor.code),["A","B","C","D"]);
+  assert.deepEqual(high.rows.map(r=>r.factor.code),["C","A","B","D"]);
+  const changes=low.predictors.flatMap((row,i)=>row.map((x,j)=>x!==high.predictors[i][j]?[i,j]:null)).filter(Boolean);
+  assert.deepEqual(changes,[[0,1],[1,0]]);
+  for(const {overlap,rows,result} of weightScenarios){
+    assert.deepEqual([...rows].sort((a,b)=>a.index-b.index).map(r=>r.correlation),satisfactionCorrelations);
+    assert.deepEqual([...rows].sort((a,b)=>a.index-b.index).map(r=>r.correlationRank),[1,2,3,4]);
+    // Closed-form solution for one correlated block and two independent factors.
+    const [a,b,c,d]=satisfactionCorrelations;
+    const positive=(a+b)**2/(4*(1+overlap)),negative=(a-b)**2/(4*(1-overlap));
+    const alpha=(Math.sqrt(1+overlap)+Math.sqrt(1-overlap))/2;
+    const beta=(Math.sqrt(1+overlap)-Math.sqrt(1-overlap))/2;
+    const u=Math.sqrt(positive)+Math.sqrt(negative),v=Math.sqrt(positive)-Math.sqrt(negative);
+    const expected=[alpha**2*u**2+beta**2*v**2,beta**2*u**2+alpha**2*v**2,c*c,d*d];
+    result.raw.forEach((value,i)=>near(value,expected[i]));
+    near(result.r2,2*(positive+negative)+c*c+d*d);
+    near(result.rawTotal,result.r2);
+    near(rows.reduce((s,r)=>s+r.share,0),100);
+  }
+});
+
+test("the separate regression and Johnson allocation agree on a general non-diagonal matrix",()=>{
+  const matrix=[[1,.23,-.18],[.23,1,.32],[-.18,.32,1]], outcome=[.36,-.19,.29];
+  const result=johnsonRelativeWeights(matrix,outcome);
+  // Independent NumPy eigh + solve reference, not derived from the JS solver.
+  [0.198032900217695,0.106415895071583,0.157539270437035].forEach((value,i)=>near(result.raw[i],value));
+  near(result.r2,0.4619880657263134);
+  near(result.rawTotal,result.r2);
+  const order=[2,0,1];
+  const permuted=johnsonRelativeWeights(order.map(i=>order.map(j=>matrix[i][j])),order.map(i=>outcome[i]));
+  near(permuted.r2,result.r2);
+  permuted.raw.forEach((value,i)=>near(value,result.raw[order[i]]));
+  const identity=johnsonRelativeWeights([[1,0],[0,1]],[.3,-.4]);
+  near(identity.raw[0],.09);near(identity.raw[1],.16);near(identity.r2,.25);
+});
+
+test("rejects invalid or singular correlation inputs and does not invent shares for zero explained variance",()=>{
+  for(const args of [[[],[]],[[[1]],[NaN]],[[[1,.2],[.4,1]],[.3,.4]],[[[1,1],[1,1]],[.3,.4]],[[[1,0],[0,1]],[.9,.9]]]){
+    assert.throws(()=>johnsonRelativeWeights(...args),RangeError);
+  }
+  assert.deepEqual(johnsonRelativeWeights([[1,.2],[.2,1]],[0,0]).share,[null,null]);
+});
+
+test("both builds export both computed outcomes, an exact case return, and script-free controls",async()=>{
+  const builds=process.env.NEXT_PUBLIC_BASE_PATH?["out",process.env.RUI_SITES_BUILD_DIR??"dist/client"]:["out"];
+  const report=outputFragment(relativeWeightOutput.study,relativeWeightOutput.output);
+  for(const build of builds)for(const language of ["zh","en"]){
+    const html=await readFile(new URL(`${build}/${language==="en"?"en/":""}index.html`,root),"utf8");
+    const example=html.match(/<section class="rw-exhibit"[^>]*>[\s\S]*?<\/section>/)?.[0];assert.ok(example);
+    assert.equal(html.match(/id="example-relative-weights"/g)?.length,1);
+    assert.match(example,/data-active="false" data-ready="false"/);
+    assert.match(example,/type="radio"[^>]+name="rw-overlap"|name="rw-overlap"[^>]+type="radio"/);
+    assert.ok(example.includes(`href="${report}"`));
+    const home=html.match(/class="pf-header-tools"><a href="([^"]+)" hrefLang="zh-CN"/)?.[1];assert.ok(home);
+    assert.ok(example.includes(`href="${portfolioLocaleHref(home.slice(0,-1),language==="en"?"zh":"en",relativeWeightFragment)}"`));
+    for(const {id,rows,result} of weightScenarios){
+      assert.ok(example.includes(`id="rw-result-${id}"`));
+      assert.ok(example.includes(rows[0].factor[language]));
+      assert.ok(example.includes(rows[0].share.toFixed(1)+"%"));
+      assert.ok(example.includes(result.r2.toFixed(5)));
+    }
+    const brief=html.match(/<section class="pf-output-brief" id="output-content-tracking--cross-market-report"[^>]*>[\s\S]*?<\/section>/)?.[0];
+    assert.ok(brief?.includes(`href="${relativeWeightFragment}"`));
+    assert.equal([...html.matchAll(/<a\b[^>]+href="#example-relative-weights"/g)].length,3);
+    assert.doesNotMatch(example,/字节|联想|ByteDance|Lenovo|TikTok|BHT|客户数据|anonymized|脱敏/iu);
   }
 });
