@@ -499,8 +499,10 @@ test("renders a genuinely rotatable globe with a China-centered default", async 
   assert.match(source,/getContext\("webgl2"/);
   assert.match(source,/texImage2D/);
   assert.match(source,/setPointerCapture/);
-  assert.match(source,/ArrowLeft.*ArrowRight.*ArrowUp.*ArrowDown.*Home/);
-  assert.match(source,/choose\("US",-98,37\)/);
+  assert.match(source,/ArrowLeft.*ArrowRight.*ArrowUp.*ArrowDown/);
+  assert.match(source,/e.key === "Home" && e.target === canvas.current/);
+  assert.match(source,/choose\("US"\)/);
+  assert.match(source,/focus.current\?\.\(place.lon, place.lat\)/);
   assert.doesNotMatch(source,/research-globe\.png|torus|ringGeometry/);
   assert.match(source,/earthFragment.*earthMaterial.*earthVertex/);
   assert.match(source,/marketStudyIndex\(cases, selected\)/);

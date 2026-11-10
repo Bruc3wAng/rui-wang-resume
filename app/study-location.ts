@@ -5,6 +5,7 @@ export type HistoryMode = "push" | "replace";
 const changeEvent = "portfolio-fragment-change";
 const casePrefix = "#study-";
 const practicePrefix = "#practice-";
+const mapPrefix = "#map-";
 
 export function studyFragment(id: string): Fragment { return `${casePrefix}${id}`; }
 
@@ -18,18 +19,25 @@ export function practiceIndexFromFragment(fragment: string | null, practices: re
   return fragment?.startsWith(practicePrefix) ? practices.findIndex(practice => practiceFragment(practice.id) === fragment) : -1;
 }
 
+export function mapFragment(id: string): Fragment { return `${mapPrefix}${id}`; }
+
+export function mapIndexFromFragment(fragment: string | null, ids: readonly string[]) {
+  return fragment?.startsWith(mapPrefix) ? ids.findIndex(id => mapFragment(id) === fragment) : -1;
+}
+
 export function portfolioLocaleHref(base: string, language: Language, fragment = "") {
   return base + (language === "en" ? "/en/" : "/") + fragment;
 }
 
 // Emit this fixed, data-free initializer in the static document before the
-// hosting adapter boots. Homepage anchors are native same-document navigation.
+// hosting adapter boots. Even a repeated native visit to the same anchor can
+// emit popstate; it must not start a page fetch that can restore an older hash.
 export const studyHistoryInitializer = `(() => {
   let previous = new URL(location.href);
   const sync = () => { previous = new URL(location.href); };
   addEventListener("popstate", event => {
     const next = new URL(location.href);
-    if (next.pathname === previous.pathname && next.search === previous.search && next.hash !== previous.hash) {
+    if (next.pathname === previous.pathname && next.search === previous.search && (next.hash || previous.hash)) {
       event.stopImmediatePropagation();
     }
     previous = next;

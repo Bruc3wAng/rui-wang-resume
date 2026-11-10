@@ -9,7 +9,7 @@ import release from "../content/resume-release.json";
 import ResumeDownload from "./ResumeDownload";
 import PortfolioLight from "./PortfolioLight";
 import InteractiveGlobe from "./InteractiveGlobe";
-import type { MarketStudyOrigin } from "./globe-research";
+import { caseWorkIndices, mapStudyIds, type MarketStudyOrigin } from "./globe-research";
 import ShareLocale from "./ShareLocale";
 import ResearchLab, { type ResearchLabHandle } from "./ResearchLab";
 import { researchExampleFor } from "./research-lab";
@@ -21,7 +21,7 @@ import CopyPortfolioLink from "./CopyPortfolioLink";
 import { workStudyCopyFor } from "./work-study-copy";
 import { heroBrief, heroCases } from "./hero-brief";
 import { aiWorkflowProofFor } from "./ai-workflow-proof";
-import { browserPortfolioFragment, portfolioLocaleHref, practiceFragment, practiceIndexFromFragment, staticPortfolioFragment, studyFragment, studyHistoryInitializer, studyIndexFromFragment, subscribePortfolioFragment, updatePortfolioFragment, type HistoryMode } from "./study-location";
+import { browserPortfolioFragment, mapFragment, mapIndexFromFragment, portfolioLocaleHref, practiceFragment, practiceIndexFromFragment, staticPortfolioFragment, studyFragment, studyHistoryInitializer, studyIndexFromFragment, subscribePortfolioFragment, updatePortfolioFragment, type HistoryMode } from "./study-location";
 import "./portfolio.css";
 import "./portfolio-refinement.css";
 import "./work-value.css";
@@ -189,13 +189,14 @@ function ResearchObject({ active, language, paused, ref }: { active: number; lan
 
 type WorkMarketContext = MarketStudyOrigin & { workIndex: number };
 
-function WorkStudyPanel({ index, selected, ready, compact, language, paused, onReturn, fromMarket, onExploreAI }: {
+function WorkStudyPanel({ index, selected, ready, compact, language, paused, onReturn, fromMarket, onExploreAI, onViewMap }: {
   index: number; selected: boolean; ready: boolean; compact: boolean; language: Language; paused: boolean;
-  onReturn: () => void; fromMarket: boolean; onExploreAI: (index: number) => void;
+  onReturn: () => void; fromMarket: WorkMarketContext | null; onExploreAI: (index: number) => void; onViewMap: (index: number) => void;
 }) {
   const folio = useRef<ResearchFolioHandle>(null);
   const item = selectedWork[index], note = workNotes[index], story = workStudyCopyFor(item.id);
   const aiPracticeIndex = aiPractice.findIndex(practice => practice.id === workAIPracticeById[item.id]);
+  const mapIndex = caseWorkIndices.findIndex(work => work === index);
   const outputName = note.outputs[language][story.output];
   const outputPurpose = folioDescriptionsFor(item.id)[story.output].purpose[language];
   const titleId = `pf-case-output-title-${index}`;
@@ -203,7 +204,7 @@ function WorkStudyPanel({ index, selected, ready, compact, language, paused, onR
     <span className="pf-study-anchor" id={studyFragment(item.id).slice(1)} aria-hidden="true"/>
     <div className="pf-work-story">
       {fromMarket
-        ? <button className="pf-market-return" type="button" onClick={onReturn}><Arrow/>{local(language, "返回市场研究", "Back to market studies")}</button>
+        ? <button className="pf-market-return" type="button" onClick={onReturn}><Arrow/>{fromMarket.fromMapLink ? local(language, "返回案例地图", "Back to study map") : local(language, "返回市场研究", "Back to market studies")}</button>
         : <button className="pf-work-return" type="button" onClick={onReturn}><Arrow/>{local(language, "返回研究目录", "Back to study index")}</button>}
       <WorkStudyHeader id={item.id} title={item.title[language]} role={item.role[language]} language={language}/>
       <h3 id={`pf-work-question-${index}`} tabIndex={-1}>{note.question[language]}</h3>
@@ -218,19 +219,26 @@ function WorkStudyPanel({ index, selected, ready, compact, language, paused, onR
           {local(language, "查看交付说明", "View output details")}<Arrow/>
         </button>
       </div>
-      {aiPracticeIndex >= 0 && <a className="pf-case-ai-link" data-ai-practice={aiPracticeIndex} href={practiceFragment(aiPractice[aiPracticeIndex].id)} onClick={event => {
-        if (!isPlainLinkActivation(event)) return;
-        event.preventDefault();
-        onExploreAI(aiPracticeIndex);
-      }}>{aiPractice[aiPracticeIndex].id === "research-analysis" ? local(language, "查看 AI 分析流程", "Explore AI-assisted analysis") : local(language, "查看 AI 更新流程", "Explore AI-assisted reporting")}<Arrow/></a>}
+      {(aiPracticeIndex >= 0 || mapIndex >= 0) && <div className="pf-case-paths">
+        {aiPracticeIndex >= 0 && <a className="pf-case-ai-link" data-ai-practice={aiPracticeIndex} href={practiceFragment(aiPractice[aiPracticeIndex].id)} onClick={event => {
+          if (!isPlainLinkActivation(event)) return;
+          event.preventDefault();
+          onExploreAI(aiPracticeIndex);
+        }}>{aiPractice[aiPracticeIndex].id === "research-analysis" ? local(language, "查看 AI 分析流程", "Explore AI-assisted analysis") : local(language, "查看 AI 更新流程", "Explore AI-assisted reporting")}<Arrow/></a>}
+        {mapIndex >= 0 && <a className="pf-case-map-link" href={mapFragment(mapStudyIds[mapIndex])} onClick={event => {
+          if (!isPlainLinkActivation(event)) return;
+          event.preventDefault();
+          onViewMap(mapIndex);
+        }}>{local(language, "查看案例地图", "View study map")}<svg aria-hidden="true" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8"/><ellipse cx="12" cy="12" rx="4" ry="8"/><path d="M4 12h16"/></svg></a>}
+      </div>}
     </div>
     <div className="pf-object-stage" onPointerMove={e => tilt(e, paused)} onPointerLeave={resetTilt}><ResearchObject ref={folio} active={index} language={language} paused={paused}/></div>
   </article>;
 }
 
-function Work({ language, active, setActive, paused, ready, onExploreAI, marketContext, onBackToMarket, onReturnToIndex }: {
+function Work({ language, active, setActive, paused, ready, onExploreAI, onViewMap, marketContext, onBackToMarket, onReturnToIndex }: {
   language: Language; active: number; setActive: (n: number, mode?: HistoryMode) => void; paused: boolean; ready: boolean;
-  onExploreAI: (index: number) => void; marketContext: WorkMarketContext | null; onBackToMarket: (context: WorkMarketContext) => void; onReturnToIndex: () => void;
+  onExploreAI: (index: number) => void; onViewMap: (index: number) => void; marketContext: WorkMarketContext | null; onBackToMarket: (context: WorkMarketContext) => void; onReturnToIndex: () => void;
 }) {
   const compact = useSyncExternalStore(subscribeCompactWork, isCompactWork, serverCompactAI);
   const revealTarget = useRef<number | null>(null);
@@ -264,7 +272,7 @@ function Work({ language, active, setActive, paused, ready, onExploreAI, marketC
         {selectedWork.map((item, index) => {
           const origin = marketContext?.workIndex === index ? marketContext : null;
           return <WorkStudyPanel key={item.id} index={index} selected={active === index} ready={ready} compact={compact} language={language} paused={paused}
-            fromMarket={origin !== null} onReturn={origin ? () => onBackToMarket(origin) : returnToIndex} onExploreAI={onExploreAI}/>;
+            fromMarket={origin} onReturn={origin ? () => onBackToMarket(origin) : returnToIndex} onExploreAI={onExploreAI} onViewMap={onViewMap}/>;
         })}
       </div>
       <section className="pf-internship-expanded"><header><div><p className="pf-eyebrow">EARLIER EXPERIENCE / COMMERCIAL RESEARCH</p><h3>{earlier.company[language]}<span>{earlier.title[language]}</span></h3></div><span>{earlier.period[language]}</span></header><div>{internshipProjects.map((project,i)=><article key={project.title.en}><span className="pf-internship-number">0{i+1}</span><h4>{project.title[language]}</h4><div><p>{project.contribution[language]}</p><p className="pf-internship-output">{project.output[language]}</p></div></article>)}</div></section>
@@ -415,11 +423,13 @@ export function Portfolio({ language }: { language: Language }) {
   const fragment = useSyncExternalStore<string | null>(subscribePortfolioFragment, browserPortfolioFragment, staticPortfolioFragment);
   const linkedWork = studyIndexFromFragment(fragment, selectedWork);
   const linkedPractice = practiceIndexFromFragment(fragment, aiPractice);
+  const linkedMap = mapIndexFromFragment(fragment, mapStudyIds);
   const activeWork = linkedWork < 0 ? lastWork : linkedWork;
   const activeAIPractice = linkedPractice < 0 ? aiView.practice : linkedPractice;
   const aiStage = activeAIPractice === aiView.practice ? aiView.stage : 0;
   const localeFragment = linkedWork >= 0 ? studyFragment(selectedWork[linkedWork].id)
     : linkedPractice >= 0 ? practiceFragment(aiPractice[linkedPractice].id)
+    : linkedMap >= 0 ? mapFragment(mapStudyIds[linkedMap])
     : fragment === "#method" ? fragment : "";
   const handledFragment = useRef<string | null>(null);
   const nav = [local(language, "重点工作", "Work"), local(language, "AI 提效实践", "AI practice"), local(language, "个人作品", "Projects"), local(language, "专业能力", "Capabilities")];
@@ -427,16 +437,17 @@ export function Portfolio({ language }: { language: Language }) {
   useEffect(() => {
     const handled = handledFragment.current === fragment;
     handledFragment.current = null;
-    if ((linkedWork < 0 && linkedPractice < 0) || handled) return;
+    if ((linkedWork < 0 && linkedPractice < 0 && linkedMap < 0) || handled) return;
     // Wait for the selected panel to be painted before moving focus.
     const frame = requestAnimationFrame(() => {
       if (window.location.hash !== fragment) return;
-      const target = linkedWork >= 0 ? { scroll: `pf-work-panel-${linkedWork}`, focus: `pf-work-question-${linkedWork}` } : practiceLanding(linkedPractice);
+      const target = linkedWork >= 0 ? { scroll: `pf-work-panel-${linkedWork}`, focus: `pf-work-question-${linkedWork}` }
+        : linkedMap >= 0 ? { scroll: "rg-map-address", focus: "rg-map-title" } : practiceLanding(linkedPractice);
       document.getElementById(target.scroll)?.scrollIntoView({ behavior: "instant", block: "start" });
       document.getElementById(target.focus)?.focus({ preventScroll: true });
     });
     return () => cancelAnimationFrame(frame);
-  }, [fragment, linkedWork, linkedPractice]);
+  }, [fragment, linkedWork, linkedPractice, linkedMap]);
   useEffect(() => {
     function keyboard(e: globalThis.KeyboardEvent) { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") { e.preventDefault(); setPalette(v => !v); } }
     window.addEventListener("keydown", keyboard); return () => window.removeEventListener("keydown", keyboard);
@@ -490,6 +501,16 @@ export function Portfolio({ language }: { language: Language }) {
     const target = practiceLanding(index);
     jump(target.scroll, target.focus);
   }
+  function setMapLocation(index: number, mode: HistoryMode = "push") {
+    const next = mapFragment(mapStudyIds[index]);
+    setLastWork(activeWork);
+    if (window.location.hash === next) {
+      if (mode === "push") jump("rg-map-address", "rg-map-title");
+      return;
+    }
+    if (mode === "replace") handledFragment.current = next;
+    updatePortfolioFragment(next, mode);
+  }
   function selectWork(index: number, mode: HistoryMode = "replace") { setMarketContext(null); setWorkLocation(index, mode); }
   function showWork(index: number) { setWorkLocation(index, "push"); jump(`pf-work-panel-${index}`, `pf-work-question-${index}`); }
   function openFeaturedStudy(id: string) {
@@ -500,6 +521,7 @@ export function Portfolio({ language }: { language: Language }) {
   }
   function openWorkFromMarket(index: number, origin: MarketStudyOrigin) { setMarketContext({ ...origin, workIndex: index }); showWork(index); }
   function backToMarket(origin: WorkMarketContext) {
+    if (origin.fromMapLink) { setMapLocation(origin.studyIndex); return; }
     const market = document.getElementById("rg-market-research")?.dataset.market;
     const study = document.getElementById("rg-study-panel")?.dataset.study;
     const sameStudy = market === origin.market && study === String(origin.studyIndex);
@@ -532,13 +554,13 @@ export function Portfolio({ language }: { language: Language }) {
         </div>
         <div className="pf-hero-world">
           <div className="pf-world-label"><span>{local(language, "多国研究地图", "RESEARCH BY MARKET")}</span><span>{local(language, "选择市场，查看研究项目", "Select a market to see its studies")}</span></div>
-          <InteractiveGlobe language={language} paused={paused} ready={fragment !== null} onExplore={openWorkFromMarket}/>
+          <InteractiveGlobe language={language} paused={paused} ready={fragment !== null} linkedStudy={linkedMap >= 0 ? linkedMap : null} onExplore={openWorkFromMarket} onViewMap={setMapLocation}/>
         </div>
       </div>
       <div className="pf-hero-bottom pf-wrap"><span>RESEARCH / ANALYSIS / DELIVERY</span><a href="#work">{local(language, "继续探索", "Continue exploring")}<Arrow down/></a><button type="button" onClick={() => setPaused(v => !v)} aria-pressed={paused}>{paused ? "◌" : "≈"} {local(language, paused ? "开启动效" : "暂停动效", paused ? "Enable motion" : "Pause motion")}</button></div>
     </section>
     <Work language={language} active={activeWork} setActive={selectWork} paused={paused} ready={fragment !== null} marketContext={marketContext} onBackToMarket={backToMarket}
-      onReturnToIndex={() => setSectionLocation("pf-work-index")} onExploreAI={openAIFromWork}/>
+      onReturnToIndex={() => setSectionLocation("pf-work-index")} onExploreAI={openAIFromWork} onViewMap={setMapLocation}/>
     <AIPractice language={language} practice={activeAIPractice} stage={aiStage} ready={fragment !== null} setPractice={setPracticeLocation} setStage={stage => setAIView({ practice: activeAIPractice, stage })} onExploreWork={index => { if (marketContext?.workIndex !== index) setMarketContext(null); showWork(index); }}/>
     <Projects language={language}/>
     <section className="pf-capabilities pf-section" id="capabilities" data-tone="light"><div className="pf-wrap"><div className="pf-section-head"><div><p className="pf-eyebrow">04 / CAPABILITIES</p><h2>{local(language, "研究方法与实现能力。", "Research methods and practical implementation.")}</h2></div></div><div className="pf-capability-list">{capabilities.map((c, i) => <article key={c.title.en}><span>0{i + 1}</span><h3>{c.title[language]}</h3><p>{c.items[language]}</p></article>)}</div><div className="pf-education"><div className="pf-university-image"><Image src={`${base}/images/uoft-signature.webp`} width={690} height={302} alt="University of Toronto" unoptimized/></div><div className="pf-education-body"><p className="pf-eyebrow">EDUCATION</p><h3>{education.institution[language]}</h3><p>{education.degree[language]}</p><strong>{education.focus[language]}</strong><span className="pf-education-period">{education.period}</span><p>{education.coursework[language]}</p><p>{local(language,"英语 TOEFL 110 · 普通话 母语","English TOEFL 110 · Mandarin Chinese Native")}</p></div></div></div></section>

@@ -1,0 +1,100 @@
+.portfolio-v17 .pf-case-paths {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  align-items: center;
+  margin-top: 15px;
+}
+.portfolio-v17 .pf-case-paths .pf-case-ai-link { margin-top: 0; }
+.portfolio-v17 .pf-case-map-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 44px;
+  padding: 8px 0;
+  border-bottom: 1px solid #a8bbc9;
+  color: #385e7e;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.portfolio-v17 .pf-case-map-link svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 1.3; }
+.portfolio-v17 .pf-case-map-link:hover { border-color: currentColor; color: #244665; }
+.portfolio-v17 :is(.pf-case-map-link, .rg-map-brief-links a, .rg-back-to-globe, #rg-map-title):focus-visible {
+  outline: 2px solid #365b73;
+  outline-offset: 3px;
+}
+.portfolio-v17 .pf-hero-world:has(.rg-globe[data-map-link=true], .rg-map-link-brief:target)>.pf-world-label { display: none; }
+
+.portfolio-v17 :is(.rg-map-address, .rg-map-link-brief) {
+  scroll-margin-top: 14px;
+  padding: 12px 14px;
+  border: 1px solid #b9c9cb;
+  border-inline-start: 3px solid #a8844c;
+  background: #f6f6ee;
+  color: #263f55;
+}
+.portfolio-v17 .rg-map-address {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 6px 13px;
+  margin-bottom: 8px;
+}
+.portfolio-v17 .rg-map-eyebrow { margin: 0 0 5px; color: #745825; font-size: 10px; line-height: 1.35; letter-spacing: .09em; }
+.portfolio-v17 :is(.rg-map-address, .rg-map-link-brief) h3 {
+  margin: 0;
+  color: #213a51;
+  font-size: clamp(17px, 1.45vw, 22px);
+  font-weight: 600;
+  line-height: 1.35;
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+}
+.portfolio-v17 .rg-map-address-markets {
+  grid-column: 1 / -1;
+  color: #526a7b;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.portfolio-v17 .pf-map-copy { position: relative; }
+.portfolio-v17 .pf-copy-map {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 9px;
+  border: 1px solid #9eb2bd;
+  background: transparent;
+  color: #294e6b;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.portfolio-v17 .pf-copy-map svg { width: 15px; height: 15px; flex: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; }
+.portfolio-v17 .pf-copy-map:hover { background: #e4eceb; border-color: #718c9f; }
+.portfolio-v17 :is(.pf-copy-map, .pf-map-copy-field input):focus-visible { outline: 2px solid #365b73; outline-offset: 3px; }
+.portfolio-v17 .pf-map-copy-field { grid-column: 1 / -1; display: grid; gap: 5px; min-width: 0; color: #425f73; font-size: 12px; }
+.portfolio-v17 .pf-map-copy-field input {
+  min-height: 44px;
+  min-width: 0;
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid #9eb2bd;
+  background: #fffdf6;
+  color: #294661;
+  font: 16px Arial, "Microsoft YaHei", sans-serif;
+}
+.portfolio-v17 .rg-map-link-brief { display: none; }
+.portfolio-v17 .rg-globe[data-market-ready=false] .rg-map-link-brief:target { display: block; }
+.portfolio-v17 .rg-globe[data-market-ready=false]:has(.rg-map-link-brief:target)>:is(.rg-globe-stage, .rg-globe-toolbar, .rg-market-research),
+.portfolio-v17 .rg-globe[data-map-link=true][data-renderer=fallback]>:is(.rg-globe-stage, .rg-globe-toolbar) { display: none; }
+.portfolio-v17 .rg-globe[data-map-link=true][data-renderer=loading] :is(.rg-earth-poster, .rg-globe-shadow) { opacity: 0; }
+.portfolio-v17 .rg-globe[data-map-link=true][data-renderer=loading] .rg-globe-note { inset: 0; display: grid; place-items: center; font-size: 12px; }
+.portfolio-v17 .rg-map-link-brief .rg-map-address-markets { margin-top: 5px; }
+.portfolio-v17 .rg-map-brief-contribution { margin: 9px 0 0; color: #425f73; font-size: 13px; line-height: 1.65; }
+.portfolio-v17 .rg-map-brief-links { display: flex; flex-wrap: wrap; gap: 5px 16px; margin-top: 7px; }
+.portfolio-v17 .rg-map-brief-links a { display: inline-flex; align-items: center; gap: 7px; min-height: 44px; border-bottom: 1px solid #a8bbc9; color: #385e7e; font-size: 12px; }
+@media (max-width: 480px) {
+  .portfolio-v17 .rg-map-address { padding-inline: 11px; gap: 6px 9px; }
+}

@@ -2,7 +2,8 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { cases, selectedWork } from "../content/resume.ts";
-import { caseWorkIndices, marketIndexScrollDelta, marketStudyIndex, preferredMarketStudyIndex, researchForMarket } from "../app/globe-research.ts";
+import { caseWorkIndices, mapMarketForStudy, mapStudyIds, marketIndexScrollDelta, marketStudyIndex, preferredMarketStudyIndex, researchForMarket } from "../app/globe-research.ts";
+import { mapFragment, mapIndexFromFragment, portfolioLocaleHref } from "../app/study-location.ts";
 import { allResearchLinks, networkMesh, researchMarkets, researchRouteShape, studyGlobeCoverage } from "../app/globe-geometry.ts";
 import { earthFragment, earthMaterial, earthVertex, shadeEarth } from "../app/earth-material.ts";
 import { marketStudyPresentation } from "../content/market-studies.ts";
@@ -103,7 +104,7 @@ test("case coverage encodes exactly the verified markets and never includes the 
 test("the GPU case filter applies to both route endpoints, moving packets and nodes", async () => {
   const ui=await readFile(new URL("../app/InteractiveGlobe.tsx",import.meta.url),"utf8");
   assert.match(ui,/uniform1i\(uMask, renderMask.current\)/);
-  assert.match(ui,/const mask = showingCoverage \? coverage.mask : allResearchLinks/);
+  assert.match(ui,/const mask = requestedStyle === "network" && caseOnly && hasCoverage \? coverage.mask : allResearchLinks/);
   assert.match(ui,/aria-pressed=\{showingCoverage\}/);
   assert.match(earthVertex,/\(caseMarketMask&\(1<<source\)\)!=0&&\(caseMarketMask&\(1<<destination\)\)!=0/);
   assert.match(earthFragment,/if\(\(kind>\.5&&kind<2\.5\)\|\|kind>3\.5\)\{\s*if\(inCoverage<\.5\)discard/);
@@ -113,10 +114,10 @@ test("keeps market filtering usable when rotation is unavailable and preserves s
   const ui=await readFile(new URL("../app/InteractiveGlobe.tsx",import.meta.url),"utf8");
   const selector=ui.match(/<select id="rg-market-select"[\s\S]*?<\/select>/)?.[0];
   assert.ok(selector);assert.doesNotMatch(selector,/disabled=/);
-  assert.match(selector,/researchMarkets.map/);assert.match(selector,/chooseMarket\(e.currentTarget.value\)/);
+  assert.match(selector,/researchMarkets.map/);assert.match(selector,/choose\(e.currentTarget.value\)/);
   assert.match(ui,/role="tabpanel"[^>]*data-study=/);
   assert.match(ui,/caseWorkIndices\[currentStudy.index\]/);
-  assert.match(ui,/onExplore\(workIndex, \{ market: selected, studyIndex: currentStudy.index \}\)/);
+  assert.match(ui,/onExplore\(workIndex, \{ market: selected, studyIndex: currentStudy.index, fromMapLink: linkedStudy !== null \}\)/);
   assert.match(ui,/setView\("FREE"\)/);assert.doesNotMatch(ui,/setSelected\("FREE"\)/);
   assert.match(ui,/!motion.current && networkTarget > \.01/);
   assert.match(ui,/document.hidden/);assert.match(ui,/IntersectionObserver/);
@@ -129,6 +130,49 @@ test("opens independently owned U.S. work first, with deterministic defaults for
   assert.equal(preferredMarketStudyIndex(cases,"UNKNOWN"),null);
   for (const {code} of researchMarkets.filter(place=>place.code!=="US")) {
     assert.equal(preferredMarketStudyIndex(cases,code),marketStudyIndex(cases,code)[0].index);
+  }
+});
+
+test("maps stable public case IDs to verified scope without assigning unmatched work or markets", () => {
+  assert.deepEqual(mapStudyIds,["content-tracking","search-tracking","us-search-experience","us-content"]);
+  for(const [index,id] of mapStudyIds.entries()) {
+    const hash=mapFragment(id), work=caseWorkIndices[index];
+    assert.equal(mapIndexFromFragment(hash,mapStudyIds),index);
+    assert.equal(portfolioLocaleHref("/rui-wang-resume","en",hash),"/rui-wang-resume/en/"+hash);
+    if(work!==null)assert.equal(id,selectedWork[work].id);
+  }
+  for(const bad of [null,"","#map-unknown","#map-brand-tracking","#study-us-content","#map-US-content","#map-us-content?lat=37"]) {
+    assert.equal(mapIndexFromFragment(bad,mapStudyIds),-1);
+  }
+  assert.equal(mapMarketForStudy(cases,0,"CN"),"CN");
+  assert.equal(mapMarketForStudy(cases,1,"SA"),"CN");
+  assert.equal(mapMarketForStudy(cases,0,"JP"),"JP");
+  assert.equal(mapMarketForStudy(cases,2,"CN"),"US");
+  assert.equal(mapMarketForStudy(cases,3,"UK"),"US");
+});
+
+test("both locales expose only verified work-to-map links and a native brief at every map address", async () => {
+  const builds=process.env.NEXT_PUBLIC_BASE_PATH?["out",process.env.RUI_SITES_BUILD_DIR??"dist/client"]:["out"];
+  for(const build of builds)for(const lang of ["zh","en"]) {
+    const html=await readFile(new URL(`../${build}/${lang==="en"?"en/":""}index.html`,import.meta.url),"utf8");
+    const work=[...html.matchAll(/<article\b[^>]*id="pf-work-panel-(\d+)"[^>]*>([\s\S]*?)<\/article>/g)];
+    assert.equal(work.length,5);
+    for(const [,number,body] of work) {
+      const index=caseWorkIndices.findIndex(entry=>entry===Number(number));
+      const links=[...body.matchAll(/class="pf-case-map-link" href="([^"]+)"/g)].map(match=>match[1]);
+      assert.deepEqual(links,index<0?[]:[mapFragment(mapStudyIds[index])]);
+    }
+    for(const [i,id] of mapStudyIds.entries()) {
+      const matches=[...html.matchAll(new RegExp(`<section class="rg-map-link-brief" id="map-${id}"[^>]*>([\\s\\S]*?)<\\/section>`,"g"))];
+      assert.equal(matches.length,1);
+      const body=matches[0][1];
+      assert.ok(body.includes(cases[i].title[lang]));
+      const language=lang==="zh"?"en":"zh-CN", otherPath=language==="en"?"/en/":"/";
+      assert.ok(body.includes(`${otherPath}${mapFragment(id)}" hrefLang="${language}" lang="${language}"`));
+      const target=caseWorkIndices[i];
+      if(target!==null)assert.ok(body.includes(`href="#study-${selectedWork[target].id}"`));
+      else {assert.ok(body.includes(cases[i].approach[lang]));assert.doesNotMatch(body,/href="#study-/);}
+    }
   }
 });
 

@@ -44,12 +44,15 @@ test("keeps chapter and case fragment history native without swallowing real rou
   };
   pop("#work",true);
   pop("#method",true);
+  pop("#map-us-content",true);
+  pop("#map-us-content",true);
   location.href=initial+"#study-brand-tracking";
   listeners.get("portfolio-fragment-change")();
   pop("#work",true);
   pop(initial,true);
   pop(initial,false);
   pop("?ref=portfolio#work",false);
+  pop("?ref=another#work",false);
   pop("/rui-wang-resume/#work",false);
   pop("/rui-wang-resume/overseas/#sources",false);
 });
