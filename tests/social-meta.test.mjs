@@ -97,7 +97,9 @@ for (const build of builds) for (const [key, card] of Object.entries(socialCards
 
   test(`${build}: ${key} has language-scoped navigation without changing public routes`, async () => {
     const html = await readFile(new URL(`${build}${card.route}index.html`, root), "utf8");
-    const navigation = tags(html, "a").filter(tag => tag.hreflang);
+    const navMarkup = card.kind === "profile" ? html.match(/<div class="pf-header-tools">[\s\S]*?<\/div>/)?.[0] : html;
+    assert.ok(navMarkup);
+    const navigation = tags(navMarkup, "a").filter(tag => tag.hreflang);
     assert.equal(navigation.length, card.kind === "profile" ? 2 : 1);
     for (const link of navigation) {
       assert.equal(link.lang, link.hreflang);

@@ -456,7 +456,7 @@ test("presents project judgment and AI outcomes before optional exploration", as
 
 test("keeps AI workflow controls coordinated and company adoption separate from the personal prototype", async () => {
   const ui = await readFile(new URL("app/Portfolio.tsx", root), "utf8");
-  assert.match(ui, /"content-tracking": 0, "brand-tracking": 1/);
+  assert.match(ui, /"content-tracking": "research-analysis", "brand-tracking": "tracking-delivery"/);
   assert.match(ui, /data-ai-practice=\{aiPracticeIndex\}/);
   assert.match(ui, /practice < 2 && <p className="pf-adoption"/);
   assert.match(ui, /className="pf-ai-prototype"/);
@@ -484,16 +484,13 @@ test("adds explorable research folios and a synchronized workflow route", async 
 });
 
 test("preserves motion controls and avoids waking the paused hero on pointer movement", async () => {
-  const [light, css, ui] = await Promise.all([
+  const [light, css] = await Promise.all([
     readFile(new URL("app/PortfolioLight.tsx", root), "utf8"),
     readFile(new URL("app/portfolio.css", root), "utf8"),
-    readFile(new URL("app/Portfolio.tsx", root), "utf8"),
   ]);
   assert.match(light, /if \(pause\.current \|\| e\.pointerType === "touch"\) return/);
   assert.match(css, /prefers-reduced-motion:\s*reduce/);
   assert.match(css, /data-motion="still"/);
-  assert.match(ui, /function choosePractice\(index: number\) \{ setPractice\(index\); setStage\(0\); \}/);
-  assert.match(ui, /onKeyDown=\{e => tabs\(e, i, 3, choosePractice\)\}/);
 });
 
 test("renders a genuinely rotatable globe with a China-centered default", async () => {

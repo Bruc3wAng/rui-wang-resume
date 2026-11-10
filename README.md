@@ -38,12 +38,14 @@ pnpm test
 
 Before publishing to both hosts, build GitHub Pages with its base path, run
 `pnpm run build` for Sites, then run `NEXT_PUBLIC_BASE_PATH=/rui-wang-resume pnpm run test:release`.
+This also checks that both language pages serve the bundled portrait directly
+without relying on a runtime image-optimization endpoint.
 
 The homepage places three representative study links next to the introduction and before the market globe in reading order. The links use the same permanent case fragments as the full work section, including with scripts unavailable. The work section keeps desktop roving tabs and exposes a full mobile study index. Each public study has a stable `#study-…` link and a copy action; the live language switch and browser history keep the addressed study. Explicit mobile selection opens the matching contribution with an index return action; related AI practices link back to their actual work entry. The personal prototype has no employer-study association.
 
 The case text separates context, the researcher's decisions, verified AI use, and a selected deliverable's purpose. The deliverable action opens its exact entry in the existing research folio, which retains three contribution/purpose views per study. Folios grow with their content, support keyboard selection and Escape-to-close, and return focus to the action that opened them.
-This also checks that both language pages serve the bundled portrait directly
-without relying on a runtime image-optimization endpoint.
+
+Each AI practice has a stable `#practice-…` address. Work cases link to their actual practice; language switching, reload, and browser history keep the addressed practice. Copying a practice shares its localized public address, not example inputs or results. A no-script view still shows the addressed practice and offers native links to its case and other language.
 
 ## Content maintenance
 

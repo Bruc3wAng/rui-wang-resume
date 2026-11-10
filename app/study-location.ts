@@ -4,11 +4,18 @@ type Fragment = `#${string}`;
 export type HistoryMode = "push" | "replace";
 const changeEvent = "portfolio-fragment-change";
 const casePrefix = "#study-";
+const practicePrefix = "#practice-";
 
 export function studyFragment(id: string): Fragment { return `${casePrefix}${id}`; }
 
 export function studyIndexFromFragment(fragment: string | null, studies: readonly { id: string }[]) {
   return fragment?.startsWith(casePrefix) ? studies.findIndex(study => studyFragment(study.id) === fragment) : -1;
+}
+
+export function practiceFragment(id: string): Fragment { return `${practicePrefix}${id}`; }
+
+export function practiceIndexFromFragment(fragment: string | null, practices: readonly { id: string }[]) {
+  return fragment?.startsWith(practicePrefix) ? practices.findIndex(practice => practiceFragment(practice.id) === fragment) : -1;
 }
 
 export function portfolioLocaleHref(base: string, language: Language, fragment = "") {

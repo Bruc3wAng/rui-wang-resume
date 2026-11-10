@@ -132,7 +132,7 @@ test("reveals a project only on explicit narrow-screen selection and supports re
 
 test("derives AI-to-work links from the same mapping and excludes the personal prototype",async()=>{
   const ui=await read("app/Portfolio.tsx");
-  assert.match(ui,/selectedWork.findIndex\(work => workAIPracticeById\[work.id\] === practice\)/);
+  assert.match(ui,/selectedWork.findIndex\(work => workAIPracticeById\[work.id\] === id\)/);
   assert.match(ui,/relatedWorkIndex >= 0\s*\? <div className="pf-ai-project"/);
   assert.match(ui,/: <span className="pf-ai-prototype"/);
   assert.match(ui,/data-work-index=\{relatedWorkIndex\}/);

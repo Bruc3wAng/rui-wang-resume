@@ -1,0 +1,34 @@
+.pf-ai-practice-links{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 14px;align-items:center;min-width:0}
+.portfolio-v17 .pf-ai-practice-links .pf-ai-project{gap:12px}
+.portfolio-v17 .pf-ai-practice-links .pf-ai-project p{overflow-wrap:anywhere}
+.portfolio-v17 .pf-ai-practice-links .pf-ai-project>button{padding-inline-end:5px}
+.pf-practice-copy{position:relative}
+.portfolio-v17 .pf-copy-practice{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:7px 9px;border:1px solid #60748b;background:none;color:#dae4ed;font-size:11px;white-space:nowrap}
+.portfolio-v17 .pf-copy-practice:is(:hover,:focus-visible){background:#25354a;border-color:#cbb58f}
+.portfolio-v17 .pf-copy-practice:focus-visible,.portfolio-v17 .pf-practice-copy-field input:focus-visible{outline:2px solid #e4cda4;outline-offset:3px}
+.pf-copy-practice svg{width:15px;height:15px;flex:none;stroke:currentColor;stroke-width:1.55;stroke-linecap:round;stroke-linejoin:round}
+.pf-practice-copy-field{grid-column:1/-1;display:grid;gap:6px;min-width:0;color:#cfdeeb;font-size:12px;line-height:1.5}
+.pf-practice-copy-field input{min-width:0;width:100%;min-height:44px;padding:8px 10px;border:1px solid #8799ad;background:#f4f1e9;color:#21374b;font:16px Arial,"Microsoft YaHei",sans-serif}
+
+.pf-ai-link-directory,.pf-ai-link-brief{display:none}
+.portfolio-v17 .pf-ai[data-practice-url-ready=false] :is(.pf-ai-tabs,.pf-ai-panel){display:none}
+.pf-ai[data-practice-url-ready=false] .pf-ai-link-directory{display:flex;flex-wrap:wrap;gap:8px 18px;margin-bottom:20px}
+.pf-ai[data-practice-url-ready=false] .pf-ai-link-brief[data-default=true],.pf-ai[data-practice-url-ready=false] .pf-ai-link-brief:target{display:block}
+.pf-ai[data-practice-url-ready=false]:has(.pf-ai-link-brief:target) .pf-ai-link-brief:not(:target){display:none}
+.pf-ai-link-brief{scroll-margin-top:14px;max-width:870px;padding:clamp(16px,2.5vw,30px);border:1px solid #4d5d70;background:#172434}
+.portfolio-v17 .pf-ai-link-brief h3{color:#f0ebe1;font-size:clamp(18px,2vw,25px);line-height:1.35;text-wrap:pretty}
+.portfolio-v17 .pf-ai-link-brief h3+p{margin:9px 0 14px;color:#bdcbd8;font-size:13px;line-height:1.7}
+.pf-ai-link-brief dl>div{display:grid;grid-template-columns:minmax(0,120px) minmax(0,1fr);gap:5px 16px;border-top:1px solid #4d5d70;padding:11px 0;line-height:1.6}
+.pf-ai-link-brief dt{font-size:13px;font-weight:600;color:#f0ebe1}
+.pf-ai-link-brief dd{font-size:13px;color:#bdcbd8}
+.pf-ai-brief-links{display:flex;flex-wrap:wrap;gap:8px 18px}
+.pf-ai-link-directory a,.pf-ai-brief-links a{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:4px 0;border-bottom:1px solid #60748b;color:#dae4ed;font-size:12px}
+.pf-ai-brief-links .pf-arrow{width:15px;height:15px}
+.portfolio-v17 :is(.pf-ai-link-directory,.pf-ai-brief-links) a:focus-visible{outline-color:#e4cda4}
+@media(max-width:767px){
+  .pf-ai-practice-links{gap:8px 10px}
+  .portfolio-v17 .pf-ai-practice-links .pf-ai-project{gap:8px}
+}
+@media(max-width:414px){
+  .pf-ai-link-brief dl>div{grid-template-columns:minmax(0,1fr)}
+}

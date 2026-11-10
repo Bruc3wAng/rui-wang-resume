@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useImperativeHandle, useRef, useState, useSyncExternalStore, type KeyboardEvent, type PointerEvent, type CSSProperties, type Ref } from "react";
+import { useEffect, useImperativeHandle, useRef, useState, useSyncExternalStore, type KeyboardEvent, type MouseEvent, type PointerEvent, type CSSProperties, type Ref } from "react";
 import Image from "next/image";
 import NavigationAvatar from "./NavigationAvatar";
 import { profile, selectedWork, experiences, aiPractice, creativeCategories, capabilities, education, type CreativeItem, type Language } from "../content/resume";
@@ -17,10 +17,11 @@ import { internshipProjects } from "../content/portfolio-exhibits";
 import { folioDescriptionsFor, responsibilityLabel } from "../content/work-folios";
 import { atlasProjectPath, personalProjectHref, personalProjectStories, personalProjectStory } from "../content/personal-projects";
 import WorkStudyHeader from "./WorkStudyHeader";
+import CopyPortfolioLink from "./CopyPortfolioLink";
 import { workStudyCopyFor } from "./work-study-copy";
 import { heroBrief, heroCases } from "./hero-brief";
 import { aiWorkflowProofFor } from "./ai-workflow-proof";
-import { browserPortfolioFragment, portfolioLocaleHref, staticPortfolioFragment, studyFragment, studyHistoryInitializer, studyIndexFromFragment, subscribePortfolioFragment, updatePortfolioFragment, type HistoryMode } from "./study-location";
+import { browserPortfolioFragment, portfolioLocaleHref, practiceFragment, practiceIndexFromFragment, staticPortfolioFragment, studyFragment, studyHistoryInitializer, studyIndexFromFragment, subscribePortfolioFragment, updatePortfolioFragment, type HistoryMode } from "./study-location";
 import "./portfolio.css";
 import "./portfolio-refinement.css";
 import "./work-value.css";
@@ -29,6 +30,7 @@ import "./research-folios.css";
 import "./personal-projects.css";
 import "./hero-brief.css";
 import "./ai-workflow-proof.css";
+import "./practice-navigation.css";
 
 const base = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 const local = (l: Language, zh: string, en: string) => l === "zh" ? zh : en;
@@ -48,9 +50,15 @@ function subscribeCompactWork(onChange: () => void) {
   return () => media.removeEventListener("change", onChange);
 }
 function isCompactWork() { return window.matchMedia(compactWorkQuery).matches; }
-const workAIPracticeById: Record<string, number | undefined> = {
-  "content-tracking": 0, "brand-tracking": 1,
+const workAIPracticeById: Record<string, string | undefined> = {
+  "content-tracking": "research-analysis", "brand-tracking": "tracking-delivery",
 };
+function relatedStudyForPractice(id: string) { return selectedWork.findIndex(work => workAIPracticeById[work.id] === id); }
+function isPlainLinkActivation(event: MouseEvent<HTMLAnchorElement>) { return event.button === 0 && !event.metaKey && !event.ctrlKey && !event.altKey && !event.shiftKey; }
+function practiceLanding(index: number) {
+  const focus = `pf-ai-tab-${index}`;
+  return { focus, scroll: isCompactAI() ? focus : "method" };
+}
 const workNotes = [
   {
     question: { zh: "哪些体验因素，与用户满意度关联更强？", en: "Which experiences matter most to user satisfaction?" },
@@ -186,7 +194,8 @@ function WorkStudyPanel({ index, selected, ready, compact, language, paused, onR
   onReturn: () => void; fromMarket: boolean; onExploreAI: (index: number) => void;
 }) {
   const folio = useRef<ResearchFolioHandle>(null);
-  const item = selectedWork[index], note = workNotes[index], story = workStudyCopyFor(item.id), aiPracticeIndex = workAIPracticeById[item.id];
+  const item = selectedWork[index], note = workNotes[index], story = workStudyCopyFor(item.id);
+  const aiPracticeIndex = aiPractice.findIndex(practice => practice.id === workAIPracticeById[item.id]);
   const outputName = note.outputs[language][story.output];
   const outputPurpose = folioDescriptionsFor(item.id)[story.output].purpose[language];
   const titleId = `pf-case-output-title-${index}`;
@@ -209,7 +218,11 @@ function WorkStudyPanel({ index, selected, ready, compact, language, paused, onR
           {local(language, "查看交付说明", "View output details")}<Arrow/>
         </button>
       </div>
-      {aiPracticeIndex !== undefined && <button type="button" className="pf-case-ai-link" data-ai-practice={aiPracticeIndex} aria-controls="pf-ai-panel" onClick={() => onExploreAI(aiPracticeIndex)}>{aiPracticeIndex === 0 ? local(language, "查看 AI 分析流程", "Explore AI-assisted analysis") : local(language, "查看 AI 更新流程", "Explore AI-assisted reporting")}<Arrow/></button>}
+      {aiPracticeIndex >= 0 && <a className="pf-case-ai-link" data-ai-practice={aiPracticeIndex} href={practiceFragment(aiPractice[aiPracticeIndex].id)} onClick={event => {
+        if (!isPlainLinkActivation(event)) return;
+        event.preventDefault();
+        onExploreAI(aiPracticeIndex);
+      }}>{aiPractice[aiPracticeIndex].id === "research-analysis" ? local(language, "查看 AI 分析流程", "Explore AI-assisted analysis") : local(language, "查看 AI 更新流程", "Explore AI-assisted reporting")}<Arrow/></a>}
     </div>
     <div className="pf-object-stage" onPointerMove={e => tilt(e, paused)} onPointerLeave={resetTilt}><ResearchObject ref={folio} active={index} language={language} paused={paused}/></div>
   </article>;
@@ -259,25 +272,49 @@ function Work({ language, active, setActive, paused, ready, onExploreAI, marketC
   </section>;
 }
 
-function AIPractice({ language, practice, stage, setPractice, setStage, onExploreWork }: { language: Language; practice: number; stage: number; setPractice: (index: number) => void; setStage: (index: number) => void; onExploreWork: (index: number) => void }) {
+function PracticeLinkBriefs({ language, labels }: { language: Language; labels: string[] }) {
+  const other = language === "zh" ? "en" : "zh";
+  return <>
+    <nav className="pf-ai-link-directory" aria-label={local(language, "研究实践目录", "Research practice directory")}>
+      {aiPractice.map(item => <a key={item.id} href={practiceFragment(item.id)}>{item.title[language]}</a>)}
+    </nav>
+    {aiPractice.map((item, index) => {
+      const fragment = practiceFragment(item.id), related = relatedStudyForPractice(item.id);
+      return <section key={item.id} className="pf-ai-link-brief" id={fragment.slice(1)} data-default={index === 0} aria-labelledby={`pf-ai-brief-title-${index}`}>
+        <h3 id={`pf-ai-brief-title-${index}`}>{item.title[language]}</h3>
+        <p>{item.context[language]}</p>
+        <dl>{aiWorkflowProofFor(item.id).map((step, i) => <div key={i}><dt>{labels[i]}</dt><dd>{step[language]}</dd></div>)}</dl>
+        <div className="pf-ai-brief-links">
+          {related >= 0 && <a href={studyFragment(selectedWork[related].id)}>{local(language, "查看研究案例", "View related study")}<Arrow/></a>}
+          <a href={portfolioLocaleHref(base, other, fragment)} hrefLang={other === "zh" ? "zh-CN" : "en"} lang={other === "zh" ? "zh-CN" : "en"}>{language === "zh" ? "Read in English" : "阅读中文版"}<Arrow/></a>
+        </div>
+      </section>;
+    })}
+  </>;
+}
+
+function AIPractice({ language, practice, stage, ready, setPractice, setStage, onExploreWork }: { language: Language; practice: number; stage: number; ready: boolean; setPractice: (index: number, mode: HistoryMode) => void; setStage: (index: number) => void; onExploreWork: (index: number) => void }) {
   const compact = useSyncExternalStore(subscribeCompactAI, isCompactAI, serverCompactAI);
   const lab = useRef<ResearchLabHandle>(null);
   const example = researchExampleFor(practice);
-  const relatedWorkIndex = selectedWork.findIndex(work => workAIPracticeById[work.id] === practice);
   const item = aiPractice[practice], detail = details[practice].stages[stage];
+  const relatedWorkIndex = relatedStudyForPractice(item.id);
   const proof = aiWorkflowProofFor(item.id);
   const labels = [local(language, "我的判断", "My judgment"), local(language, "Codex 执行", "Codex execution"), local(language, "交付与复用", "Delivery & reuse")];
   const next = (stage + 1) % labels.length;
-  function choosePractice(index: number) { setPractice(index); setStage(0); }
-  return <section className="pf-ai pf-section" id="method" data-tone="night"><div className="pf-wrap">
+  return <section className="pf-ai pf-section" id="method" data-tone="night" data-practice-url-ready={ready}><div className="pf-wrap">
     <div className="pf-section-head"><div><p className="pf-eyebrow">02 / RESEARCH × AI</p><h2>{local(language, "AI 提效实践", "AI in research practice")}</h2></div><p>{local(language, "把研究规则写进工具，让分析、核验与报告更新能够复用。", "Reusable tools for analysis, validation, and reporting, built around research rules.")}</p></div>
-    <div className="pf-ai-tabs" role="tablist" aria-orientation={compact ? "vertical" : "horizontal"} aria-label={local(language, "选择AI实践", "Choose an AI practice")}>{aiPractice.map((p, i) => <button type="button" key={p.id} role="tab" id={`pf-ai-tab-${i}`} aria-controls="pf-ai-panel" aria-selected={practice === i} tabIndex={practice === i ? 0 : -1} onClick={() => choosePractice(i)} onKeyDown={e => tabs(e, i, 3, choosePractice)}><span>0{i + 1}</span><span className="pf-ai-tab-label">{p.title[language]}</span><svg className="pf-ai-tab-indicator" aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="m6 4 4 4-4 4"/></svg></button>)}</div>
+    <div className="pf-ai-tabs" role="tablist" aria-orientation={compact ? "vertical" : "horizontal"} aria-label={local(language, "选择AI实践", "Choose an AI practice")}>{aiPractice.map((p, i) => <button type="button" key={p.id} role="tab" id={`pf-ai-tab-${i}`} aria-controls="pf-ai-panel" aria-selected={practice === i} tabIndex={practice === i ? 0 : -1} onClick={() => setPractice(i, "push")} onKeyDown={e => tabs(e, i, aiPractice.length, index => setPractice(index, "replace"))}><span>0{i + 1}</span><span className="pf-ai-tab-label">{p.title[language]}</span><svg className="pf-ai-tab-indicator" aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="m6 4 4 4-4 4"/></svg></button>)}</div>
+    {!ready && <PracticeLinkBriefs language={language} labels={labels}/>}
     <article id="pf-ai-panel" role="tabpanel" aria-labelledby={`pf-ai-tab-${practice}`} className="pf-ai-panel" data-practice={practice} data-stage={stage}>
       <div className="pf-ai-practice-meta">
         <p className="pf-ai-context">{item.context[language]}</p>
-        {relatedWorkIndex >= 0
-          ? <div className="pf-ai-project" data-work-index={relatedWorkIndex}><div><span>{local(language, "研究项目", "RELATED STUDY")}</span><p>{selectedWork[relatedWorkIndex].title[language]}</p></div><button type="button" aria-controls={`pf-work-panel-${relatedWorkIndex}`} onClick={() => onExploreWork(relatedWorkIndex)}>{local(language, "查看项目", "View study")}<Arrow/></button></div>
-          : <span className="pf-ai-prototype">{local(language, "个人研究原型", "Personal research prototype")}</span>}
+        <div className="pf-ai-practice-links">
+          {relatedWorkIndex >= 0
+            ? <div className="pf-ai-project" data-work-index={relatedWorkIndex}><div><span>{local(language, "研究项目", "RELATED STUDY")}</span><p>{selectedWork[relatedWorkIndex].title[language]}</p></div><button type="button" aria-controls={`pf-work-panel-${relatedWorkIndex}`} onClick={() => onExploreWork(relatedWorkIndex)}>{local(language, "查看项目", "View study")}<Arrow/></button></div>
+            : <span className="pf-ai-prototype">{local(language, "个人研究原型", "Personal research prototype")}</span>}
+          <CopyPortfolioLink key={item.id} fragment={practiceFragment(item.id)} kind="practice" language={language}/>
+        </div>
       </div>
       <div className="pf-stage-tabs pf-ai-flow" role="tablist" aria-orientation={compact ? "vertical" : "horizontal"} aria-label={local(language, "研究工作阶段", "Research workflow stage")}>
         {labels.map((label, i) => <button type="button" role="tab" key={label} id={`pf-stage-tab-${i}`} aria-labelledby={`pf-stage-label-${i}`} aria-describedby={`pf-stage-proof-${i}`} aria-controls="pf-stage-panel" aria-selected={stage === i} tabIndex={stage === i ? 0 : -1} onClick={() => setStage(i)} onKeyDown={e => tabs(e, i, labels.length, setStage)}>
@@ -372,28 +409,34 @@ function Projects({ language }: { language: Language }) {
 export function Portfolio({ language }: { language: Language }) {
   const [lastWork, setLastWork] = useState(0), [paused, setPaused] = useState(false), [activeSection, setActiveSection] = useState("top"), [tone, setTone] = useState("light"), [copied, setCopied] = useState("");
   const [marketContext, setMarketContext] = useState<WorkMarketContext | null>(null);
-  const [activeAIPractice, setActiveAIPractice] = useState(0), [aiStage, setAIStage] = useState(0);
+  const [aiView, setAIView] = useState({ practice: 0, stage: 0 });
   const [palette, setPalette] = useState(false), [query, setQuery] = useState("");
   const dialog = useRef<HTMLDialogElement>(null), search = useRef<HTMLInputElement>(null), lastFocus = useRef<HTMLElement | null>(null), shell = useRef<HTMLElement>(null);
   const fragment = useSyncExternalStore<string | null>(subscribePortfolioFragment, browserPortfolioFragment, staticPortfolioFragment);
   const linkedWork = studyIndexFromFragment(fragment, selectedWork);
+  const linkedPractice = practiceIndexFromFragment(fragment, aiPractice);
   const activeWork = linkedWork < 0 ? lastWork : linkedWork;
-  const caseFragment = linkedWork < 0 ? "" : studyFragment(selectedWork[linkedWork].id);
+  const activeAIPractice = linkedPractice < 0 ? aiView.practice : linkedPractice;
+  const aiStage = activeAIPractice === aiView.practice ? aiView.stage : 0;
+  const localeFragment = linkedWork >= 0 ? studyFragment(selectedWork[linkedWork].id)
+    : linkedPractice >= 0 ? practiceFragment(aiPractice[linkedPractice].id)
+    : fragment === "#method" ? fragment : "";
   const handledFragment = useRef<string | null>(null);
   const nav = [local(language, "重点工作", "Work"), local(language, "AI 提效实践", "AI practice"), local(language, "个人作品", "Projects"), local(language, "专业能力", "Capabilities")];
   useEffect(() => { const m = matchMedia("(prefers-reduced-motion: reduce)"); const sync = () => setPaused(m.matches); sync(); m.addEventListener("change", sync); return () => m.removeEventListener("change", sync); }, []);
   useEffect(() => {
     const handled = handledFragment.current === fragment;
     handledFragment.current = null;
-    if (linkedWork < 0 || handled) return;
+    if ((linkedWork < 0 && linkedPractice < 0) || handled) return;
     // Wait for the selected panel to be painted before moving focus.
     const frame = requestAnimationFrame(() => {
       if (window.location.hash !== fragment) return;
-      document.getElementById(`pf-work-panel-${linkedWork}`)?.scrollIntoView({ behavior: "instant", block: "start" });
-      document.getElementById(`pf-work-question-${linkedWork}`)?.focus({ preventScroll: true });
+      const target = linkedWork >= 0 ? { scroll: `pf-work-panel-${linkedWork}`, focus: `pf-work-question-${linkedWork}` } : practiceLanding(linkedPractice);
+      document.getElementById(target.scroll)?.scrollIntoView({ behavior: "instant", block: "start" });
+      document.getElementById(target.focus)?.focus({ preventScroll: true });
     });
     return () => cancelAnimationFrame(frame);
-  }, [fragment, linkedWork]);
+  }, [fragment, linkedWork, linkedPractice]);
   useEffect(() => {
     function keyboard(e: globalThis.KeyboardEvent) { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") { e.preventDefault(); setPalette(v => !v); } }
     window.addEventListener("keydown", keyboard); return () => window.removeEventListener("keydown", keyboard);
@@ -433,12 +476,19 @@ export function Portfolio({ language }: { language: Language }) {
     updatePortfolioFragment(`#${id}`);
   }
   function goToSection(id: string, focusId?: string) { setSectionLocation(id); jump(id, focusId); }
+  function setPracticeLocation(index: number, mode: HistoryMode) {
+    setLastWork(activeWork);
+    setAIView({ practice: index, stage: 0 });
+    const next = practiceFragment(aiPractice[index].id);
+    if (window.location.hash !== next) {
+      handledFragment.current = next;
+      updatePortfolioFragment(next, mode);
+    }
+  }
   function openAIFromWork(index: number) {
-    setActiveAIPractice(index);
-    setAIStage(0);
-    setSectionLocation("method");
-    const tab = `pf-ai-tab-${index}`;
-    jump(window.matchMedia(compactAIQuery).matches ? tab : "method", tab);
+    setPracticeLocation(index, "push");
+    const target = practiceLanding(index);
+    jump(target.scroll, target.focus);
   }
   function selectWork(index: number, mode: HistoryMode = "replace") { setMarketContext(null); setWorkLocation(index, mode); }
   function showWork(index: number) { setWorkLocation(index, "push"); jump(`pf-work-panel-${index}`, `pf-work-question-${index}`); }
@@ -460,7 +510,7 @@ export function Portfolio({ language }: { language: Language }) {
     <script id="pf-study-history" dangerouslySetInnerHTML={{ __html: studyHistoryInitializer }}/>
     <ShareLocale language={language}/>
     <a className="skip-link" href="#work">{local(language, "跳至工作经历", "Skip to work experience")}</a>
-    <header className={`pf-header tone-${tone}`}><div className="pf-wrap pf-header-inner"><a className="pf-brand" href="#top"><NavigationAvatar/><span>{profile.name[language]}</span><small>RESEARCH & AI</small></a><nav aria-label={local(language, "主导航", "Main navigation")}>{nav.map((v, i) => <a href={`#${chapters[i]}`} key={v} aria-current={activeSection === chapters[i] ? "location" : undefined}>{v}</a>)}</nav><div className="pf-header-tools"><a href={portfolioLocaleHref(base, "zh", caseFragment)} hrefLang="zh-CN" lang="zh-CN" aria-label="中文" aria-current={language === "zh" ? "page" : undefined}>中</a><span>/</span><a href={portfolioLocaleHref(base, "en", caseFragment)} hrefLang="en" lang="en" aria-label="English" aria-current={language === "en" ? "page" : undefined}>EN</a><button type="button" onClick={() => setPalette(true)} aria-label={local(language, "打开快速访问", "Open quick access")}>⌘K</button></div></div><div className="pf-reading-progress" aria-hidden="true"/></header>
+    <header className={`pf-header tone-${tone}`}><div className="pf-wrap pf-header-inner"><a className="pf-brand" href="#top"><NavigationAvatar/><span>{profile.name[language]}</span><small>RESEARCH & AI</small></a><nav aria-label={local(language, "主导航", "Main navigation")}>{nav.map((v, i) => <a href={`#${chapters[i]}`} key={v} aria-current={activeSection === chapters[i] ? "location" : undefined}>{v}</a>)}</nav><div className="pf-header-tools"><a href={portfolioLocaleHref(base, "zh", localeFragment)} hrefLang="zh-CN" lang="zh-CN" aria-label="中文" aria-current={language === "zh" ? "page" : undefined}>中</a><span>/</span><a href={portfolioLocaleHref(base, "en", localeFragment)} hrefLang="en" lang="en" aria-label="English" aria-current={language === "en" ? "page" : undefined}>EN</a><button type="button" onClick={() => setPalette(true)} aria-label={local(language, "打开快速访问", "Open quick access")}>⌘K</button></div></div><div className="pf-reading-progress" aria-hidden="true"/></header>
     <section className="pf-hero" id="content" data-tone="light">
       <PortfolioLight paused={paused}/>
       <div className="pf-wrap pf-hero-layout">
@@ -489,7 +539,7 @@ export function Portfolio({ language }: { language: Language }) {
     </section>
     <Work language={language} active={activeWork} setActive={selectWork} paused={paused} ready={fragment !== null} marketContext={marketContext} onBackToMarket={backToMarket}
       onReturnToIndex={() => setSectionLocation("pf-work-index")} onExploreAI={openAIFromWork}/>
-    <AIPractice language={language} practice={activeAIPractice} stage={aiStage} setPractice={setActiveAIPractice} setStage={setAIStage} onExploreWork={index => { if (marketContext?.workIndex !== index) setMarketContext(null); showWork(index); }}/>
+    <AIPractice language={language} practice={activeAIPractice} stage={aiStage} ready={fragment !== null} setPractice={setPracticeLocation} setStage={stage => setAIView({ practice: activeAIPractice, stage })} onExploreWork={index => { if (marketContext?.workIndex !== index) setMarketContext(null); showWork(index); }}/>
     <Projects language={language}/>
     <section className="pf-capabilities pf-section" id="capabilities" data-tone="light"><div className="pf-wrap"><div className="pf-section-head"><div><p className="pf-eyebrow">04 / CAPABILITIES</p><h2>{local(language, "研究方法与实现能力。", "Research methods and practical implementation.")}</h2></div></div><div className="pf-capability-list">{capabilities.map((c, i) => <article key={c.title.en}><span>0{i + 1}</span><h3>{c.title[language]}</h3><p>{c.items[language]}</p></article>)}</div><div className="pf-education"><div className="pf-university-image"><Image src={`${base}/images/uoft-signature.webp`} width={690} height={302} alt="University of Toronto" unoptimized/></div><div className="pf-education-body"><p className="pf-eyebrow">EDUCATION</p><h3>{education.institution[language]}</h3><p>{education.degree[language]}</p><strong>{education.focus[language]}</strong><span className="pf-education-period">{education.period}</span><p>{education.coursework[language]}</p><p>{local(language,"英语 TOEFL 110 · 普通话 母语","English TOEFL 110 · Mandarin Chinese Native")}</p></div></div></div></section>
     <section id="contact" className="pf-contact pf-section" data-tone="light"><div className="pf-wrap"><p className="pf-eyebrow">05 / CONTACT</p><div className="pf-contact-layout"><div><h2>{local(language, "一起把问题研究清楚。", "Let’s work through the questions.")}</h2><p>{local(language, "欢迎交流市场研究、用户洞察、数据分析与 AI 研究工作流。北京优先，也可接受上海、杭州与深圳。", "Open to conversations about market research, user insights, data analytics, and AI research workflows. Beijing preferred; open to Shanghai, Hangzhou, and Shenzhen.")}</p></div><div className="pf-contact-details"><a href={`mailto:${profile.email}`}>{profile.email}<Arrow/></a><div><button type="button" onClick={() => copy(profile.email, local(language, "邮箱已复制", "Email copied"))}>{local(language, "复制邮箱", "Copy email")}</button><a href={`tel:${profile.phone.href}`}>{profile.phone.display}</a><button type="button" onClick={() => copy(profile.phone.href, local(language, "电话已复制", "Phone copied"))}>{local(language, "复制电话", "Copy phone")}</button></div><p role="status" aria-live="polite" className="pf-copy-status">{copied || " "}</p><div className="pf-resume-downloads"><ResumeDownload language={language} className="pf-contact-resume"/><ResumeDownload language={language} documentLanguage={language === "zh" ? "en" : "zh"} className="pf-resume-alternative" compact/></div></div></div><footer><span>© {new Date(release.updatedAt).getFullYear()} {profile.name[language]}</span><span>{local(language, "定量研究 · 数据分析 · 多市场洞察 · AI 研究工作流", "QUANTITATIVE RESEARCH · DATA ANALYTICS · MULTI-MARKET INSIGHT · AI WORKFLOWS")}</span><a href="#top">{local(language, "返回顶部", "Back to top")} ↑</a></footer></div></section>
