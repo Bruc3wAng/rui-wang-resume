@@ -19,6 +19,36 @@ test("each guided example is bilingual and runs the intended conditions",()=>{
   assert.throws(()=>lab.researchExampleFor(3),RangeError);
 });
 
+test("prototype questions distinguish a comparable pair, one record, and a source gap in every export",()=>{
+  const expected=[
+    ["compare","pet","online",["pet-a","pet-b"],[4000,4900]],
+    ["record","pet","offline",["pet-d"],[3500]],
+    ["gap","health","offline",[],[]],
+  ];
+  assert.deepEqual(lab.libraryQuestionPresets.map(({id,category,channel})=>[id,category,channel]),expected.map(row=>row.slice(0,3)));
+  for(const [kind,category,channel,ids,prices] of expected){
+    const query=lab.queryLibraryEvidence(category,channel), eligible=query.groups.flatMap(group=>group.comparable);
+    assert.deepEqual(eligible.map(item=>item.record.id),ids);
+    assert.deepEqual(eligible.map(item=>item.perKgCents),prices);
+    assert.ok(query.held.every(item=>item.perKgCents===null));
+    for(const language of ["zh","en"]){
+      const decision=lab.libraryEvidenceDecision(query,language);
+      assert.equal(decision.kind,kind);assert.ok(decision.title&&decision.detail);
+      for(let artifact=0;artifact<3;artifact++){
+        const doc=lab.buildResearchArtifact(2,artifact,[],category,language,0,channel);
+        assert.equal(doc.sections[0].rows.at(-1).text,`${decision.title} · ${decision.detail}`);
+        assert.ok(lab.serializeResearchArtifact(doc,language).includes(decision.detail));
+      }
+    }
+  }
+  const mixed=lab.queryLibraryEvidence("all","online");
+  const onePerGroup={...mixed,comparable:2,groups:mixed.groups.map(group=>({...group,comparable:group.comparable.slice(0,1)}))};
+  assert.equal(lab.libraryEvidenceDecision(onePerGroup,"en").kind,"record");
+  assert.match(lab.libraryEvidenceDecision(onePerGroup,"en").detail,/do not combine categories/);
+  const empty=lab.libraryEvidenceDecision(lab.queryLibraryEvidence("unknown","online"),"en");
+  assert.equal(empty.kind,"gap");assert.match(empty.detail,/No example records match/);
+});
+
 test("calculates observed and fixed-mix rates independently for both reference waves",()=>{
   const one=lab.calculateAudienceMix(0),two=lab.calculateAudienceMix(1);
   const near=(actual,expected)=>assert.ok(Math.abs(actual-expected)<1e-12,`${actual} != ${expected}`);

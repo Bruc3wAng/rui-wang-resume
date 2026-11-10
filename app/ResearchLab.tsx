@@ -6,14 +6,14 @@ import {
   buildResearchArtifact, comparableAudienceMix, compareConditions, planTrackingUpdate, queryLibraryEvidence,
   researchExampleFor, researchOutputLabels, researchResultSummary, serializeResearchArtifact, trackingImpactForChange,
   trackingReportFor, trackingReportHeadline, libraryCategoryLabel, libraryChannelLabel,
-  type LibraryChannel, type MixReference,
+  type LibraryChannel, type LibraryQuestionPreset, type MixReference,
 } from "./research-lab";
 import AudienceMixView from "./AudienceMixView";
 import TrackingReportView from "./TrackingReportView";
 import LibraryEvidenceView from "./LibraryEvidenceView";
 import "./research-artifacts.css";
 
-export type ResearchLabHandle = { runExample: () => void };
+export type ResearchLabHandle = { runExample: () => void; runLibraryScope: (scope: LibraryQuestionPreset) => void };
 type LabProps = { practice: number; stage: number; language: Language; onStageChange: (n: number) => void; ref: Ref<ResearchLabHandle> };
 type FocusTarget = "criteria" | "result" | "output";
 const text = (language: Language, zh: string, en: string) => language === "zh" ? zh : en;
@@ -91,6 +91,12 @@ export default function ResearchLab({ practice, stage, language, onStageChange, 
       setCategory(example.category);
       setChannel("online");
       setReference(0);
+      execute();
+    },
+    runLibraryScope({ category, channel }) {
+      if (practice !== 2) return;
+      setCategory(category);
+      setChannel(channel);
       execute();
     },
   }));

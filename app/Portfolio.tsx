@@ -23,6 +23,7 @@ import { heroBrief, heroCases } from "./hero-brief";
 import { aiWorkflowProofFor } from "./ai-workflow-proof";
 import RelativeWeightExample, { relativeWeightExampleId, relativeWeightTitleId, WeightExampleLink } from "./RelativeWeightExample";
 import { relativeWeightFragment, relativeWeightOutput, relativeWeightPractice } from "./relative-weight";
+import { PlatformQuestionGuide, ResearchPlatformStory, platformGuideFragment, platformGuideTitle, platformPractice, platformStoryFragment, platformStoryTitle } from "./ResearchPlatform";
 import { browserPortfolioFragment, mapFragment, mapIndexFromFragment, outputFragment, outputFromFragment, portfolioLocaleHref, practiceFragment, practiceIndexFromFragment, staticPortfolioFragment, studyFragment, studyHistoryInitializer, studyIndexFromFragment, subscribePortfolioFragment, updatePortfolioFragment, type HistoryMode } from "./study-location";
 import "./portfolio.css";
 import "./portfolio-refinement.css";
@@ -57,6 +58,7 @@ const workAIPracticeById: Record<string, string | undefined> = {
 };
 const workOutputs = selectedWork.map(work => ({ id: work.id, outputs: workStudyCopyFor(work.id).outputs }));
 const weightPracticeIndex = aiPractice.findIndex(practice => practice.id === relativeWeightPractice);
+const platformPracticeIndex = aiPractice.findIndex(practice => practice.id === platformPractice);
 function relatedStudyForPractice(id: string) { return selectedWork.findIndex(work => workAIPracticeById[work.id] === id); }
 function isPlainLinkActivation(event: MouseEvent<HTMLAnchorElement>) { return event.button === 0 && !event.metaKey && !event.ctrlKey && !event.altKey && !event.shiftKey; }
 function practiceLanding(index: number) {
@@ -294,6 +296,7 @@ function PracticeLinkBriefs({ language, labels }: { language: Language; labels: 
         <div className="pf-ai-brief-links">
           {related >= 0 && <a href={studyFragment(selectedWork[related].id)}>{local(language, "查看研究案例", "View related study")}<Arrow/></a>}
           {item.id === relativeWeightPractice && <WeightExampleLink language={language}/>}
+          {item.id === platformPractice && <a href={platformGuideFragment}>{local(language, "查看标价比较示例", "View the price comparison example")}<Arrow/></a>}
           <a href={portfolioLocaleHref(base, other, fragment)} hrefLang={other === "zh" ? "zh-CN" : "en"} lang={other === "zh" ? "zh-CN" : "en"}>{language === "zh" ? "Read in English" : "阅读中文版"}<Arrow/></a>
         </div>
       </section>;
@@ -314,6 +317,7 @@ function AIPractice({ language, practice, stage, ready, weightExample, setPracti
     <div className="pf-section-head"><div><p className="pf-eyebrow">02 / RESEARCH × AI</p><h2>{local(language, "AI 提效实践", "AI in research practice")}</h2></div><p>{local(language, "把研究规则写进工具，让分析、核验与报告更新能够复用。", "Reusable tools for analysis, validation, and reporting, built around research rules.")}</p></div>
     <div className="pf-ai-tabs" role="tablist" aria-orientation={compact ? "vertical" : "horizontal"} aria-label={local(language, "选择AI实践", "Choose an AI practice")}>{aiPractice.map((p, i) => <button type="button" key={p.id} role="tab" id={`pf-ai-tab-${i}`} aria-controls={weightExample && i === weightPracticeIndex ? relativeWeightExampleId : "pf-ai-panel"} aria-selected={practice === i} tabIndex={practice === i ? 0 : -1} onClick={() => setPractice(i, "push")} onKeyDown={e => tabs(e, i, aiPractice.length, index => setPractice(index, "replace"))}><span>0{i + 1}</span><span className="pf-ai-tab-label">{p.title[language]}</span><svg className="pf-ai-tab-indicator" aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="m6 4 4 4-4 4"/></svg></button>)}</div>
     {!ready && <PracticeLinkBriefs language={language} labels={labels}/>}
+    {!ready && <PlatformQuestionGuide language={language}/>}
     <RelativeWeightExample language={language} active={weightExample} ready={ready} tabId={`pf-ai-tab-${weightPracticeIndex}`}/>
     <article id="pf-ai-panel" role="tabpanel" aria-labelledby={`pf-ai-tab-${practice}`} className="pf-ai-panel" data-practice={practice} data-stage={stage} hidden={weightExample}>
       <div className="pf-ai-practice-meta">
@@ -332,11 +336,11 @@ function AIPractice({ language, practice, stage, ready, weightExample, setPracti
           <Arrow down/>
         </button>)}
       </div>
-      <div className="pf-ai-example" data-example={practice}>
+      {item.id === platformPractice ? <PlatformQuestionGuide language={language} run={preset => lab.current?.runLibraryScope(preset)}/> : <div className="pf-ai-example" data-example={practice}>
         <div className="pf-ai-example-label"><svg className="pf-ai-example-mark" viewBox="0 0 42 42" fill="none" aria-hidden="true"><path d="M8 21h11m4 0 9-12m-9 12 9 12"/><circle cx="6" cy="21" r="2.5"/><circle cx="21" cy="21" r="3"/><circle cx="34" cy="7" r="2.5"/><circle cx="34" cy="35" r="2.5"/></svg><span>{local(language, "方法示例", "EXAMPLE")}</span></div>
         <div className="pf-ai-example-body"><h3 id="pf-ai-example-title">{example.title[language]}</h3><p id="pf-ai-example-summary">{example.prompt[language]}</p></div>
         <button type="button" className="pf-ai-run-example" aria-controls="pf-ai-method-example" aria-describedby="pf-ai-example-title pf-ai-example-summary" onClick={() => lab.current?.runExample()}>{local(language, "运行示例", "Run example")}<Arrow/></button>
-      </div>
+      </div>}
       {item.id === relativeWeightPractice && <div className="rw-workflow-entry">
         <p>{local(language, "单看相关和放进同一个模型，体验因素的排序一样吗？", "Do experience factors rank the same when considered individually and together?")}</p>
         <WeightExampleLink language={language} className="rw-workflow-link"/>
@@ -400,6 +404,7 @@ function Projects({ language }: { language: Language }) {
       </div>
       <div className="pf-atlas-art" aria-hidden="true"><div className="pf-atlas-rings"><i/><i/><i/></div><span className="pf-atlas-word">WORLD<br/>IN VIEW.</span><div className="pf-atlas-coordinates"><span>COUNTRY</span><span>INDICATOR</span><span>YEAR</span></div></div>
     </article>
+    <ResearchPlatformStory language={language}/>
     <div className="pf-creative-heading">
       <h3>{local(language, "作品目录", "Project index")}</h3>
       <div role="tablist" aria-label={local(language, "作品类型", "Project categories")}>
@@ -430,12 +435,14 @@ export function Portfolio({ language }: { language: Language }) {
   const outputLinked = linkedOutput !== null;
   const linkedWork = linkedOutput?.workIndex ?? studyIndexFromFragment(fragment, selectedWork);
   const weightExample = fragment === relativeWeightFragment;
-  const linkedPractice = weightExample ? weightPracticeIndex : practiceIndexFromFragment(fragment, aiPractice);
+  const platformGuide = fragment === platformGuideFragment;
+  const platformStory = fragment === platformStoryFragment;
+  const linkedPractice = weightExample ? weightPracticeIndex : platformGuide ? platformPracticeIndex : practiceIndexFromFragment(fragment, aiPractice);
   const linkedMap = mapIndexFromFragment(fragment, mapStudyIds);
   const activeWork = linkedWork < 0 ? lastWork : linkedWork;
   const activeAIPractice = linkedPractice < 0 ? aiView.practice : linkedPractice;
   const aiStage = activeAIPractice === aiView.practice ? aiView.stage : 0;
-  const localeFragment = (outputLinked || weightExample) && fragment ? fragment
+  const localeFragment = (outputLinked || weightExample || platformGuide || platformStory) && fragment ? fragment
     : linkedWork >= 0 ? studyFragment(selectedWork[linkedWork].id)
     : linkedPractice >= 0 ? practiceFragment(aiPractice[linkedPractice].id)
     : linkedMap >= 0 ? mapFragment(mapStudyIds[linkedMap])
@@ -447,18 +454,20 @@ export function Portfolio({ language }: { language: Language }) {
     const handled = handledFragment.current === fragment;
     handledFragment.current = null;
     // A linked deliverable moves focus inside its own folio, not to the case header.
-    if ((linkedWork < 0 && linkedPractice < 0 && linkedMap < 0) || outputLinked || handled) return;
+    if ((linkedWork < 0 && linkedPractice < 0 && linkedMap < 0 && !platformStory) || outputLinked || handled) return;
     // Wait for the selected panel to be painted before moving focus.
     const frame = requestAnimationFrame(() => {
       if (window.location.hash !== fragment) return;
       const target = weightExample ? { scroll: relativeWeightExampleId, focus: relativeWeightTitleId }
+        : platformGuide ? { scroll: platformGuideFragment.slice(1), focus: platformGuideTitle }
+        : platformStory ? { scroll: platformStoryFragment.slice(1), focus: platformStoryTitle }
         : linkedWork >= 0 ? { scroll: `pf-work-panel-${linkedWork}`, focus: `pf-work-question-${linkedWork}` }
         : linkedMap >= 0 ? { scroll: "rg-map-address", focus: "rg-map-title" } : practiceLanding(linkedPractice);
       document.getElementById(target.scroll)?.scrollIntoView({ behavior: "instant", block: "start" });
       document.getElementById(target.focus)?.focus({ preventScroll: true });
     });
     return () => cancelAnimationFrame(frame);
-  }, [fragment, linkedWork, linkedPractice, linkedMap, outputLinked, weightExample]);
+  }, [fragment, linkedWork, linkedPractice, linkedMap, outputLinked, weightExample, platformGuide, platformStory]);
   useEffect(() => {
     function keyboard(e: globalThis.KeyboardEvent) { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") { e.preventDefault(); setPalette(v => !v); } }
     window.addEventListener("keydown", keyboard); return () => window.removeEventListener("keydown", keyboard);

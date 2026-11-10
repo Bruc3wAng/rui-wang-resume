@@ -1,6 +1,6 @@
 import type { Language } from "../content/resume";
 import {
-  libraryBatchLabel, libraryCategoryLabel, libraryChannelLabel, libraryEvidenceFormula,
+  libraryBatchLabel, libraryCategoryLabel, libraryChannelLabel, libraryEvidenceDecision, libraryEvidenceFormula,
   libraryPrice, libraryReason, libraryScopeNote, librarySingleRecordNote, libraryStatus, libraryUnitPrice, libraryWeight,
   type LibraryEvidenceQuery,
 } from "./research-lab";
@@ -37,13 +37,15 @@ function RecordDetail({ item, language }: { item: AssessedRecord; language: Lang
 
 export default function LibraryEvidenceView({ query, language }: { query: LibraryEvidenceQuery; language: Language }) {
   const l = (zh: string, en: string) => language === "zh" ? zh : en;
+  const decision = libraryEvidenceDecision(query, language);
   return <div className="rlab-library" id="rlab-source-evidence" data-library-category={query.category} data-library-channel={query.channel}>
     <p className="rlab-library-scope"><strong>{libraryChannelLabel(query.channel, language)}</strong><span>{libraryBatchLabel("current", language)}</span></p>
+    <div className="rp-decision" data-decision={decision.kind}><span>{libraryCategoryLabel(query.category, language)}</span><strong>{decision.title}</strong><p>{decision.detail}</p></div>
     <div className="rlab-library-groups">
       {query.groups.map(group => <section key={group.category} data-library-group={group.category} aria-label={libraryCategoryLabel(group.category, language)}>
         <h6>{libraryCategoryLabel(group.category, language)}</h6>
         <div>{group.comparable.map(item => <RecordDetail key={item.record.id} item={item} language={language}/>)}</div>
-        {group.comparable.length===1 && <p className="rlab-library-single">{librarySingleRecordNote(language)}</p>}
+        {group.comparable.length===1 && decision.kind==="compare" && <p className="rlab-library-single">{librarySingleRecordNote(language)}</p>}
       </section>)}
       {!query.groups.length && <p className="rlab-library-empty">{query.records.length
         ? l("没有符合当前渠道和批次的标价。", "No list prices meet the current channel and batch criteria.")

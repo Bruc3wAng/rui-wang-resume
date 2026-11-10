@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { aiPractice } from "../content/resume.ts";
-import { researchExampleFor } from "../app/research-lab.ts";
+import { libraryEvidenceDecision, queryLibraryEvidence, researchExampleFor } from "../app/research-lab.ts";
 import { aiWorkflowProofFor, aiWorkflowProofs } from "../app/ai-workflow-proof.ts";
 import { outputFragment, portfolioLocaleHref, practiceFragment, practiceIndexFromFragment } from "../app/study-location.ts";
 import { johnsonRelativeWeights, relativeWeightFragment, relativeWeightOutput, satisfactionCorrelations, weightScenarios } from "../app/relative-weight.ts";
@@ -106,6 +106,27 @@ test("both exports have actual native practice destinations and no-script case a
       if(index<2) assert.ok(body.includes(`href="#study-${["content-tracking","brand-tracking"][index]}"`));
       else assert.doesNotMatch(body,/href="#study-|RELATED STUDY/);
     }
+  }
+});
+
+test("exports the personal prototype and all three readable scope decisions with native links",async()=>{
+  const builds=process.env.NEXT_PUBLIC_BASE_PATH?["out",process.env.RUI_SITES_BUILD_DIR??"dist/client"]:["out"];
+  for(const build of builds)for(const language of ["zh","en"]){
+    const html=await readFile(new URL(`${build}/${language==="en"?"en/":""}index.html`,root),"utf8");
+    const guide=html.match(/<section class="rp-guide" id="prototype-research-questions"[^>]*>[\s\S]*?<\/section>/)?.[0];
+    assert.ok(guide?.includes('data-native="true"'));
+    assert.equal(html.match(/id="prototype-research-questions"/g)?.length,1);
+    assert.equal(html.match(/id="project-research-platform"/g)?.length,1);
+    const base=html.match(/class="pf-header-tools"><a href="([^"]+)" hrefLang="zh-CN"/)?.[1]?.slice(0,-1);assert.notEqual(base,undefined);
+    assert.ok(guide.includes(`href="${portfolioLocaleHref(base,language==="en"?"zh":"en","#prototype-research-questions")}"`));
+    assert.ok(guide.includes('href="#project-research-platform"'));
+    for(const [kind,category,channel] of [["compare","pet","online"],["record","pet","offline"],["gap","health","offline"]]){
+      const decision=libraryEvidenceDecision(queryLibraryEvidence(category,channel),language);
+      const preset=guide.match(new RegExp(`<details class="rp-native-preset" data-preset="${kind}"[^>]*>[\\s\\S]*?<\\/details>`))?.[0];
+      assert.ok(preset?.includes(`data-decision="${kind}"`));
+      assert.ok(preset.includes(decision.title)&&preset.includes(decision.detail));
+    }
+    assert.doesNotMatch(guide,/href="#study-|ByteDance|Lenovo|字节|联想|BHT|已脱敏|anonymized|paid pilot/iu);
   }
 });
 

@@ -159,8 +159,13 @@ test("renders one actionable same-tab entry, accurate status and distinct credit
     assert.doesNotMatch(section, /View live|在线体验|已脱敏|anonymized|localStorage|自动订位|revenue|付费用户/i);
     assert.equal([...section.matchAll(/class="pf-project-contribution"/g)].length, 4);
     const links = [...section.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)];
-    assert.equal(links.length, 5, "Four exhibit entries plus the existing source link");
+    assert.equal(links.length, 6, "Four exhibit entries, one prototype example and the existing source link");
     assert.equal(links.filter(([, attrs]) => /target="_blank"/.test(attrs)).length, 1);
+    const prototype = section.match(/<article class="rp-story" id="project-research-platform"[^>]*>[\s\S]*?<\/article>/)?.[0];
+    assert.ok(prototype?.includes(language === "zh" ? "个人研究原型" : "PERSONAL PROTOTYPE"));
+    assert.ok(prototype.includes('href="#prototype-research-questions"'));
+    assert.ok(prototype.includes("Codex"));
+    assert.equal(links.filter(([, attrs]) => attrs.includes('href="#prototype-research-questions"')).length, 1);
     for (const { path, id, actions, statuses } of projectDestinations) {
       const expectedHref = `${id === "atlas" && !prefix ? canonical : prefix}${localePath}${path}`;
       const [link] = links.filter(([, attrs]) => attrs.includes(`href="${expectedHref}"`));

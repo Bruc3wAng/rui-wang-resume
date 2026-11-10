@@ -300,13 +300,42 @@ export function libraryEvidenceHeadline(query: LibraryEvidenceQuery, language: R
     : `${query.comparable} ${query.comparable === 1 ? "list price matches" : "list prices match"} this scope`;
 }
 
+export const libraryQuestionPresets = [
+  { id: "compare", category: "pet", channel: "online", title: { zh: "两条标价怎么比？", en: "Compare two prices" } },
+  { id: "record", category: "pet", channel: "offline", title: { zh: "只有一条标价呢？", en: "Inspect one price" } },
+  { id: "gap", category: "health", channel: "offline", title: { zh: "找不到同渠道资料？", en: "Check a source gap" } },
+] as const;
+export type LibraryQuestionPreset = (typeof libraryQuestionPresets)[number];
+
+export function libraryEvidenceDecision(query: LibraryEvidenceQuery, language: ResearchLanguage) {
+  const l = (zh: string, en: string) => language === "zh" ? zh : en;
+  if (query.groups.some(group => group.comparable.length >= 2)) return {
+    kind: "compare", title: l("可以做组内比较", "Compare within a category"),
+    detail: l("同品类至少有两条标价符合渠道、批次和规格要求，可换算成每公斤标价后比较。不同品类不合并。", "At least two prices in one category meet the channel, batch, and pack-size requirements. Compare their prices per kilogram within that category only."),
+  } as const;
+  if (query.comparable > 0) return {
+    kind: "record", title: l("只记录单价", "Record unit prices only"),
+    detail: query.comparable === 1
+      ? l("只有一条标价符合本次口径。可以记录每公斤标价，但不能做组内比较。", "Only one list price meets this scope. Record its price per kilogram, but do not make a comparison from one record.")
+      : l("各品类都只有一条符合口径的标价，可以分别记录，但不能跨品类凑成一组比较。", "Each category has only one eligible price. Record them separately; do not combine categories to make a comparison."),
+  } as const;
+  return {
+    kind: "gap", title: l("本口径没有可用标价", "No usable prices in this scope"),
+    detail: query.records.length
+      ? l("现有记录未满足本次口径。保留排除原因，不用其他渠道或批次的资料补出单价。", "The available records do not meet this scope. Keep the exclusion reasons; do not fill the gap with prices from another channel or batch.")
+      : l("没有匹配的样例资料，因此不计算单价或给出比较。", "No example records match, so there are no unit prices or comparisons to report."),
+  } as const;
+}
+
 function libraryEvidenceSections(query: LibraryEvidenceQuery, artifact: number, language: ResearchLanguage): ResearchArtifactSection[] {
   const l=(zh:string,en:string)=>language==="zh"?zh:en;
   const empty = l("本口径没有可纳入比较的标价。","No list prices can be included under this scope.");
+  const decision = libraryEvidenceDecision(query, language);
   const scope = { title: l("样例比较口径","Example comparison scope"), rows: [
     {label:l("品类","Category"),text:libraryCategoryLabel(query.category,language)},
     {label:l("来源范围","Source scope"),text:`${libraryChannelLabel(query.channel,language)} · ${libraryBatchLabel("current",language)}`},
     {label:l("比较单位","Comparison unit"),text:l("标价 ÷ 净重（kg）","List price ÷ net weight (kg)")},
+    {label:l("资料支持的判断","What the data supports"),text:`${decision.title} · ${decision.detail}`},
   ], points: [libraryScopeNote(language)] };
   const name = (record: LibraryEvidence) => `${record.name[language]} · ${libraryCategoryLabel(record.category,language)}`;
   if (!query.records.length) return [scope,{title:l("查询结果","Query results"),points:[l("未找到符合条件的样例记录。","No matching example records found.")]}];
