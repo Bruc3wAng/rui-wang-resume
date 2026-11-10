@@ -9,6 +9,7 @@ import { outputFragment, portfolioLocaleHref, studyFragment, studyHistoryInitial
 import { heroBrief, heroCases } from "../app/hero-brief.ts";
 import { directoryFragment, normalizeLookup, searchPortfolio } from "../app/portfolio-lookup.ts";
 import { workStudyCopyFor } from "../app/work-study-copy.ts";
+import { audienceOverlapExample, audienceOverlapTarget } from "../app/audience-overlap.ts";
 
 const root=new URL("../",import.meta.url);
 const read=path=>readFile(new URL(path,root),"utf8");
@@ -195,7 +196,8 @@ test("publishes case-specific bilingual pages with exact roles, evidence links a
       assert.ok(body.includes(folioDescriptionsFor(id)[story.output].purpose[lang]));
       const readerLinks=[...reader.matchAll(/<a\b[^>]*>/g)].map(([tag])=>attributes(tag));
       const routes=readerLinks.map(a=>a.href);
-      assert.deepEqual(routes,["#study-reader-main",workBase,`${base}/${other}research/${id}/`,`${workBase}#output-${id}--${outputId}`,
+      assert.deepEqual(routes,["#study-reader-main",workBase,`${base}/${other}research/${id}/`,
+        ...(id==="us-content"?["#example-audience-overlap"]:[]),`${workBase}#output-${id}--${outputId}`,
         ...(example?[`${workBase}${example}`]:[]),`${workBase}#study-${id}`,`${workBase}projects/resume/`]);
       assert.ok(home.includes(`id="study-${id}"`) && home.includes(`id="output-${id}--${outputId}"`));
       if(example)assert.ok(story.ai && body.includes(story.ai[lang]));
@@ -206,6 +208,54 @@ test("publishes case-specific bilingual pages with exact roles, evidence links a
   const sitemap=await read("out/sitemap.xml");
   for(const id of Object.keys(sharedCases)) for(const locale of ["","en/"]){
     assert.ok(sitemap.includes(`<loc>${siteUrl}/${locale}research/${id}/</loc>`));
+  }
+});
+
+test("reconciles a fixed overlap, three denominators and distinct preference groups",()=>{
+  const result=audienceOverlapExample();
+  assert.deepEqual(audienceOverlapTarget,{study:"us-content",output:"preferences-and-habits",fragment:"#example-audience-overlap"});
+  assert.equal(result.total,200);
+  assert.deepEqual(result.groups.map(({id,size})=>[id,size]),[["a-only",48],["both",32],["b-only",80],["neither",40]]);
+  assert.deepEqual(result.bases.map(({id,overlap,size,start,width,share})=>[id,overlap,size,start,width,share]),[
+    ["a",32,80,0,.4,.4],["b",32,112,.24,.56,2/7],["all",32,200,0,1,.16],
+  ]);
+  assert.deepEqual(result.preferences.map(({id,preferShort,size,share})=>[id,preferShort,size,share]),[
+    ["a-only",36,48,.75],["both",16,32,.5],["b-only",20,80,.25],
+  ]);
+});
+
+test("exports a labeled native audience example and links only its matching case and deliverable",async()=>{
+  const targets=process.env.NEXT_PUBLIC_BASE_PATH?["out",process.env.RUI_SITES_BUILD_DIR??"dist/client"]:["out"];
+  for(const target of targets) for(const lang of ["zh","en"]){
+    const en=lang==="en", locale=en?"en/":"";
+    const home=await read(`${target}/${locale}index.html`);
+    const base=target==="out"?home.match(/src="([^"]*)\/_next\/static\//)?.[1]:"";
+    const destination=`${base}/${locale}research/us-content/#example-audience-overlap`;
+    const links=[...home.matchAll(/<a\b[^>]*>/g)].map(([tag])=>attributes(tag)).filter(a=>a.href===destination);
+    assert.equal(links.length,2,"one in the selected case, one in its static output");
+    const start=home.indexOf('id="output-us-content--preferences-and-habits"');
+    assert.ok(start>=0);
+    assert.ok(home.slice(start,home.indexOf("</section>",start)).includes(`href="${destination}"`));
+    for(const id of Object.keys(sharedCases)){
+      const html=await read(`${target}/${locale}research/${id}/index.html`);
+      const example=html.match(/<section class="ao-example" id="example-audience-overlap"[\s\S]+?<\/article>/)?.[0].replaceAll("<!-- -->","");
+      const bootstrap=html.indexOf('id="ao-fragment-history"');
+      if(id!=="us-content"){assert.equal(example,undefined);assert.equal(bootstrap,-1);continue;}
+      assert.ok(example);
+      assert.ok(bootstrap>=0 && bootstrap<html.indexOf('id="_R_"'),"initialize native fragment handling before hydration");
+      assert.ok(example.includes(en?">Example data<":">示例数据<"));
+      assert.ok(example.includes(en?">200 people<":">200 人<"));
+      const options=[...example.matchAll(/<input\b[^>]*>/g)].map(([tag])=>attributes(tag));
+      assert.deepEqual(options.map(o=>[o.type,o.name,o.value]),["a","b","all"].map(id=>["radio","ao-base",id]));
+      assert.deepEqual(options.filter(o=>Object.hasOwn(o,"checked")).map(o=>o.value),["a"]);
+      for(const [id,rate,size] of [["a","40%",80],["b","28.6%",112],["all","16%",200]]){
+        assert.ok(example.includes(`id="ao-share-${id}">${rate}</strong><span>32 ÷ ${size}</span>`));
+      }
+      for(const [rate,fraction] of [["75%","36 / 48"],["50%","16 / 32"],["25%","20 / 80"]]){
+        assert.ok(example.includes(`<strong>${rate}</strong><small>${fraction}</small>`));
+      }
+      assert.doesNotMatch(example,/<script|ByteDance|Lenovo|字节跳动|联想|客户数据|样本脱敏|anonymized/i);
+    }
   }
 });
 

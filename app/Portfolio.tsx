@@ -19,6 +19,7 @@ import { atlasProjectPath, personalProjectHref, personalProjectStories, personal
 import WorkStudyHeader from "./WorkStudyHeader";
 import CopyPortfolioLink from "./CopyPortfolioLink";
 import { workStudyCopyFor } from "./work-study-copy";
+import { audienceOverlapLabel, audienceOverlapTarget } from "./audience-overlap";
 import { heroBrief, heroCases } from "./hero-brief";
 import { aiWorkflowProofFor } from "./ai-workflow-proof";
 import RelativeWeightExample, { relativeWeightExampleId, relativeWeightTitleId, WeightExampleLink } from "./RelativeWeightExample";
@@ -72,6 +73,11 @@ function practiceLanding(index: number) {
 }
 function Arrow({ down = false }: { down?: boolean }) {
   return <svg aria-hidden="true" viewBox="0 0 24 24" className={down ? "pf-arrow is-down" : "pf-arrow"} fill="none"><path d="M4 12h15m-6-6 6 6-6 6" /></svg>;
+}
+
+function AudienceExampleLink({ language, className = "ao-example-link" }: { language: Language; className?: string }) {
+  const href = studyPageHref(base, language, audienceOverlapTarget.study) + audienceOverlapTarget.fragment;
+  return <a className={className} href={href}>{audienceOverlapLabel[language]}<Arrow/></a>;
 }
 
 function HeroCaseIndex({ language, onOpen }: { language: Language; onOpen: (id: string) => void }) {
@@ -155,6 +161,7 @@ function ResearchObject({ active, language, paused, ready, outputIndex, onSelect
       <div className="pf-folio-detail" id={detailId} role="tabpanel" aria-labelledby={`pf-folio-output-${active}-${output}`} key={output}><dl><div><dt>{local(language, "我做的部分", "My contribution")}</dt><dd>{description.content[language]}</dd></div><div><dt>{local(language, "研究用途", "Research purpose")}</dt><dd>{description.purpose[language]}</dd></div></dl></div>
       {open && work.id === relativeWeightOutput.study && story.outputs[output].id === relativeWeightOutput.output && <WeightExampleLink language={language} className="rw-folio-link"/>}
       {open && work.id === tableCheckOutput.study && story.outputs[output].id === tableCheckOutput.output && <TableCheckExampleLink language={language} className="tc-folio-link"/>}
+      {open && work.id === audienceOverlapTarget.study && story.outputs[output].id === audienceOverlapTarget.output && <AudienceExampleLink language={language} className="ao-folio-link"/>}
       {open && <CopyPortfolioLink key={story.outputs[output].id} fragment={outputFragment(work.id, story.outputs[output].id)} kind="output" language={language}/>}
     </div>
     <div className="pf-folio-front" aria-hidden={open} inert={open}>
@@ -188,6 +195,7 @@ function WorkOutputBriefs({ index, language }: { index: number; language: Langua
       <dl><div><dt>{local(language, "我做的部分", "My contribution")}</dt><dd>{descriptions[i].content[language]}</dd></div><div><dt>{local(language, "研究用途", "Research purpose")}</dt><dd>{descriptions[i].purpose[language]}</dd></div></dl>
       <div className="pf-output-brief-links"><a href={studyFragment(work.id)}>{local(language, "返回案例", "Back to case")}</a>{work.id === relativeWeightOutput.study && output.id === relativeWeightOutput.output && <WeightExampleLink language={language}/>}
         {work.id === tableCheckOutput.study && output.id === tableCheckOutput.output && <TableCheckExampleLink language={language} className="tc-native-link"/>}
+        {work.id === audienceOverlapTarget.study && output.id === audienceOverlapTarget.output && <AudienceExampleLink language={language}/>}
         <a href={portfolioLocaleHref(base, other, fragment)} hrefLang={other === "zh" ? "zh-CN" : "en"} lang={other === "zh" ? "zh-CN" : "en"}>{other === "zh" ? "中文" : "English"}</a></div>
     </section>;
   });
@@ -238,6 +246,7 @@ function WorkStudyPanel({ index, selected, ready, compact, language, paused, tab
           event.preventDefault();
           onViewMap(mapIndex);
         }}>{local(language, "查看案例地图", "View study map")}<svg aria-hidden="true" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8"/><ellipse cx="12" cy="12" rx="4" ry="8"/><path d="M4 12h16"/></svg></a>}
+        {item.id === audienceOverlapTarget.study && <AudienceExampleLink language={language}/>}
         <a className="pf-case-reader-link" href={studyPageHref(base, language, item.id)}>{local(language, "单页阅读", "Read case brief")}<Arrow/></a>
       </div>
     </div>

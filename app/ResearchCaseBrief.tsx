@@ -1,9 +1,11 @@
 import type { Language, Localized } from "../content/resume";
 import { folioDescriptionsFor } from "../content/work-folios";
+import AudienceOverlapExample from "./AudienceOverlapExample";
+import { audienceOverlapLabel, audienceOverlapTarget } from "./audience-overlap";
 import { relativeWeightFragment, relativeWeightOutput } from "./relative-weight";
 import type { ResearchCase } from "./research-case";
 import ShareLocale from "./ShareLocale";
-import { outputFragment, portfolioLocaleHref, practiceFragment, studyFragment, studyPageHref } from "./study-location";
+import { outputFragment, portfolioLocaleHref, practiceFragment, studyFragment, studyHistoryInitializer, studyPageHref } from "./study-location";
 import { tableCheckFragment, tableCheckOutput } from "./table-check";
 import { workStudyCopyFor } from "./work-study-copy";
 import "./research-case.css";
@@ -25,9 +27,11 @@ export default function ResearchCaseBrief({ study, language }: { study: Research
   const story = workStudyCopyFor(study.id);
   const output = story.outputs[story.output], description = folioDescriptionsFor(study.id)[story.output];
   const example = examples[study.id];
+  const showOverlapExample = study.id === audienceOverlapTarget.study;
   const home = portfolioLocaleHref(base, language);
   return <div className="study-reader">
     <ShareLocale language={language}/>
+    {showOverlapExample && <script id="ao-fragment-history" dangerouslySetInnerHTML={{ __html: studyHistoryInitializer }}/>}
     <a className="skip-link" href="#study-reader-main">{en ? "Skip to case" : "跳至案例"}</a>
     <header className="study-reader-header study-reader-width">
       <a className="study-reader-signature" href={home}>{name}<span>{en ? "Research portfolio" : "研究作品集"}</span></a>
@@ -50,6 +54,7 @@ export default function ResearchCaseBrief({ study, language }: { study: Research
           <section className="study-reader-work" aria-labelledby="study-reader-work">
             <h2 id="study-reader-work">{en ? "What I did" : "我的工作"}</h2>
             <p><strong>{story.action[language]}</strong>{en ? " " : ""}{story.contribution[language]}</p>
+            {showOverlapExample && <a className="ao-jump-link" href={audienceOverlapTarget.fragment}>{audienceOverlapLabel[language]}<Arrow/></a>}
           </section>
           <section className="study-reader-deliverable" aria-labelledby="study-reader-output">
             <h2 id="study-reader-output">{en ? "Selected deliverable" : "代表性交付"}</h2>
@@ -63,6 +68,7 @@ export default function ResearchCaseBrief({ study, language }: { study: Research
             {example && <a href={portfolioLocaleHref(base, language, example.fragment)}>{example.label[language]}<Arrow/></a>}
           </section>}
         </div>
+        {showOverlapExample && <AudienceOverlapExample language={language}/>}
       </article>
     </main>
     <footer className="study-reader-footer study-reader-width">
