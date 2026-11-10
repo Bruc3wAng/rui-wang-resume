@@ -4,6 +4,7 @@ type Fragment = `#${string}`;
 export type HistoryMode = "push" | "replace";
 const changeEvent = "portfolio-fragment-change";
 const casePrefix = "#study-";
+const outputPrefix = "#output-";
 const practicePrefix = "#practice-";
 const mapPrefix = "#map-";
 
@@ -11,6 +12,17 @@ export function studyFragment(id: string): Fragment { return `${casePrefix}${id}
 
 export function studyIndexFromFragment(fragment: string | null, studies: readonly { id: string }[]) {
   return fragment?.startsWith(casePrefix) ? studies.findIndex(study => studyFragment(study.id) === fragment) : -1;
+}
+
+export function outputFragment(studyId: string, outputId: string): Fragment { return `${outputPrefix}${studyId}--${outputId}`; }
+
+export function outputFromFragment(fragment: string | null, studies: readonly { id: string; outputs: readonly { id: string }[] }[]) {
+  if (!fragment?.startsWith(outputPrefix)) return null;
+  for (const [workIndex, study] of studies.entries()) {
+    const outputIndex = study.outputs.findIndex(output => outputFragment(study.id, output.id) === fragment);
+    if (outputIndex >= 0) return { workIndex, outputIndex };
+  }
+  return null;
 }
 
 export function practiceFragment(id: string): Fragment { return `${practicePrefix}${id}`; }

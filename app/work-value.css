@@ -11,8 +11,6 @@
 .pf-case-output-action .pf-arrow{width:15px;height:15px}
 .portfolio-v17 .pf-case-output-action:hover{border-bottom-color:currentColor;color:#17374d}
 .portfolio-v17 .pf-case-output-action:focus-visible{outline:2px solid #315a70;outline-offset:3px}
-.pf-work-layout[data-study-url-ready=false] .pf-case-output-action{display:none}
-.pf-work-layout[data-study-url-ready=false] .pf-case-result{grid-template-columns:minmax(0,1fr)}
 .pf-work-story .pf-case-ai-note{border-top:0;margin-top:13px;padding-top:0}
 @media(max-width:699px){
   .pf-case-result{gap:4px 10px;padding:10px 11px}

@@ -22,10 +22,8 @@
 .pf-folio-cover-link .pf-arrow{width:15px;height:15px}
 .portfolio-v17 .pf-folio-cover-link[data-representative=true]{border-inline-start-color:#dbbf91;background:#c6a66b14}
 .pf-folio-cover-link[data-representative=true]>span{color:#dbbf91}
-.portfolio-v17 .pf-folio-cover-link:not(:disabled):is(:hover,:focus-visible){background:#e5edf01a;color:#fff}
+.portfolio-v17 .pf-folio-cover-link:is(:hover,:focus-visible){background:#e5edf01a;color:#fff}
 .portfolio-v17 .pf-folio-cover-link:focus-visible{outline:2px solid #e2cb9f;outline-offset:-2px}
-.portfolio-v17 .pf-folio-cover-link:disabled{cursor:default}
-.pf-folio-cover-link:disabled .pf-arrow{visibility:hidden}
 
 .portfolio-v17 .pf-folio-page{position:relative;left:auto;top:auto;width:100%;max-width:400px;height:auto;padding:13px 22px 24px;margin:0 auto;border:1px solid #bdc9c7;border-radius:2px 8px 8px 2px;background:#f5f2ea;color:#1f394c;z-index:4;scroll-margin-top:14px;box-shadow:4px 6px 0 #dce1dd,9px 14px 25px #233c4e16}
 .portfolio-v17 .pf-research-object[data-open=true] .pf-folio-page{opacity:1;transform:none;animation:pf-folio-read .3s ease both}
@@ -33,7 +31,8 @@
 .pf-folio-page-head .pf-folio-kicker{font-size:10px;font-weight:600;color:#755a31}
 .portfolio-v17 .pf-folio-page .pf-folio-toggle{position:static;width:auto;min-height:44px;display:inline-flex;gap:7px;align-items:center;padding:5px 0;border:0;border-bottom:1px solid #a6b6b7;background:none;color:#36596a;font-size:12px;white-space:nowrap}
 .portfolio-v17 .pf-folio-page .pf-folio-toggle:focus-visible{outline:2px solid #4c6e8b;outline-offset:3px}
-.portfolio-v17 .pf-folio-page h4{font-size:22px;font-weight:500;line-height:1.35;margin:6px 0 14px}
+.portfolio-v17 .pf-folio-page h4{font-size:22px;font-weight:500;line-height:1.35;margin:6px 0 3px;text-wrap:pretty;overflow-wrap:anywhere}
+.pf-folio-role{margin:0 0 13px;color:#3b6567;font-size:11px;line-height:1.5}
 .pf-folio-output-tabs{display:grid;border-top:1px solid #c3ccd0}
 .pf-folio-output-tabs button{display:grid;grid-template-columns:18px minmax(0,1fr) 12px;align-items:center;gap:8px;text-align:left;min-height:44px;padding:8px 0;border:0;border-bottom:1px solid #c3ccd0;color:#526a7b;background:none;font-size:13px;line-height:1.5}
 .pf-folio-output-tabs button>span:first-child{font-size:9px;color:#5b717e}
@@ -45,6 +44,22 @@
 .pf-folio-detail dl{margin:0;display:grid;gap:14px}
 .pf-folio-detail dt{font-size:11px;font-weight:600;line-height:1.5;color:#3d5e73;margin-bottom:4px}
 .pf-folio-detail dd{font-size:13px;line-height:1.65;color:#405c6c;margin:0;text-align:left;overflow-wrap:anywhere}
+.pf-output-copy{margin-top:14px;border-top:1px solid #c8d0cc}
+.portfolio-v17 .pf-copy-output{display:inline-flex;min-height:44px;align-items:center;gap:7px;padding:5px 2px;color:#315673;background:none;border:0;border-bottom:1px solid #a8b9bd;font-size:12px}
+.portfolio-v17 .pf-copy-output:hover{color:#1e415a;border-color:currentColor}
+.pf-copy-output svg{flex:none;width:15px;height:15px;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.pf-output-copy-field{display:grid;gap:4px;margin-top:8px;min-width:0;color:#405c6c;font-size:11px;line-height:1.5}
+.pf-output-copy-field input{width:100%;min-width:0;min-height:44px;padding:6px 8px;border:1px solid #a9b8c2;background:#fbfaf5;color:#223d53;font-family:Arial,"Microsoft YaHei",sans-serif;font-size:16px}
+.portfolio-v17 :is(.pf-copy-output,.pf-output-copy-field input,.pf-output-brief-links a):focus-visible{outline:2px solid #315673;outline-offset:3px}
+.pf-output-brief{display:none;grid-column:1/-1;min-width:0;scroll-margin-top:14px;padding:16px 18px 9px;border:1px solid #bfcdca;border-inline-start:3px solid #a08456;background:#f4f1e9;color:#263f53}
+.pf-output-brief:target{display:block}
+.pf-output-brief-context{margin:0 0 5px;font-size:12px;line-height:1.5;color:#375f62}
+.pf-output-brief h4{margin:0 0 12px;font-size:clamp(18px,2vw,25px);line-height:1.3;font-weight:600}
+.pf-output-brief dl{display:grid;gap:11px;margin:0}
+.pf-output-brief dt{font-size:12px;color:#3c5c70;font-weight:600}
+.pf-output-brief dd{margin:4px 0 0;color:#405c6c;font-size:13px;line-height:1.65}
+.pf-output-brief-links{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:4px}
+.pf-output-brief-links a{display:inline-flex;align-items:center;min-height:44px;color:#315673;font-size:12px;text-decoration:underline;text-underline-offset:3px}
 @keyframes pf-folio-read{from{opacity:0;translate:0 8px}to{opacity:1;translate:0 0}}
 @media(max-width:699px){.pf-folio-front{margin-top:15px}.pf-folio-cover{padding:18px 16px 20px 19px}.pf-folio-cover h4{margin-block:10px 15px}.portfolio-v17 .pf-folio-page{padding:10px 16px 19px}}
 @media(prefers-reduced-motion:reduce){.portfolio-v17 .pf-folio-page,.pf-folio-detail{animation:none!important}}

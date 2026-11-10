@@ -4,6 +4,7 @@ import test from "node:test";
 import { selectedWork } from "../content/resume.ts";
 import { workStudyCopy, workStudyCopyFor } from "../app/work-study-copy.ts";
 import { folioDescriptionsFor } from "../content/work-folios.ts";
+import { outputFragment, outputFromFragment, portfolioLocaleHref, studyFragment } from "../app/study-location.ts";
 const root=new URL("../",import.meta.url);
 const read=path=>readFile(new URL(path,root),"utf8");
 const escaped = value => value.replace(/[&<>"']/g, char => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#x27;" })[char]);
@@ -41,7 +42,7 @@ test("exposes the exact approved output purpose and a specific action in every b
       const result=panel.match(new RegExp(`<div class="pf-case-result" data-case-output="${story.output}">([\\s\\S]*?)<\\/div>`))?.[1];
       assert.ok(result?.includes(`<strong id="pf-case-output-title-${index}">${escaped(story.outputs[story.output][language])}</strong>`));
       assert.ok(result?.includes(escaped(folioDescriptionsFor(work.id)[story.output].purpose[language])));
-      assert.match(result,new RegExp(`class="pf-case-output-action" aria-controls="pf-folio-page-${index}" aria-describedby="pf-case-output-title-${index}"`));
+      assert.ok(result.includes(`class="pf-case-output-action" href="${outputFragment(work.id,story.outputs[story.output].id)}" aria-controls="pf-folio-page-${index}" aria-describedby="pf-case-output-title-${index}"`));
       assert.equal(panel.includes('class="pf-contribution pf-case-ai-note"'),Boolean(story.ai));
       if(story.ai)assert.ok(panel.indexOf('class="pf-case-result"')<panel.indexOf('class="pf-contribution pf-case-ai-note"'));
     }
@@ -112,14 +113,59 @@ test("uses the actual output titles as the folio's three explicit cover controls
       assert.ok(panel);
       const cover=panel.match(/<ul class="pf-folio-cover-index">([\s\S]*?)<\/ul>/)?.[1];
       assert.ok(cover);
-      const rows=[...cover.matchAll(/<button class="pf-folio-cover-link"([^>]*)>[\s\S]*?<strong>([\s\S]*?)<\/strong>[\s\S]*?<\/button>/g)];
+      const rows=[...cover.matchAll(/<a class="pf-folio-cover-link"([^>]*)>[\s\S]*?<strong>([\s\S]*?)<\/strong>[\s\S]*?<\/a>/g)];
       const story=workStudyCopyFor(work.id);
       assert.deepEqual(rows.map(r=>r[2]),story.outputs.map(t=>escaped(t[lang])));
       for(const [n,row] of rows.entries()){
         assert.ok(row[1].includes(`data-output-index="${n}"`));
         assert.ok(row[1].includes(`data-representative="${n===story.output}"`));
-        assert.ok(row[1].includes(`aria-controls="pf-folio-page-${index}"`) && row[1].includes('aria-expanded="false"') && row[1].includes('disabled'));
+        assert.ok(row[1].includes(`aria-controls="pf-folio-page-${index}"`) && row[1].includes('aria-expanded="false"'));
+        assert.ok(row[1].includes(`href="${outputFragment(work.id,story.outputs[n].id)}"`));
+        assert.ok(!row[1].includes('disabled'));
       }
+    }
+  }
+});
+
+test("assigns stable unique links to known deliverables and rejects ambiguous or unverified combinations",()=>{
+  const catalogue=selectedWork.map(work=>({id:work.id,outputs:workStudyCopyFor(work.id).outputs}));
+  const expected=[
+    ["cross-market-report","wave-comparisons","analysis-guide"], ["wave-reports","metric-mapping","reusable-tools"],
+    ["audience-segments","preferences-and-habits","analytical-delivery"], ["market-comparisons","audience-and-context","validation-tools"],
+    ["field-evidence","user-profiles","needs-and-decisions"],
+  ];
+  assert.deepEqual(catalogue.map(work=>work.outputs.map(item=>item.id)),expected);
+  const hashes=catalogue.flatMap((work,workIndex)=>work.outputs.map((item,outputIndex)=>{
+    const fragment=outputFragment(work.id,item.id);
+    assert.match(fragment,/^#output-[a-z-]+--[a-z-]+$/);
+    assert.deepEqual(outputFromFragment(fragment,catalogue),{workIndex,outputIndex});
+    assert.equal(portfolioLocaleHref("/rui-wang-resume","en",fragment),`/rui-wang-resume/en/${fragment}`);
+    return fragment;
+  }));
+  assert.equal(new Set(hashes).size,15);
+  for(const bad of [null,"#work","#study-us-content","#output-content-tracking--user-profiles","#output-unknown--wave-comparisons","#output-US-content--audience-segments","#output-us-content--audience-segments?i=1","#output-us-content--"]){
+    assert.equal(outputFromFragment(bad,catalogue),null);
+  }
+});
+
+test("every deliverable has one readable native target with the exact case, responsibility and bilingual evidence",async()=>{
+  const targets=process.env.NEXT_PUBLIC_BASE_PATH?["out",process.env.RUI_SITES_BUILD_DIR??"dist/client"]:["out"];
+  for(const build of targets)for(const language of ["zh","en"]){
+    const html=await read(`${build}/${language==="en"?"en/":""}index.html`);
+    assert.equal([...html.matchAll(/class="pf-output-brief"/g)].length,15);
+    for(const work of selectedWork)for(const [i,output] of workStudyCopyFor(work.id).outputs.entries()){
+      const fragment=outputFragment(work.id,output.id),id=fragment.slice(1),record=folioDescriptionsFor(work.id)[i];
+      const native=[...html.matchAll(new RegExp(`<section class="pf-output-brief" id="${id}"[^>]*>([\\s\\S]*?)<\\/section>`,"g"))];
+      assert.equal(native.length,1);
+      const section=native[0][1];
+      assert.ok(section.includes(escaped(work.title[language])));
+      assert.ok(section.includes(escaped(work.role[language].split(" · ")[0])));
+      assert.ok(section.includes(`<h4 id="${id}-title">${escaped(output[language])}</h4>`));
+      assert.ok(section.includes(`<dd>${escaped(record.content[language])}</dd>`));
+      assert.ok(section.includes(`<dd>${escaped(record.purpose[language])}</dd>`));
+      assert.ok(section.includes(`href="${studyFragment(work.id)}"`));
+      const other=language==="zh"?"/en/":"/";
+      assert.ok(section.includes(`${other}${fragment}" hrefLang=`));
     }
   }
 });

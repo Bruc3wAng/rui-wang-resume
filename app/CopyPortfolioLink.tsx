@@ -5,7 +5,7 @@ import type { Language } from "../content/resume";
 import { siteUrl } from "../content/site";
 import { portfolioLocaleHref } from "./study-location";
 
-export default function CopyPortfolioLink({ fragment, kind, language }: { fragment: `#${string}`; kind: "study" | "practice" | "map"; language: Language }) {
+export default function CopyPortfolioLink({ fragment, kind, language }: { fragment: `#${string}`; kind: "study" | "practice" | "map" | "output"; language: Language }) {
   const [state, setState] = useState<"idle" | "copied" | "manual">("idle");
   const input = useRef<HTMLInputElement>(null), button = useRef<HTMLButtonElement>(null);
   const en = language === "en";
@@ -14,6 +14,7 @@ export default function CopyPortfolioLink({ fragment, kind, language }: { fragme
     study: en ? "Copy case link" : "复制案例链接",
     practice: en ? "Copy link" : "复制链接",
     map: en ? "Copy map link" : "复制地图链接",
+    output: en ? "Copy deliverable link" : "复制交付链接",
   }[kind];
   const accessibleLabel = kind === "practice" ? en ? "Copy practice link" : "复制实践链接" : undefined;
   const copiedLabel = en ? "Link copied" : "链接已复制";
@@ -47,7 +48,7 @@ export default function CopyPortfolioLink({ fragment, kind, language }: { fragme
     {state === "manual" && <label className={`pf-${kind}-copy-field`}>
       {manualLabel}
       <input ref={input} type="url" readOnly value={url} onFocus={e => e.currentTarget.select()} onKeyDown={e => {
-        if (e.key === "Escape") { e.preventDefault(); setState("idle"); button.current?.focus({ preventScroll: true }); }
+        if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); setState("idle"); button.current?.focus({ preventScroll: true }); }
       }}/>
     </label>}
   </>;

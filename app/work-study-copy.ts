@@ -1,10 +1,11 @@
 import type { Localized } from "../content/resume";
 
+type StudyOutput = Localized & { id: string };
 type StudyCopy = {
   context: Localized;
   action: Localized;
   contribution: Localized;
-  outputs: readonly [Localized, Localized, Localized];
+  outputs: readonly [StudyOutput, StudyOutput, StudyOutput];
   output: 0 | 1 | 2;
   ai?: Localized;
 };
@@ -30,9 +31,9 @@ export const workStudyCopy: Record<string, StudyCopy> = {
       en: "I used Codex to make market-level calculations, independent checks, and wave comparisons rerunnable. The same rules can be reused, leaving more time to interpret differences.",
     },
     outputs: [
-      { zh: "跨市场分析报告", en: "Cross-market report" },
-      { zh: "跨期比较", en: "Wave comparisons" },
-      { zh: "分析方法 SOP", en: "Analysis guide" },
+      { id: "cross-market-report", zh: "跨市场分析报告", en: "Cross-market report" },
+      { id: "wave-comparisons", zh: "跨期比较", en: "Wave comparisons" },
+      { id: "analysis-guide", zh: "分析方法 SOP", en: "Analysis guide" },
     ],
     output: 0,
   },
@@ -54,9 +55,9 @@ export const workStudyCopy: Record<string, StudyCopy> = {
       en: "I encoded the update rules and used Codex to compare files across waves and update affected tables, charts, and text. I could review discrepancies together instead of searching and copying file by file.",
     },
     outputs: [
-      { zh: "多期数据与报告", en: "Multi-wave data and reports" },
-      { zh: "来源与指标映射", en: "Source and metric mapping" },
-      { zh: "复用程序", en: "Reusable tools" },
+      { id: "wave-reports", zh: "多期数据与报告", en: "Multi-wave data and reports" },
+      { id: "metric-mapping", zh: "来源与指标映射", en: "Source and metric mapping" },
+      { id: "reusable-tools", zh: "复用程序", en: "Reusable tools" },
     ],
     output: 0,
   },
@@ -74,9 +75,9 @@ export const workStudyCopy: Record<string, StudyCopy> = {
       en: "I compared preferences and habits using the same audience segments to identify where users overlapped and where their differences mattered.",
     },
     outputs: [
-      { zh: "用户分层", en: "Audience segments" },
-      { zh: "偏好与习惯比较", en: "Preferences and habits" },
-      { zh: "分析交付", en: "Analytical delivery" },
+      { id: "audience-segments", zh: "用户分层", en: "Audience segments" },
+      { id: "preferences-and-habits", zh: "偏好与习惯比较", en: "Preferences and habits" },
+      { id: "analytical-delivery", zh: "分析交付", en: "Analytical delivery" },
     ],
     output: 1,
   },
@@ -94,9 +95,9 @@ export const workStudyCopy: Record<string, StudyCopy> = {
       en: "I compared platform awareness and actual use separately, then checked across waves to identify differences worth explaining.",
     },
     outputs: [
-      { zh: "跨市场比较", en: "Market comparisons" },
-      { zh: "用户与场景分析", en: "Audience and context analysis" },
-      { zh: "批量核验工具", en: "Batch-validation tools" },
+      { id: "market-comparisons", zh: "跨市场比较", en: "Market comparisons" },
+      { id: "audience-and-context", zh: "用户与场景分析", en: "Audience and context analysis" },
+      { id: "validation-tools", zh: "批量核验工具", en: "Batch-validation tools" },
     ],
     ai: {
       zh: "我设计并验证了 Codex 辅助复核工具，把问卷、数据字段和分析表连起来。发现差异后，团队可以回到对应的源数据核对。",
@@ -118,9 +119,9 @@ export const workStudyCopy: Record<string, StudyCopy> = {
       en: "I used interview and related survey evidence to connect users’ situations with specific questions about product use and purchasing.",
     },
     outputs: [
-      { zh: "实地研究资料", en: "Field-research evidence" },
-      { zh: "用户画像", en: "User profiles" },
-      { zh: "需求与决策分析", en: "Needs and decision analysis" },
+      { id: "field-evidence", zh: "实地研究资料", en: "Field-research evidence" },
+      { id: "user-profiles", zh: "用户画像", en: "User profiles" },
+      { id: "needs-and-decisions", zh: "需求与决策分析", en: "Needs and decision analysis" },
     ],
     output: 2,
   },

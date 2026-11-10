@@ -45,6 +45,7 @@ test("keeps chapter and case fragment history native without swallowing real rou
   pop("#work",true);
   pop("#method",true);
   pop("#map-us-content",true);
+  pop("#output-us-content--preferences-and-habits",true);
   pop("#map-us-content",true);
   location.href=initial+"#study-brand-tracking";
   listeners.get("portfolio-fragment-change")();
@@ -71,6 +72,7 @@ test("static pages contain one native target and explicit case header for every 
   }
   const css=await read("app/work-navigation.css");
   assert.match(css,/data-study-url-ready=false[^\n]+:has\(\.pf-study-anchor:target\)[^\n]+display:grid/);
+  assert.match(css,/data-study-url-ready=false[^\n]+:has\(\.pf-output-brief:target\)[^\n]+display:grid/);
 });
 
 test("gives both homepages a native overview of three supported work studies before the globe",async()=>{

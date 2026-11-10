@@ -4,6 +4,8 @@
 .pf-work-layout[data-study-url-ready=false] .pf-work-panel[data-selected=false]{display:none}
 .pf-work-layout[data-study-url-ready=false]:has(.pf-study-anchor:target) .pf-work-panel:not(:has(.pf-study-anchor:target)){display:none}
 .pf-work-layout[data-study-url-ready=false] .pf-work-panel:has(.pf-study-anchor:target){display:grid}
+.pf-work-layout[data-study-url-ready=false]:has(.pf-output-brief:target) .pf-work-panel:not(:has(.pf-output-brief:target)){display:none}
+.pf-work-layout[data-study-url-ready=false] .pf-work-panel:has(.pf-output-brief:target){display:grid}
 .pf-work-layout[data-study-url-ready=false] .pf-study-header>:is(.pf-study-copy,.pf-work-return,.pf-market-return){display:none}
 .pf-work-return{display:none}
 .pf-market-return{display:inline-flex;align-items:center;gap:12px;min-height:44px;margin:0 0 14px;padding:8px 0;border:0;border-bottom:1px solid #bbc8d1;background:none;color:#365a7a;font-size:12px;white-space:nowrap}
