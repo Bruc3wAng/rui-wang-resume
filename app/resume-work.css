@@ -2,20 +2,39 @@
 .resume-jump a,.resume-case-output{display:inline-flex;align-items:center;gap:9px;min-height:44px;color:#284968;text-decoration:none;border-bottom:1px solid #a8b6c1;font-size:13px;line-height:1.35}
 .resume-jump a:hover,.resume-case-output:hover{color:#1a354e;border-color:currentColor}
 .resume-jump+.resume-collection-grid{margin-top:35px;padding-top:30px}
-.resume-collection :is(#resume-work,#resume-downloads){scroll-margin-top:12px}
+.resume-collection :is(#resume-work,#resume-downloads,.resume-view-anchor){scroll-margin-top:12px}
 .resume-collection :is(#resume-work,#resume-downloads):focus{outline:none}
 .resume-collection #resume-downloads:focus-visible{outline:2px solid #648198;outline-offset:4px}
+.resume-work-evidence{position:relative}
 .resume-work-evidence h2{position:relative}
 .resume-work-evidence:focus-visible h2::before{content:"";position:absolute;inset:3px auto 3px -8px;width:2px;background:#648198}
 .resume-work-evidence h2,.resume-timeline-section h2{color:#223b51;font-size:clamp(19px,2vw,25px);font-weight:500;line-height:1.35}
-.resume-work-evidence ol{list-style:none;padding:0;margin:13px 0 0}
+.resume-view-anchor{position:absolute;inset:0 auto auto 0;width:1px;height:1px;pointer-events:none}
+.resume-view-nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-top:12px}
+.resume-view-nav a{display:grid;place-items:center;min-height:44px;min-width:0;padding:4px 7px;border:1px solid #b4c1ca;border-radius:3px;background:#f4f5f1;color:#34526a;font-size:12px;font-weight:600;line-height:1.3;text-align:center;text-decoration:none;white-space:nowrap}
+.resume-view-nav a:hover{border-color:#7891a3;background:#e2e9eb}
+.resume-view-nav a[aria-current=location],
+.resume-work-evidence[data-view-ready=false]:not(:has(>.resume-view-anchor:target)) a[data-resume-view-link=research],
+.resume-work-evidence[data-view-ready=false]:has(>#resume-work-analytics:target) a[data-resume-view-link=analytics],
+.resume-work-evidence[data-view-ready=false]:has(>#resume-work-operations:target) a[data-resume-view-link=operations]{background:#263e56;border-color:#263e56;color:#fffef8}
+.resume-view-nav a:focus-visible,.resume-case-actions a:focus-visible{outline:2px solid #8a632d;outline-offset:3px}
+.resume-evidence-view{display:none}
+.resume-evidence-view[data-view-selected=true]{display:block}
+.resume-work-evidence[data-view-ready=false]:has(>.resume-view-anchor:target)>.resume-evidence-view{display:none}
+.resume-work-evidence[data-view-ready=false]:has(>#resume-work-analytics:target)>[data-resume-view=analytics],
+.resume-work-evidence[data-view-ready=false]:has(>#resume-work-operations:target)>[data-resume-view=operations]{display:block}
+.resume-work-evidence .resume-view-summary{margin:10px 0 8px;color:#465d70;font-size:12px;line-height:1.55}
+.resume-work-evidence ol{list-style:none;padding:0;margin:0}
 .resume-work-evidence li{padding:13px 0 10px;border-top:1px solid var(--ex-line)}
 .resume-work-evidence .resume-case-role{color:#4a697e;font-size:12px;line-height:1.4;font-weight:600}
 .resume-work-evidence li h3{margin:4px 0 5px;color:#233f57;font-size:clamp(16px,1.5vw,19px);font-weight:500;line-height:1.35;text-wrap:pretty}
 .resume-work-evidence .resume-case-contribution{max-width:66ch;color:#465d70;font-size:13px;line-height:1.65;text-wrap:pretty}
+.resume-case-actions{display:flex;flex-wrap:wrap;align-items:center;column-gap:15px}
 .resume-case-output{max-width:100%;gap:6px 9px;padding:4px 0;flex-wrap:wrap}
 .resume-case-output>small{color:#506a7e;font-size:11px}
 .resume-case-output>span:last-child{color:#456887}
+.resume-case-example{display:inline-flex;align-items:center;gap:6px;min-height:44px;color:#345a72;font-size:12px;line-height:1.4;text-decoration:none}
+.resume-case-example:hover{text-decoration:underline;text-underline-offset:4px}
 .resume-timeline-section{margin:24px 0 0}
 .resume-timeline-section .resume-mini-timeline{margin-top:10px!important}
 @media(max-width:699px){
@@ -24,3 +43,4 @@
   .resume-case-output{font-size:12px}
   .resume-case-output>small{font-size:10px}
 }
+@media(max-width:399px){.resume-view-nav a{padding-inline:3px;font-size:11px}}

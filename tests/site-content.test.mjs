@@ -7,7 +7,7 @@ import { resumeDocuments, resumeHref, resumePreviewHref } from "../content/resum
 import { personalProjectStories, personalProjectStory } from "../content/personal-projects.ts";
 import { profile, selectedWork } from "../content/resume.ts";
 import { responsibilityLabel } from "../content/work-folios.ts";
-import { resumeDownloadFragment, resumeSectionFragment, resumeWorkEntries, resumeWorkFragment } from "../app/resume-work.ts";
+import { resumeAnalyticsFragment, resumeDownloadFragment, resumeOperationsFragment, resumeSectionFragment, resumeWorkEntries, resumeWorkFragment, resumeWorkViewForFragment, resumeWorkViews } from "../app/resume-work.ts";
 import { workStudyCopyFor } from "../app/work-study-copy.ts";
 
 const root = new URL("../", import.meta.url);
@@ -413,14 +413,27 @@ test("ships source-bound high-resolution previews without requiring a PDF plug-i
   assert.match(collection, /Preview unavailable/);
 });
 
-test("connects each résumé case to the exact bilingual deliverable description", async () => {
+test("connects each résumé view to exact bilingual cases, deliverables, and runnable examples", async () => {
   const builds = process.env.NEXT_PUBLIC_BASE_PATH ? ["out", sitesBuild] : ["out"];
-  const expected = [
-    ["content-tracking", "cross-market-report"],
-    ["brand-tracking", "wave-reports"],
-    ["us-content", "preferences-and-habits"],
-  ];
-  assert.deepEqual(resumeWorkEntries.map(e => e.id), expected.map(e => e[0]));
+  const expected = {
+    research: [
+      ["content-tracking", "cross-market-report"],
+      ["brand-tracking", "wave-reports"],
+      ["us-content", "preferences-and-habits"],
+    ],
+    analytics: [
+      ["content-tracking", "cross-market-report", "#example-relative-weights"],
+      ["search-tracking", "validation-tools", "#example-table-check"],
+      ["us-content", "audience-segments"],
+    ],
+    operations: [
+      ["content-tracking", "analysis-guide"],
+      ["brand-tracking", "metric-mapping", "#practice-tracking-delivery"],
+      ["qualitative", "field-evidence"],
+    ],
+  };
+  assert.deepEqual(resumeWorkEntries.map(e => e.id), expected.research.map(e => e[0]));
+  assert.deepEqual(resumeWorkViews.map(view => view.id), Object.keys(expected));
   for (const build of builds) for (const lang of ["zh", "en"]) {
     const locale = lang === "en" ? "en/" : "";
     const page = await readFile(new URL(`${build}/${locale}projects/resume/index.html`, root), "utf8");
@@ -429,29 +442,50 @@ test("connects each résumé case to the exact bilingual deliverable description
     assert.ok(region);
     const base = build === "out" ? home.match(/src="([^"]*)\/_next\/static\//)?.[1] : "";
     assert.notEqual(base, undefined);
-    assert.equal((region.match(/class="resume-case-output"/g)??[]).length, 3);
+    assert.equal((region.match(/class="resume-case-output"/g)??[]).length, 9);
+    assert.equal((region.match(/data-view-selected="true"/g)??[]).length, 1);
+    assert.match(region, /id="resume-view-research"[^>]*data-view-selected="true"/);
     assert.match(page, /class="resume-jump"[^>]*>[\s\S]*?href="#resume-work"[\s\S]*?href="#resume-downloads"/);
     assert.equal((page.match(/id="resume-downloads"/g)??[]).length,1);
     assert.match(page, /id="resume-section-history"/);
     assert.doesNotMatch(page, /class="resume-focus"|Different perspectives on the work/);
-    for (const [i, [id, outputId]] of expected.entries()) {
-      const work = selectedWork.find(item => item.id === id), story = workStudyCopyFor(id);
-      const output = story.outputs[story.output];
-      assert.equal(output.id, outputId);
-      const row = region.match(new RegExp(`<li data-resume-case="${id}"[^>]*>[\\s\\S]*?<\\/li>`))?.[0];
-      assert.ok(row?.includes(work.title[lang]) && row.includes(responsibilityLabel(work.role[lang])));
-      assert.ok(row.includes(resumeWorkEntries[i].contribution[lang]));
-      assert.ok(row.includes(output[lang]));
-      assert.ok(row.includes(`href="${base}/${locale}#output-${id}--${outputId}"`));
-      assert.ok(home.includes(`class="pf-output-brief" id="output-${id}--${outputId}"`));
-      assert.doesNotMatch(row, /target=|download=|Senior|负责人.*全部|已脱敏|anonymized|ByteDance|Lenovo|字节|联想/u);
+    const tags = [...region.matchAll(/<div class="resume-evidence-view" id="resume-view-([^"]+)"[^>]*>/g)];
+    assert.deepEqual(tags.map(match => match[1]), Object.keys(expected));
+    const ids = [...region.matchAll(/\sid="([^"]+)"/g)].map(match => match[1]);
+    assert.equal(ids.length, new Set(ids).size);
+    for (const [v, tag] of tags.entries()) {
+      const view = resumeWorkViews[v];
+      const panel = region.slice(tag.index, tags[v + 1]?.index ?? region.length);
+      assert.match(region, new RegExp(`href="${view.fragment}"[^>]*data-resume-view-link="${view.id}"`));
+      const rows = [...panel.matchAll(/<li data-resume-case="([^"]+)"[^>]*>[\s\S]*?<\/li>/g)];
+      assert.deepEqual(rows.map(match => match[1]), expected[view.id].map(row => row[0]));
+      for (const [i, [id, outputId, example]] of expected[view.id].entries()) {
+        const work = selectedWork.find(item => item.id === id), story = workStudyCopyFor(id);
+        const output = story.outputs.find(item => item.id === outputId);
+        assert.ok(work && output);
+        const row = rows[i][0].replace(/&amp;/g, "&").replace(/&#x27;/g, "'");
+        assert.ok(row.includes(work.title[lang]) && row.includes(responsibilityLabel(work.role[lang])));
+        assert.ok(row.includes(view.entries[i].contribution[lang]));
+        assert.ok(row.includes(output[lang]));
+        assert.ok(row.includes(`href="${base}/${locale}#output-${id}--${outputId}"`));
+        assert.ok(home.includes(`class="pf-output-brief" id="output-${id}--${outputId}"`));
+        if (example) {
+          assert.ok(row.includes(`href="${base}/${locale}${example}"`));
+          assert.ok(home.includes(`id="${example.slice(1)}"`));
+        } else assert.doesNotMatch(row, /class="resume-case-example"/);
+        assert.doesNotMatch(row, /target=|download=|Senior|负责人.*全部|已脱敏|anonymized|ByteDance|Lenovo|字节|联想/u);
+      }
     }
   }
 });
 
-test("retains only the two résumé anchors when switching page language", () => {
-  for (const fragment of [resumeWorkFragment,resumeDownloadFragment]) assert.equal(resumeSectionFragment(fragment),fragment);
-  for (const other of [null,"","#resume-pdf-reader","#resume-work?private","#output-us-content--preferences-and-habits"]) assert.equal(resumeSectionFragment(other),"");
+test("retains only the known résumé views and download anchor when switching page language", () => {
+  for (const fragment of [resumeWorkFragment,resumeAnalyticsFragment,resumeOperationsFragment,resumeDownloadFragment]) assert.equal(resumeSectionFragment(fragment),fragment);
+  for (const view of resumeWorkViews) assert.equal(resumeWorkViewForFragment(view.fragment), view);
+  for (const other of [null,"","#resume-pdf-reader","#resume-work?private","#resume-work-operations?private","#output-us-content--preferences-and-habits"]) {
+    assert.equal(resumeSectionFragment(other),"");
+    assert.equal(resumeWorkViewForFragment(other).id,"research");
+  }
 });
 
 test("keeps the script font contract", async () => {
