@@ -5,7 +5,7 @@ import Image from "next/image";
 import { cases, selectedWork, type Language } from "../content/resume";
 import { marketStudyPresentation } from "../content/market-studies";
 import { responsibilityLabel } from "../content/work-folios";
-import { globeMesh, networkMesh, projectPoint, researchMarkets, researchRouteShape } from "./globe-geometry";
+import { allResearchLinks, globeMesh, networkMesh, projectPoint, researchMarkets, researchRouteShape, studyGlobeCoverage } from "./globe-geometry";
 import { earthFragment, earthMaterial, earthPosterRevision, earthVertex } from "./earth-material";
 import { caseWorkIndices, marketIndexScrollDelta, marketStudyIndex, preferredMarketStudyIndex, type MarketStudyOrigin } from "./globe-research";
 import { studyFragment } from "./study-location";
@@ -18,8 +18,10 @@ export default function InteractiveGlobe({ language, paused, ready, onExplore }:
   const stage = useRef<HTMLDivElement>(null), caseIndex = useRef<HTMLDivElement>(null), marketHeading = useRef<HTMLHeadingElement>(null);
   const focus = useRef<((lon: number, lat: number) => void) | null>(null), active = useRef(8);
   const changeStyle = useRef<((network: boolean) => void) | null>(null), redraw = useRef<(() => void) | null>(null);
+  const renderMask = useRef(allResearchLinks);
   const [renderer, setRenderer] = useState("loading"), [selected, setSelected] = useState("CN"), [style, setStyle] = useState("earth");
   const [view, setView] = useState("CN"), [study, setStudy] = useState(0);
+  const [caseOnly, setCaseOnly] = useState(false);
   const loc = (zh: string, en: string) => language === "zh" ? zh : en;
   const selectedPlace = researchMarkets.find(p => p.code === selected);
   const marketName = selectedPlace?.[language] ?? loc("多国研究", "Multi-country studies");
@@ -27,7 +29,12 @@ export default function InteractiveGlobe({ language, paused, ready, onExplore }:
   const currentStudy = related.find(item => item.index === study) ?? related[0];
   const workIndex = caseWorkIndices[currentStudy.index];
   const presentation = marketStudyPresentation[currentStudy.index];
+  const coverage = studyGlobeCoverage(currentStudy.item.markets);
+  const hasCoverage = coverage.mask !== 0;
+  const showingCoverage = style === "network" && renderer === "webgl" && caseOnly && hasCoverage;
+  const mask = showingCoverage ? coverage.mask : allResearchLinks;
   useEffect(() => { motion.current = paused; redraw.current?.(); }, [paused]);
+  useEffect(() => { renderMask.current = mask; redraw.current?.(); }, [mask]);
   useEffect(() => {
     const el = canvas.current;
     if (!el) return;
@@ -50,7 +57,7 @@ export default function InteractiveGlobe({ language, paused, ready, onExplore }:
       const a = gl.getAttribLocation(program, name); gl.enableVertexAttribArray(a); gl.vertexAttribPointer(a, size, gl.FLOAT, false, 32, offset);
     }
     gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LEQUAL); gl.enable(gl.CULL_FACE); gl.cullFace(gl.BACK); gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); gl.clearColor(0, 0, 0, 0);
-    const uo = gl.getUniformLocation(program, "orientation"), ur = gl.getUniformLocation(program, "resolution"), ua = gl.getUniformLocation(program, "activeMarket"), un = gl.getUniformLocation(program, "networkView"), uReveal = gl.getUniformLocation(program, "routeReveal"), uClock = gl.getUniformLocation(program, "clock"), uPixel = gl.getUniformLocation(program, "pixelRatio");
+    const uo = gl.getUniformLocation(program, "orientation"), ur = gl.getUniformLocation(program, "resolution"), ua = gl.getUniformLocation(program, "activeMarket"), un = gl.getUniformLocation(program, "networkView"), uReveal = gl.getUniformLocation(program, "routeReveal"), uClock = gl.getUniformLocation(program, "clock"), uPixel = gl.getUniformLocation(program, "pixelRatio"), uMask = gl.getUniformLocation(program, "caseMarketMask");
     gl.uniform2f(gl.getUniformLocation(program, "routeShape"), researchRouteShape.baseRadius, researchRouteShape.lift);
     const texture = gl.createTexture(); gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, texture); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, new Uint8Array([8, 30, 45]));
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
@@ -73,6 +80,7 @@ export default function InteractiveGlobe({ language, paused, ready, onExplore }:
       if (!motion.current && networkBlend > .01) flowClock += delta;
       gl!.viewport(0, 0, el!.width, el!.height); gl!.uniform2f(ur, el!.width, el!.height); gl!.uniform2f(uo, current[0] * Math.PI / 180, current[1] * Math.PI / 180); gl!.uniform1f(ua, active.current); gl!.clear(gl!.COLOR_BUFFER_BIT | gl!.DEPTH_BUFFER_BIT);
       gl!.uniform1f(un, networkBlend); gl!.uniform1f(uReveal, routeReveal); gl!.uniform1f(uClock, flowClock); gl!.uniform1f(uPixel, Math.min(2, el!.width / Math.max(1, el!.clientWidth)));
+      gl!.uniform1i(uMask, renderMask.current);
       gl!.drawArrays(gl!.TRIANGLES, 0, globe.length / 8);
       gl!.depthMask(false); gl!.drawArrays(gl!.TRIANGLES, globe.length / 8, atmosphere.length / 8);
       gl!.disable(gl!.CULL_FACE); gl!.drawArrays(gl!.TRIANGLES, (globe.length + atmosphere.length) / 8, network.triangles);
@@ -159,16 +167,21 @@ export default function InteractiveGlobe({ language, paused, ready, onExplore }:
     canvas.current?.focus({ preventScroll: true });
   }
   function chooseStyle(value: string) { setStyle(value); changeStyle.current?.(value === "network"); }
+  function mapCurrentStudy() {
+    setCaseOnly(true);
+    chooseStyle("network");
+    backToGlobe();
+  }
   function keyboard(e: KeyboardEvent<HTMLDivElement>) { if (e.key === "Escape") { choose("CN", 105, 30); canvas.current?.focus(); } }
   function studyKey(e: KeyboardEvent<HTMLButtonElement>, index: number) {
     const offset = ({ ArrowRight: 1, ArrowLeft: -1, ArrowDown: 2, ArrowUp: -2 } as Record<string, number | undefined>)[e.key];
     const next = e.key === "Home" ? 0 : e.key === "End" ? related.length - 1 : offset === undefined ? -1 : (index + offset + 2 * related.length) % related.length;
     if (next < 0) return; e.preventDefault(); setStudy(related[next].index); document.getElementById(`rg-study-tab-${related[next].index}`)?.focus();
   }
-  return <div className="rg-globe" data-renderer={renderer} data-view={view} data-market-selection={selected} data-style={style} data-market-ready={ready}>
+  return <div className="rg-globe" data-renderer={renderer} data-view={view} data-market-selection={selected} data-style={style} data-market-ready={ready} data-layer={showingCoverage ? "study" : "all"}>
     <div className="rg-globe-stage" id="rg-globe-stage" ref={stage} onKeyDown={keyboard}><div className="rg-globe-shadow"/><Image className="rg-earth-poster" src={`${base}/images/earth-china-poster.webp?v=${earthPosterRevision}`} width={768} height={768} alt={loc("中国视角的地球", "Earth centered on China")} aria-hidden={renderer === "webgl"} unoptimized priority draggable={false}/>
       <canvas ref={canvas} className="rg-globe-canvas" tabIndex={renderer === "webgl" ? 0 : -1} role="img" aria-hidden={renderer !== "webgl"} aria-label={loc("可旋转地球。拖动改变视角，方向键旋转，Home返回中国。", "Interactive globe. Drag or use arrow keys to rotate. Home centers China.")} onDragStart={e => e.preventDefault()}/>
-      <div className="rg-globe-nodes" ref={labels}>{researchMarkets.map(p => <button type="button" data-market={p.code} key={p.code} hidden disabled={renderer !== "webgl"} aria-label={loc(`查看${p.zh}研究项目`, `View research in ${p.en}`)} aria-controls="rg-market-research" aria-pressed={selected === p.code} onClick={() => exploreFromGlobe(p.code, p.lon, p.lat)}><span>{p.code}</span></button>)}</div>
+      <div className="rg-globe-nodes" ref={labels}>{researchMarkets.map((p, i) => <button type="button" data-market={p.code} data-in-study={Boolean(coverage.mask & (1 << i))} key={p.code} hidden disabled={renderer !== "webgl"} aria-label={loc(`查看${p.zh}研究项目`, `View research in ${p.en}`)} aria-controls="rg-market-research" aria-pressed={selected === p.code} onClick={() => exploreFromGlobe(p.code, p.lon, p.lat)}><span>{p.code}</span></button>)}</div>
       <span className="rg-globe-note" role="status">{!ready ? "" : renderer === "fallback" ? loc("仍可在下方选择市场", "SELECT A MARKET BELOW") : renderer === "loading" ? loc("正在准备地球交互", "PREPARING INTERACTIVE VIEW") : loc("拖动旋转 · 点击标记查看案例", "DRAG TO ROTATE · SELECT A MARKET PIN")}</span>
     </div>
     <div className="rg-globe-toolbar"><div className="rg-globe-styles" role="group" aria-label={loc("地球显示方式", "Globe display style")}><button type="button" disabled={renderer !== "webgl"} aria-pressed={style === "earth"} onClick={() => chooseStyle("earth")}><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8"/><ellipse cx="12" cy="12" rx="4" ry="8"/><path d="M4 12h16"/></svg>{loc("卫星", "Satellite")}</button><button type="button" disabled={renderer !== "webgl"} aria-pressed={style === "network"} onClick={() => chooseStyle("network")}><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 6 12 2-5 10L6 6l12 2M6 6l7 12"/><circle cx="6" cy="6" r="2"/><circle cx="18" cy="8" r="2"/><circle cx="13" cy="18" r="2"/></svg>{loc("研究网络", "Research network")}</button></div>
@@ -177,8 +190,18 @@ export default function InteractiveGlobe({ language, paused, ready, onExplore }:
       <button type="button" disabled={renderer !== "webgl"} aria-pressed={view === "US"} aria-label={loc("美国视角", "U.S. view")} aria-controls="rg-market-research" onClick={() => choose("US",-98,37)}>{loc("美国", "U.S.")}</button>
     </div>
     <div className="rg-network-key" hidden={style !== "network"} aria-label={loc("研究连线图例", "Research link legend")}>
-      <span><i aria-hidden="true"/>{loc("高亮连线", "Highlighted links")}</span><span><i aria-hidden="true"/>{loc("其他研究连线", "Other research links")}</span>
-    </div></div>
+      <div className="rg-key-legend">
+        {showingCoverage
+          ? <span className="rg-key-markets"><i aria-hidden="true"/>{loc("本案例涉及市场", "Markets in this study")}</span>
+          : <><span><i aria-hidden="true"/>{selectedPlace ? loc("当前市场连线", "Selected market links") : loc("北京起点", "Beijing hub")}</span><span><i aria-hidden="true"/>{loc("其他研究连线", "Other research links")}</span></>}
+      </div>
+      {hasCoverage && <button className="rg-case-layer" type="button" aria-pressed={showingCoverage} aria-controls="rg-globe-stage" onClick={() => setCaseOnly(value => !value)}>
+        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 2.5H2.5V6m7.5-3.5h3.5V6M6 13.5H2.5V10m7.5 3.5h3.5V10"/><circle cx="8" cy="8" r="1.5"/></svg>
+        {loc("仅看此案例", "Selected case only")}
+      </button>}
+    </div>
+    {showingCoverage && <div className="rg-case-map-summary" role="status"><span>{loc("案例范围", "STUDY COVERAGE")}</span><strong>{currentStudy.item.title[language]}</strong></div>}
+    </div>
     <section className="rg-market-research" id="rg-market-research" aria-labelledby="rg-market-heading" data-market={selected}>
       <div className="rg-market-index" ref={caseIndex} data-market={selected}>
         <header className="rg-market-head">
@@ -213,6 +236,7 @@ export default function InteractiveGlobe({ language, paused, ready, onExplore }:
       <div className="rg-study-detail" id="rg-study-panel" role="tabpanel" aria-labelledby={`rg-study-tab-${currentStudy.index}`} tabIndex={0} data-study={currentStudy.index}>
         <h4>{currentStudy.item.title[language]}</h4><p className="rg-study-role">{currentStudy.item.role[language]}</p>
         <dl className="rg-study-proof">
+          {hasCoverage && <div className="rg-study-markets"><dt>{loc("涉及市场", "Markets")}</dt><dd>{coverage.places.map(place => place[language]).join(loc("、", " · "))}</dd></div>}
           <div><dt>{loc("我的工作", "My contribution")}</dt><dd>{(presentation.contribution ?? currentStudy.item.approach)[language]}</dd></div>
           {presentation.ai && <div className="rg-study-ai"><dt>{loc("AI 用法", "How I used AI")}</dt><dd>{presentation.ai[language]}</dd></div>}
           <div><dt>{loc("研究交付", "Deliverables")}</dt><dd>{(presentation.delivery ?? currentStudy.item.value)[language]}</dd></div>
@@ -222,7 +246,7 @@ export default function InteractiveGlobe({ language, paused, ready, onExplore }:
             if (e.button !== 0 || e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) return;
             e.preventDefault(); onExplore(workIndex, { market: selected, studyIndex: currentStudy.index });
           }}>{loc("查看完整案例", "Read the full case")}<span aria-hidden="true">↗</span></a>}
-          {renderer === "webgl" && <button className="rg-back-to-globe" type="button" onClick={backToGlobe} aria-controls="rg-globe-stage">{loc("回到地球", "Back to globe")}<span aria-hidden="true">↑</span></button>}
+          {renderer === "webgl" && hasCoverage && <button className="rg-back-to-globe" type="button" onClick={mapCurrentStudy} aria-controls="rg-globe-stage">{loc("在地图上查看", "View on globe")}<span aria-hidden="true">↑</span></button>}
         </div>
       </div>
     </section>

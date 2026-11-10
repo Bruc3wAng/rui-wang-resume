@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { cases, selectedWork } from "../content/resume.ts";
 import { caseWorkIndices, marketIndexScrollDelta, marketStudyIndex, preferredMarketStudyIndex, researchForMarket } from "../app/globe-research.ts";
-import { networkMesh, researchMarkets, researchRouteShape } from "../app/globe-geometry.ts";
+import { allResearchLinks, networkMesh, researchMarkets, researchRouteShape, studyGlobeCoverage } from "../app/globe-geometry.ts";
 import { earthFragment, earthMaterial, earthVertex, shadeEarth } from "../app/earth-material.ts";
 import { marketStudyPresentation } from "../content/market-studies.ts";
 
@@ -78,6 +78,37 @@ test("uses actual route shape for the moving lights and distinguishes mode from 
   assert.match(ui,/cancelAnimationFrame\(frame\); lastFrame = 0; draw\(performance\.now\(\)\)/);
 });
 
+test("case coverage encodes exactly the verified markets and never includes the Beijing base", () => {
+  const expected = [
+    ["US", "UK", "DE", "JP", "ID", "BR", "SA"],
+    ["US", "UK", "DE", "JP", "ID", "BR", "KR"],
+    ["US"],
+    ["US"],
+  ];
+  const mesh = networkMesh(cases.slice(0,2).map(item=>item.markets));
+  assert.equal(allResearchLinks,-1);
+  assert.equal(studyGlobeCoverage(["CN","UNKNOWN"]).mask,0);
+  assert.equal(studyGlobeCoverage(["US","US"]).mask,1);
+  for (const [index, item] of cases.entries()) {
+    const {mask,places}=studyGlobeCoverage(item.markets);
+    assert.deepEqual(places.map(place=>place.code),expected[index]);
+    assert.deepEqual(researchMarkets.filter((_,i)=>mask & (1<<i)).map(place=>place.code),expected[index]);
+    assert.equal(mask & (1<<8),0);
+    const matching=mesh.edges.filter(([a,b])=>mask & (1<<a) && mask & (1<<b));
+    assert.equal(matching.length,index<2?21:0);
+    assert.ok(matching.every(([a,b])=>expected[index].includes(researchMarkets[a].code)&&expected[index].includes(researchMarkets[b].code)));
+  }
+});
+
+test("the GPU case filter applies to both route endpoints, moving packets and nodes", async () => {
+  const ui=await readFile(new URL("../app/InteractiveGlobe.tsx",import.meta.url),"utf8");
+  assert.match(ui,/uniform1i\(uMask, renderMask.current\)/);
+  assert.match(ui,/const mask = showingCoverage \? coverage.mask : allResearchLinks/);
+  assert.match(ui,/aria-pressed=\{showingCoverage\}/);
+  assert.match(earthVertex,/\(caseMarketMask&\(1<<source\)\)!=0&&\(caseMarketMask&\(1<<destination\)\)!=0/);
+  assert.match(earthFragment,/if\(\(kind>\.5&&kind<2\.5\)\|\|kind>3\.5\)\{\s*if\(inCoverage<\.5\)discard/);
+});
+
 test("keeps market filtering usable when rotation is unavailable and preserves scope during manual rotation", async () => {
   const ui=await readFile(new URL("../app/InteractiveGlobe.tsx",import.meta.url),"utf8");
   const selector=ui.match(/<select id="rg-market-select"[\s\S]*?<\/select>/)?.[0];
@@ -137,6 +168,7 @@ test("exports the responsibility labels and separates contribution, AI use and d
     assert.ok(region.includes(language==="zh"?">深度参与<":">Key contribution<"));
     assert.ok(region.includes(marketStudyPresentation[0].ai[language]));
     assert.ok(region.includes(marketStudyPresentation[0].delivery[language]));
+    assert.ok(region.includes(language==="zh"?"美国、英国、德国、日本、印度尼西亚、巴西、沙特阿拉伯":"United States · United Kingdom · Germany · Japan · Indonesia · Brazil · Saudi Arabia"));
     assert.match(region,/class="rg-study-explore" href="#study-content-tracking"[^>]*aria-controls="pf-work-panel-0"/);
     const options=[...region.matchAll(/<option value="([A-Z]+)"/g)].map(match=>match[1]);
     assert.deepEqual(options,["CN",...researchMarkets.map(place=>place.code)]);

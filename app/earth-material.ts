@@ -19,8 +19,8 @@ export const earthMaterial = {
 export const earthVertex = `#version 300 es
 precision highp float;
 in vec3 position;in vec3 normal;in float material;in float market;
-uniform vec2 resolution;uniform vec2 orientation;uniform vec2 routeShape;uniform float activeMarket;uniform float clock;uniform float pixelRatio;
-out vec3 point;out vec3 surface;out float pathPosition;out float edgeDistance;flat out float kind;flat out float picked;flat out float routeCode;
+uniform vec2 resolution;uniform vec2 orientation;uniform vec2 routeShape;uniform float activeMarket;uniform float clock;uniform float pixelRatio;uniform int caseMarketMask;
+out vec3 point;out vec3 surface;out float pathPosition;out float edgeDistance;flat out float kind;flat out float picked;flat out float routeCode;flat out float inCoverage;
 vec3 view(vec3 w){float a=orientation.y,b=orientation.x;vec3 p=vec3(cos(b)*w.x-sin(b)*w.z,w.y,sin(b)*w.x+cos(b)*w.z);return vec3(p.x,cos(a)*p.y-sin(a)*p.z,sin(a)*p.y+cos(a)*p.z);}
 void main(){
  vec3 p=position;pathPosition=normal.x;edgeDistance=normal.y;
@@ -29,13 +29,21 @@ void main(){
  float depth=4.6-p.z,scale=4.2/1.12;
  gl_Position=vec4(p.x*scale/(resolution.x/resolution.y),p.y*scale,1.020202*depth-.2020202,depth);
  point=p;surface=normal;kind=material;routeCode=market;
- picked=abs(floor(market/16.)-activeMarket)<.1||abs(mod(market,16.)-activeMarket)<.1?1.:0.;
+ bool caseOnly=caseMarketMask>=0;
+ bool bothInCase=true;
+ if(caseOnly&&market>=0.){
+  int source=int(market)/16,destination=int(mod(market,16.));
+  bothInCase=(caseMarketMask&(1<<source))!=0&&(caseMarketMask&(1<<destination))!=0;
+ }
+ inCoverage=(!caseOnly||bothInCase)?1.:0.;
+ picked=caseOnly?inCoverage:((abs(floor(market/16.)-activeMarket)<.1||abs(mod(market,16.)-activeMarket)<.1)?1.:0.);
  gl_PointSize=material>3.5?(picked>.5?11.:7.)*pixelRatio:material>1.5&&material<2.5?(picked>.5?20.:13.)*pixelRatio:1.;
+ if(caseOnly&&bothInCase&&material>1.5&&material<2.5)gl_PointSize=(25.+2.*sin(clock*2.4))*pixelRatio;
 }`;
 
 export const earthFragment = `#version 300 es
 precision highp float;
-in vec3 point;in vec3 surface;in float pathPosition;in float edgeDistance;flat in float kind;flat in float picked;flat in float routeCode;out vec4 color;
+in vec3 point;in vec3 surface;in float pathPosition;in float edgeDistance;flat in float kind;flat in float picked;flat in float routeCode;flat in float inCoverage;out vec4 color;
 uniform sampler2D earth;uniform sampler2D clouds;uniform sampler2D night;uniform vec2 orientation;uniform vec2 resolution;uniform float networkView;uniform float routeReveal;uniform float clock;
 const float PI=3.14159265359;
 const float CLOUD_RADIUS=${earthMaterial.cloudRadius};
@@ -47,6 +55,7 @@ vec3 gradeSurface(vec3 natural,float water){float luma=dot(natural,vec3(.28,.58,
 vec3 shellPoint(vec3 p,vec3 direction){float b=dot(p,direction);float d=-b+sqrt(max(0.,b*b+CLOUD_RADIUS*CLOUD_RADIUS-dot(p,p)));return p+direction*d;}
 void main(){
  if((kind>.5&&kind<2.5)||kind>3.5){
+  if(inCoverage<.5)discard;
   // Fade emission into the projected sphere silhouette, not the canvas edge.
   float silhouette=(4.2/1.12)/sqrt(4.6*4.6-1.);
   float screenDistance=length((gl_FragCoord.xy-resolution*.5)*2./resolution.y);

@@ -8,6 +8,22 @@ export const researchMarkets = [
   { code: "SA", flag: "sa", zh: "沙特阿拉伯", en: "Saudi Arabia", lon: 45, lat: 24 },
   { code: "KR", flag: "kr", zh: "韩国", en: "South Korea", lon: 128, lat: 36 },
 ];
+
+export const allResearchLinks = -1;
+
+// These bit positions are the same market indices packed into the geometry.
+// The Beijing base is deliberately outside this set: it is not a study market.
+export function studyGlobeCoverage(markets: readonly string[]) {
+  const included = new Set(markets);
+  let mask = 0;
+  const places = researchMarkets.filter((place, i) => {
+    if (!included.has(place.code)) return false;
+    mask |= 1 << i;
+    return true;
+  });
+  return { mask, places };
+}
+
 const radians = Math.PI / 180;
 export const researchRouteShape = { baseRadius: 1.010, lift: .030, halfWidth: .0078, phases: [0, 1 / 3, 2 / 3] } as const;
 // Same camera and projection as the WebGL view; used to bake its first-paint image.
