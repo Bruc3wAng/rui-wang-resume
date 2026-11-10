@@ -4,11 +4,62 @@ import test from "node:test";
 import { runInNewContext } from "node:vm";
 import { selectedWork } from "../content/resume.ts";
 import { siteUrl } from "../content/site.ts";
-import { portfolioLocaleHref, studyFragment, studyHistoryInitializer, studyIndexFromFragment } from "../app/study-location.ts";
+import { outputFragment, portfolioLocaleHref, studyFragment, studyHistoryInitializer, studyIndexFromFragment } from "../app/study-location.ts";
 import { heroBrief, heroCases } from "../app/hero-brief.ts";
+import { directoryFragment, normalizeLookup, searchPortfolio } from "../app/portfolio-lookup.ts";
+import { workStudyCopyFor } from "../app/work-study-copy.ts";
 
 const root=new URL("../",import.meta.url);
 const read=path=>readFile(new URL(path,root),"utf8");
+
+test("finds bilingual and mixed-script terms without confusing US with user",()=>{
+  assert.equal(normalizeLookup("  Ｕ．Ｓ．   RÉSUMÉ — ５０％ "), "us resume 50%");
+  const e=[
+    {href:"#user",kind:"case",title:{zh:"用户画像",en:"User profiling"}},
+    {href:"#study",kind:"case",title:{zh:"美国内容消费研究",en:"U.S. content consumption"},aliases:["United States","独立负责"]},
+    {href:"#output",kind:"output",title:{zh:"偏好与习惯",en:"Preferences and habits"},context:{zh:"美国内容消费研究",en:"U.S. content consumption"}},
+    {href:"#example",kind:"example",title:{zh:"报表复核：两个 50%",en:"Table check: two 50% rates"},aliases:["分母"]},
+  ];
+  const found=q=>searchPortfolio(e,q).map(a=>a.href);
+  assert.deepEqual(found("US"),["#study","#output"]);
+  assert.deepEqual(found("u.s. content"),["#study","#output"]);
+  assert.deepEqual(found("美国 独立负责"),["#study"]);
+  assert.deepEqual(found("５０％"),["#example"]);
+  assert.deepEqual(found("denominator"),[]);
+  assert.deepEqual(found("分母"),["#example"]);
+  assert.deepEqual(found("case not listed"),[]);
+  assert.deepEqual(found(" —— "),[]);
+});
+
+test("ships the complete native directory with exact case, output, example and résumé addresses",async()=>{
+  const nativeId=directoryFragment.slice(1);
+  const destinations=[
+    ...selectedWork.map(work=>studyFragment(work.id)),
+    ...selectedWork.flatMap(work=>workStudyCopyFor(work.id).outputs.map(output=>outputFragment(work.id,output.id))),
+    "#example-relative-weights","#example-table-check","#prototype-research-questions","#map-us-search-experience",
+    "#practice-research-analysis","#practice-tracking-delivery","#practice-research-platform",
+    "#work","#method","#projects","#capabilities","#contact","#top",
+  ];
+  const targets=process.env.NEXT_PUBLIC_BASE_PATH?["out",process.env.RUI_SITES_BUILD_DIR??"dist/client"]:["out"];
+  for(const target of targets)for(const lang of ["zh","en"]){
+    const loc=lang==="en"?"en/":"",other=loc?"":"en/";
+    const base=target==="out"?"/rui-wang-resume/":"/";
+    const html=await read(`${target}/${loc}index.html`);
+    const region=html.match(/<section class="pf-lookup-directory pf-wrap"[^>]*>([\s\S]*?)<\/section>/)?.[1];
+    assert.ok(region);
+    assert.ok(html.includes(`id="${nativeId}" aria-labelledby="pf-directory-title"`));
+    for(const link of destinations){
+      assert.equal([...region.matchAll(/href="([^"]+)"/g)].filter(m=>m[1]===link).length,1,link);
+      assert.ok(html.includes(`id="${link.slice(1)}"`),`Missing destination: ${link}`);
+    }
+    assert.ok(region.includes(`href="${base}${loc}projects/resume/#resume-work"`));
+    assert.ok(region.includes(`href="${base}${other}${directoryFragment}"`));
+    const resumeHtml=await read(`${target}/${loc}projects/resume/index.html`);
+    assert.ok(resumeHtml.includes('id="resume-work"'));
+    assert.doesNotMatch(region,/ByteDance|Lenovo|TikTok|内部版|已脱敏|领导确认/);
+  }
+  assert.match(await read("app/portfolio-lookup.css"),/\.pf-lookup-directory:target\{display:block\}/);
+});
 
 test("work permalinks bind to stable case IDs, not order or visible labels",()=>{
   const ids=["content-tracking","brand-tracking","us-content","search-tracking","qualitative"];

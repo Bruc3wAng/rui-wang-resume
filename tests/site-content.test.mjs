@@ -480,8 +480,8 @@ test("ships complete research panels and valid tab relationships", async () => {
     for (const [,target] of html.matchAll(/aria-controls="([^"]+)"/g)) {
       assert.ok(ids.includes(target), `Missing tab target: ${target}`);
     }
-    assert.match(html, /class="pf-command"/);
-    assert.match(html, /aria-label="(?:打开快速访问|Open quick access)"/);
+    assert.match(html, /class="pf-lookup" id="pf-lookup" aria-labelledby="pf-lookup-title"/);
+    assert.match(html, /id="pf-lookup-trigger" href="#portfolio-directory" aria-label="(?:查找案例与方法|Find cases and methods)"/);
   }
 });
 

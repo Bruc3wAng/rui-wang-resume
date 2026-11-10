@@ -198,7 +198,9 @@ test("both builds export both computed outcomes, an exact case return, and scrip
     }
     const brief=html.match(/<section class="pf-output-brief" id="output-content-tracking--cross-market-report"[^>]*>[\s\S]*?<\/section>/)?.[0];
     assert.ok(brief?.includes(`href="${relativeWeightFragment}"`));
-    assert.equal([...html.matchAll(/<a\b[^>]+href="#example-relative-weights"/g)].length,3);
+    const oldLinks = html.replace(/<section class="pf-lookup-directory[^>]*>[\s\S]*?<\/section>/, "").replace(/<dialog class="pf-lookup"[^>]*>[\s\S]*?<\/dialog>/, "");
+    assert.equal([...oldLinks.matchAll(/<a\b[^>]+href="#example-relative-weights"/g)].length,3);
+    assert.equal([...html.matchAll(/<a\b[^>]+href="#example-relative-weights"/g)].length,5,"three existing links plus the search suggestion and directory link");
     assert.doesNotMatch(example,/字节|联想|ByteDance|Lenovo|TikTok|BHT|客户数据|anonymized|脱敏/iu);
   }
 });

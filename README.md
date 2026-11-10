@@ -51,6 +51,8 @@ The analysis workflow and the cross-market report description link to `#example-
 
 The search tracking case and its batch-validation tools folio link to `#example-table-check`. Three constructed groups show a match, a count discrepancy within the same definition, and equal percentages with different base definitions. The checks recalculate from binary example responses, compare definitions before counts, and never change the supplied report cells. Native radio controls and evidence disclosures work without scripts.
 
+Find cases and methods from the header or with Command/Ctrl+K. The in-browser index uses public case and deliverable titles, method examples, and a curated bilingual vocabulary; a selection is a normal link to the corresponding case, deliverable, example, or page. `#portfolio-directory` offers the same destinations as native links when scripts are off.
+
 The personal Research Data Platform prototype links to `#prototype-research-questions`. Three questions run the existing source review with comparable, single-record, and no-eligible-record scopes. The result view and all three exports use the same evidence decision; native disclosures show the decisions with scripts off. This is a presentation of the prototype's research logic using constructed records, not a publication of its database or implementation.
 
 ## Content maintenance
