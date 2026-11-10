@@ -1,15 +1,26 @@
-.portfolio-v17 .rg-globe{--rg-ink:#263f55;--rg-muted:#536b7e;--rg-line:#b9c6ca;--rg-accent:#b28b52}
-.portfolio-v17 .rg-globe-stage{aspect-ratio:1.13;height:auto;max-height:480px}
-.portfolio-v17 .rg-globe-note{font-size:9px;letter-spacing:.08em;color:var(--rg-muted);bottom:-1px}
-.portfolio-v17 .rg-globe[data-style=network] .rg-globe-shadow{background:#17455d39}
-.portfolio-v17 .rg-globe-toolbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px 12px;margin:16px 0 12px}
-.portfolio-v17 .rg-globe-styles{display:flex;gap:3px;border:1px solid #afbdc7;border-radius:6px;padding:3px;background:#e6ebeb82}
-.portfolio-v17 .rg-globe-styles button{display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:8px 13px;border:0;border-radius:3px;background:none;color:var(--rg-muted);font-size:11px;white-space:nowrap;transition:background .3s,color .3s}
+.portfolio-v17 .rg-globe{--rg-ink:#203c54;--rg-muted:#4f6576;--rg-line:#adbec5;--rg-accent:#a4793b;--rg-pale:#f5e7c8}
+.portfolio-v17 .rg-atlas-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px 12px;padding:0 0 8px;border-bottom:1px solid #b9c8c7}
+.portfolio-v17 .rg-atlas-head h2{display:flex;align-items:center;gap:9px;margin:0;font-size:15px;font-weight:600;line-height:1.35;color:var(--rg-ink)}
+.portfolio-v17 .rg-atlas-head h2::before{content:"";display:block;flex:none;width:12px;height:2px;background:#aa8244}
+.portfolio-v17 .rg-globe[data-market-ready=false] .rg-globe-styles,.portfolio-v17 .rg-globe[data-renderer=fallback] .rg-globe-styles{display:none}
+.portfolio-v17 .rg-globe-stage{aspect-ratio:1.13;height:auto;max-height:444px}
+.portfolio-v17 .rg-globe .rg-globe-canvas{touch-action:pan-y}
+.portfolio-v17 .rg-globe-note{font-size:11px;letter-spacing:.02em;color:var(--rg-muted);bottom:0}
+.portfolio-v17 .rg-globe[data-style=network] .rg-globe-shadow{background:#17455d36}
+.portfolio-v17 .rg-globe-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:6px 12px;margin:10px 0 12px}
+.portfolio-v17 .rg-globe-styles{display:flex;gap:3px;min-width:0;padding:2px 0}
+.portfolio-v17 .rg-globe-styles button{display:flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:6px 10px;border:1px solid transparent;border-radius:3px;background:none;color:var(--rg-muted);font-size:12px;white-space:nowrap;transition:background .24s,color .24s}
 .portfolio-v17 .rg-globe-styles svg{width:17px;height:17px;stroke:currentColor;stroke-width:1.2}
-.portfolio-v17 .rg-globe-styles button[aria-pressed=true]{background:var(--rg-ink);color:#f5f2e8;box-shadow:0 2px 5px #19344c1c}
-.portfolio-v17 .rg-globe-views{display:flex;gap:3px;margin:0;padding:3px;border:1px solid #afbdc7;border-radius:6px;background:#e6ebeb82}
-.portfolio-v17 .rg-globe-views button{min-width:46px;min-height:44px;border:0;border-radius:3px;padding:7px 10px;background:none;color:var(--rg-muted);font-size:11px;white-space:nowrap}
-.portfolio-v17 .rg-globe-views button[aria-pressed=true]{background:#ecdfc3;color:#213c52;font-weight:700}
+.portfolio-v17 .rg-globe-styles button:not([aria-pressed=true]):hover{background:#dce8e5;color:var(--rg-ink)}
+.portfolio-v17 .rg-globe-styles button[aria-pressed=true]{background:var(--rg-ink);color:#f5f2e8;border-color:#1c354a}
+.portfolio-v17 .rg-globe-views{display:grid;flex:1 0 100%;grid-template-columns:1fr 1fr;gap:8px;margin:0;padding:0}
+.portfolio-v17 .rg-globe-views button{justify-content:flex-start;gap:9px;min-width:0;min-height:46px;border:1px solid var(--rg-line);border-radius:3px;padding:6px 10px;background:#f3f6f0;color:var(--rg-ink);font-size:12px;line-height:1.2;text-align:start;transition:background .22s,border-color .22s}
+.portfolio-v17 .rg-globe-views button:hover,.portfolio-v17 .rg-globe-views button[aria-pressed=true]{background:#dce8e6;border-color:#7e9ca5}
+.portfolio-v17 .rg-globe-views .rg-view-code{flex:none;font-size:14px;font-weight:700;letter-spacing:.055em;color:inherit}
+.portfolio-v17 .rg-globe-views .rg-view-arrow{margin-inline-start:auto;font-size:16px;color:inherit}
+.portfolio-v17 .rg-globe-views .rg-us-shortcut{background:var(--rg-pale);border-color:#c6a775;font-weight:600}
+.portfolio-v17 .rg-globe-views .rg-us-shortcut:hover,.portfolio-v17 .rg-globe-views .rg-us-shortcut[aria-pressed=true]{background:#f0d9a8;border-color:#a77f3f}
+.portfolio-v17 .rg-globe-views .rg-us-shortcut .rg-view-code{font-size:17px}
 .portfolio-v17 .rg-network-key:not([hidden]){display:flex;flex:1 0 100%;min-width:0;align-items:center;justify-content:space-between;gap:5px 12px;color:var(--rg-muted);font-size:11px;line-height:1.4}
 .portfolio-v17 .rg-key-legend{display:flex;min-width:0;flex-wrap:wrap;gap:4px 12px}
 .portfolio-v17 .rg-key-legend>span{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
@@ -25,12 +36,13 @@
 .portfolio-v17 .rg-case-map-summary>strong{font-size:inherit;font-weight:600;min-width:0;overflow-wrap:anywhere}
 .portfolio-v17 .rg-globe button:disabled{opacity:.45;cursor:default}
 .portfolio-v17 .rg-globe button:focus-visible{outline:2px solid #a17b40;outline-offset:3px}
-.portfolio-v17 .rg-globe-nodes>button{width:44px;height:44px;font-size:11px;color:#e8f2f4}
+.portfolio-v17 .rg-globe-nodes>button{width:44px;height:44px;font-size:12px;color:#e8f2f4}
 .portfolio-v17 .rg-globe-nodes>button::before{content:"";position:absolute;width:5px;height:5px;top:calc(50% - 2.5px);left:calc(50% - 2.5px);background:#e6f7ff;border-radius:50%;box-shadow:0 0 6px 2px #63b4ecb0}
-.portfolio-v17 .rg-globe-nodes>button>span{opacity:1;top:9px;left:30px;padding:5px 7px;background:#142d43db;border:1px solid #7395ae7a;border-radius:3px;letter-spacing:.04em;font-weight:500;text-shadow:none;white-space:nowrap;pointer-events:auto}
+.portfolio-v17 .rg-globe-nodes>button>span{opacity:1;top:9px;left:30px;padding:5px 7px;background:#142d43ed;border:1px solid #87aab891;border-radius:3px;letter-spacing:.04em;font-weight:600;text-shadow:none;white-space:nowrap;pointer-events:auto}
+.portfolio-v17 .rg-globe-nodes>button:is(:hover,:focus-visible)>span{border-color:#e7d1a3}
 .portfolio-v17 .rg-globe-nodes>button[aria-pressed=true]{z-index:3}
-.portfolio-v17 .rg-globe-nodes>button[aria-pressed=true]>span{font-size:16px;font-weight:700;background:#f2e1bd;color:#173349;border-color:#ffedd1;padding:7px 10px;top:4px;box-shadow:0 3px 13px #142e4452}
-.portfolio-v17 .rg-globe-nodes>button[data-market=US][aria-pressed=true]>span{font-size:18px;letter-spacing:.06em}
+.portfolio-v17 .rg-globe-nodes>button[aria-pressed=true]>span,.portfolio-v17 .rg-globe-nodes>button[data-market=US]>span{font-size:16px;font-weight:700;background:#f2e1bd;color:#173349;border-color:#ffedd1;padding:7px 10px;top:4px;box-shadow:0 3px 13px #142e4452}
+.portfolio-v17 .rg-globe-nodes>button[data-market=US][aria-pressed=true]>span{font-size:19px;letter-spacing:.06em}
 .portfolio-v17 .rg-globe-nodes>button[aria-pressed=true]::before{background:#fff2d0;box-shadow:0 0 9px 3px #e8c782b0}
 .portfolio-v17 .rg-globe[data-layer=study] .rg-globe-nodes>button[data-in-study=false]{display:none}
 .portfolio-v17 .rg-globe[data-layer=study] .rg-globe-nodes>button[data-in-study=true]::before{background:#fff2d0;box-shadow:0 0 8px 2px #e8c782b0}
@@ -41,5 +53,5 @@
 .portfolio-v17 .rg-globe-nodes>button[data-market=UK]>span{top:-12px;left:auto;right:29px}
 @media(min-width:700px){.portfolio-v17 .pf-hero-layout{align-items:start}.portfolio-v17 .pf-hero-copy{position:sticky;top:120px;margin-top:70px;padding-top:0}}
 @media(min-width:700px) and (max-width:1100px){.portfolio-v17 .rg-globe-toolbar{gap:8px}}
-@media(max-width:699px){.portfolio-v17 .rg-globe-stage{max-height:none;aspect-ratio:1.07}.portfolio-v17 .rg-globe-note{font-size:8px}.portfolio-v17 .rg-globe-toolbar{margin-top:14px;gap:6px}.portfolio-v17 .rg-globe-styles button{font-size:10px;padding-inline:9px;gap:5px}.portfolio-v17 .rg-globe-views button{font-size:10px;padding-inline:8px}}
+@media(max-width:699px){.portfolio-v17 .rg-globe-stage{max-height:none;aspect-ratio:1.08}.portfolio-v17 .rg-globe-note{font-size:10px}.portfolio-v17 .rg-globe-toolbar{margin-top:10px;gap:6px}.portfolio-v17 .rg-atlas-head{gap:4px 6px;padding-bottom:4px}.portfolio-v17 .rg-atlas-head h2{font-size:13px;gap:6px}.portfolio-v17 .rg-atlas-head h2::before{width:8px}.portfolio-v17 .rg-globe-styles button{font-size:11px;padding-inline:7px;gap:4px}.portfolio-v17 .rg-globe-styles svg{width:14px;height:14px}.portfolio-v17 .rg-globe-views button{font-size:11px;padding-inline:8px;gap:6px}}
 @media(prefers-reduced-motion:reduce){.portfolio-v17 .rg-globe button{transition:none}}

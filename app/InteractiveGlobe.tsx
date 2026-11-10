@@ -23,7 +23,7 @@ export default function InteractiveGlobe({ language, paused, ready, linkedStudy,
   const focus = useRef<((lon: number, lat: number) => void) | null>(null), active = useRef(8);
   const changeStyle = useRef<((network: boolean) => void) | null>(null), redraw = useRef<(() => void) | null>(null);
   const renderMask = useRef(allResearchLinks);
-  const [renderer, setRenderer] = useState("loading"), [selected, setSelected] = useState("CN"), [requestedStyle, setStyle] = useState("earth");
+  const [renderer, setRenderer] = useState("loading"), [selected, setSelected] = useState("CN"), [requestedStyle, setStyle] = useState("network");
   const [view, setView] = useState("CN"), [study, setStudy] = useState(0);
   const [caseOnly, setCaseOnly] = useState(false);
   const [lastLinkedStudy, setLastLinkedStudy] = useState<number | null>(null);
@@ -75,7 +75,8 @@ export default function InteractiveGlobe({ language, paused, ready, linkedStudy,
     }
     gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LEQUAL); gl.enable(gl.CULL_FACE); gl.cullFace(gl.BACK); gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); gl.clearColor(0, 0, 0, 0);
     const uo = gl.getUniformLocation(program, "orientation"), ur = gl.getUniformLocation(program, "resolution"), ua = gl.getUniformLocation(program, "activeMarket"), un = gl.getUniformLocation(program, "networkView"), uReveal = gl.getUniformLocation(program, "routeReveal"), uClock = gl.getUniformLocation(program, "clock"), uPixel = gl.getUniformLocation(program, "pixelRatio"), uMask = gl.getUniformLocation(program, "caseMarketMask");
-    gl.uniform2f(gl.getUniformLocation(program, "routeShape"), researchRouteShape.baseRadius, researchRouteShape.lift);
+    gl.uniform3f(gl.getUniformLocation(program, "routeShape"), researchRouteShape.baseRadius, researchRouteShape.lift, researchRouteShape.bend);
+    gl.uniform2f(gl.getUniformLocation(program, "flow"), researchRouteShape.flowRate, researchRouteShape.phases.length);
     const texture = gl.createTexture(); gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, texture); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, new Uint8Array([8, 30, 45]));
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.uniform1i(gl.getUniformLocation(program, "earth"), 0);
@@ -86,9 +87,13 @@ export default function InteractiveGlobe({ language, paused, ready, linkedStudy,
     let frame = 0, alive = true, visible = true, loaded = false, surfaceReady = false, cloudsReady = false, painted = false, failed = false, pointer = -1, lastX = 0, lastY = 0;
     let networkBlend = 0, networkTarget = 0, routeReveal = 1, lastFrame = 0, flowClock = 0, resizePending = false;
     const current=[105,30], target=[105,30];
+    let lastProjection = "";
     const nodeLabels = labels.current?.querySelectorAll<HTMLElement>("[data-market]");
     function draw(now: number) {
       frame = 0; if (!alive || !visible || document.hidden || !loaded) return;
+      const moving = Math.abs(current[0] - target[0]) + Math.abs(current[1] - target[1]) > .04 || Math.abs(networkBlend - networkTarget) > .001 || routeReveal < 1;
+      // A still camera only needs to repaint the travelling lights, not every display refresh.
+      if (!resizePending && !moving && !motion.current && networkTarget > .01 && lastFrame && now - lastFrame < 1000 / 32) { frame = requestAnimationFrame(draw); return; }
       resizePending = false;
       const delta = Math.min(.06, lastFrame ? Math.max(0, (now - lastFrame) / 1000) : .016); lastFrame = now;
       const speed = motion.current ? 1 : .13; current[0] += (target[0] - current[0]) * speed; current[1] += (target[1] - current[1]) * speed;
@@ -103,11 +108,15 @@ export default function InteractiveGlobe({ language, paused, ready, linkedStudy,
       gl!.disable(gl!.CULL_FACE); gl!.drawArrays(gl!.TRIANGLES, (globe.length + atmosphere.length) / 8, network.triangles);
       gl!.drawArrays(gl!.POINTS, (globe.length + atmosphere.length) / 8 + network.triangles, network.points + network.particles); gl!.enable(gl!.CULL_FACE); gl!.depthMask(true);
       if (!painted) { if (gl!.getError() !== gl!.NO_ERROR) { fail(); return; } painted = true; setRenderer("webgl"); }
-      nodeLabels?.forEach((label, i) => {
-        const p = projectPoint(researchMarkets[i].lon, researchMarkets[i].lat, current[0], current[1], el!.width / el!.height);
-        label.hidden = !p.visible; label.style.left = `${p.x * 100}%`; label.style.top = `${p.y * 100}%`;
-      });
-      el!.dataset.longitude = current[0].toFixed(2); el!.dataset.latitude = current[1].toFixed(2);
+      const longitude = current[0].toFixed(2), latitude = current[1].toFixed(2), projection = `${longitude}/${latitude}/${el!.width}/${el!.height}`;
+      if (projection !== lastProjection) {
+        lastProjection = projection;
+        nodeLabels?.forEach((label, i) => {
+          const p = projectPoint(researchMarkets[i].lon, researchMarkets[i].lat, current[0], current[1], el!.width / el!.height);
+          label.hidden = !p.visible; label.style.left = `${p.x * 100}%`; label.style.top = `${p.y * 100}%`;
+        });
+        el!.dataset.longitude = longitude; el!.dataset.latitude = latitude;
+      }
       el!.dataset.networkBlend = networkBlend.toFixed(3); el!.dataset.routeReveal = routeReveal.toFixed(3);
       el!.dataset.flowClock = flowClock.toFixed(3); el!.dataset.routes = String(network.edges.length);
       el!.dataset.lightPackets = String(network.particles);
@@ -148,7 +157,7 @@ export default function InteractiveGlobe({ language, paused, ready, linkedStudy,
     const nightImage = new window.Image(); el.dataset.nightTexture = "loading";
     nightImage.onload = () => { if (!alive || failed) return; if (nightImage.width > gl!.getParameter(gl!.MAX_TEXTURE_SIZE)) { el!.dataset.nightTexture = "unavailable"; return; } gl!.activeTexture(gl!.TEXTURE2); gl!.bindTexture(gl!.TEXTURE_2D, nightTexture); gl!.texImage2D(gl!.TEXTURE_2D, 0, gl!.RGB, gl!.RGB, gl!.UNSIGNED_BYTE, nightImage); gl!.generateMipmap(gl!.TEXTURE_2D); gl!.texParameteri(gl!.TEXTURE_2D, gl!.TEXTURE_MIN_FILTER, gl!.LINEAR_MIPMAP_LINEAR); el!.dataset.nightTexture = "ready"; wake(); };
     nightImage.onerror = () => { if (alive) el!.dataset.nightTexture = "unavailable"; }; nightImage.src = `${base}/images/earth-night-2016.jpg`;
-    function down(e: globalThis.PointerEvent) { if (!loaded) return; pointer = e.pointerId; lastX = e.clientX; lastY = e.clientY; el!.setPointerCapture(pointer); el!.dataset.dragging = "true"; }
+    function down(e: globalThis.PointerEvent) { if (!loaded || !e.isPrimary || e.button !== 0) return; pointer = e.pointerId; lastX = e.clientX; lastY = e.clientY; el!.setPointerCapture(pointer); el!.dataset.dragging = "true"; }
     function move(e: globalThis.PointerEvent) { if (e.pointerId !== pointer) return; target[0] -= (e.clientX - lastX) * .35; target[1] = Math.max(-65, Math.min(65, target[1] + (e.clientY - lastY) * .24)); lastX = e.clientX; lastY = e.clientY; setView("FREE"); wake(); }
     function up(e: globalThis.PointerEvent) { if (e.pointerId !== pointer) return; if (el!.hasPointerCapture(pointer)) el!.releasePointerCapture(pointer); pointer = -1; el!.dataset.dragging = "false"; }
     function key(e: globalThis.KeyboardEvent) {
@@ -213,21 +222,28 @@ export default function InteractiveGlobe({ language, paused, ready, linkedStudy,
   return <div className="rg-globe" data-renderer={renderer} data-view={renderer === "webgl" ? view : "CN"} data-market-selection={selected} data-style={style} data-market-ready={ready} data-layer={showingCoverage ? "study" : "all"} data-map-link={linkedStudy !== null}>
     {!ready && <StudyMapBriefs language={language}/>}
     {linkedStudy !== null && <StudyMapAddress index={currentStudy.index} language={language}/>}
+    <header className="rg-atlas-head">
+      <h2>{loc("多国研究地图", "Research atlas")}</h2>
+      <div className="rg-globe-styles" role="group" aria-label={loc("地球显示方式", "Globe display style")}>
+        <button type="button" disabled={renderer !== "webgl"} aria-pressed={style === "network"} aria-label={loc("研究网络", "Research network")} onClick={() => chooseStyle("network")}><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 6 12 2-5 10L6 6l12 2M6 6l7 12"/><circle cx="6" cy="6" r="2"/><circle cx="18" cy="8" r="2"/><circle cx="13" cy="18" r="2"/></svg>{loc("研究网络", "Network")}</button>
+        <button type="button" disabled={renderer !== "webgl"} aria-pressed={style === "earth"} aria-label={loc("卫星地形", "Satellite terrain")} onClick={() => chooseStyle("earth")}><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="m5 14 5-6 4 5 2-2 3 4"/></svg>{loc("卫星地形", "Terrain")}</button>
+      </div>
+    </header>
     <div className="rg-globe-stage" id="rg-globe-stage" onKeyDown={keyboard}><div className="rg-globe-shadow"/><Image className="rg-earth-poster" src={`${base}/images/earth-china-poster.webp?v=${earthPosterRevision}`} width={768} height={768} alt={loc("中国视角的地球", "Earth centered on China")} aria-hidden={renderer === "webgl" || linkedStudy !== null} unoptimized priority draggable={false}/>
       <canvas ref={canvas} className="rg-globe-canvas" tabIndex={renderer === "webgl" ? 0 : -1} role="img" aria-hidden={renderer !== "webgl"} aria-label={loc("可旋转地球。拖动改变视角，方向键旋转，Home返回中国。", "Interactive globe. Drag or use arrow keys to rotate. Home centers China.")} onDragStart={e => e.preventDefault()}/>
       <div className="rg-globe-nodes" ref={labels}>{researchMarkets.map((p, i) => <button type="button" data-market={p.code} data-in-study={Boolean(coverage.mask & (1 << i))} key={p.code} hidden disabled={renderer !== "webgl"} aria-label={loc(`查看${p.zh}研究项目`, `View research in ${p.en}`)} aria-controls="rg-market-research" aria-pressed={selected === p.code} onClick={() => exploreFromGlobe(p.code)}><span>{p.code}</span></button>)}</div>
-      <span className="rg-globe-note" role="status">{!ready ? "" : renderer === "fallback" ? loc("仍可在下方选择市场", "SELECT A MARKET BELOW") : renderer === "loading" ? loc("正在准备地球交互", "PREPARING INTERACTIVE VIEW") : loc("拖动旋转 · 点击标记查看案例", "DRAG TO ROTATE · SELECT A MARKET PIN")}</span>
+      <span className="rg-globe-note" role="status">{!ready ? "" : renderer === "fallback" ? loc("选择市场查看案例", "Choose a market to see its cases") : renderer === "loading" ? loc("正在载入地图", "Loading map") : loc("拖动旋转 · 选择市场查看案例", "Drag to rotate · Select a market to see its cases")}</span>
     </div>
-    <div className="rg-globe-toolbar"><div className="rg-globe-styles" role="group" aria-label={loc("地球显示方式", "Globe display style")}><button type="button" disabled={renderer !== "webgl"} aria-pressed={style === "earth"} onClick={() => chooseStyle("earth")}><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8"/><ellipse cx="12" cy="12" rx="4" ry="8"/><path d="M4 12h16"/></svg>{loc("卫星", "Satellite")}</button><button type="button" disabled={renderer !== "webgl"} aria-pressed={style === "network"} onClick={() => chooseStyle("network")}><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 6 12 2-5 10L6 6l12 2M6 6l7 12"/><circle cx="6" cy="6" r="2"/><circle cx="18" cy="8" r="2"/><circle cx="13" cy="18" r="2"/></svg>{loc("研究网络", "Research network")}</button></div>
-    <div className="rg-globe-views" role="group" aria-label={loc("地球主体视角", "Globe focal view")}>
-      <button type="button" disabled={renderer !== "webgl"} aria-pressed={view === "CN"} aria-label={loc("中国视角", "China view")} onClick={() => choose("CN")}>{loc("中国", "China")}</button>
-      <button type="button" disabled={renderer !== "webgl"} aria-pressed={view === "US"} aria-label={loc("美国视角", "U.S. view")} aria-controls="rg-market-research" onClick={() => choose("US")}>{loc("美国", "U.S.")}</button>
+    <div className="rg-globe-toolbar">
+    <div className="rg-globe-views" role="group" aria-label={loc("快速选择市场", "Market shortcuts")}>
+      <button type="button" aria-pressed={view === "CN"} aria-label={loc("中国视角 · 多国研究", "China view · Multi-country studies")} aria-controls="rg-market-research" onClick={() => choose("CN")}><span className="rg-view-code">CN</span>{loc("多国研究", "Multi-country")}</button>
+      <button type="button" className="rg-us-shortcut" aria-pressed={selected === "US"} aria-label={loc("查看美国研究", "View U.S. studies")} aria-controls="rg-market-research" onClick={() => exploreFromGlobe("US")}><span className="rg-view-code">US</span>{loc("美国案例", "U.S. cases")}<span className="rg-view-arrow" aria-hidden="true">↓</span></button>
     </div>
     <div className="rg-network-key" hidden={style !== "network"} aria-label={loc("研究连线图例", "Research link legend")}>
       <div className="rg-key-legend">
         {showingCoverage
           ? <span className="rg-key-markets"><i aria-hidden="true"/>{loc("本案例涉及市场", "Markets in this study")}</span>
-          : <><span><i aria-hidden="true"/>{selectedPlace ? loc("当前市场连线", "Selected market links") : loc("北京起点", "Beijing hub")}</span><span><i aria-hidden="true"/>{loc("其他研究连线", "Other research links")}</span></>}
+          : <><span><i aria-hidden="true"/>{selectedPlace ? loc("当前市场连线", "Selected market links") : loc("北京连线", "Beijing links")}</span><span><i aria-hidden="true"/>{loc("其他研究连线", "Other research links")}</span></>}
       </div>
       {hasCoverage && <button className="rg-case-layer" type="button" aria-pressed={showingCoverage} aria-controls="rg-globe-stage" onClick={() => setCaseOnly(value => !value)}>
         <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 2.5H2.5V6m7.5-3.5h3.5V6M6 13.5H2.5V10m7.5 3.5h3.5V10"/><circle cx="8" cy="8" r="1.5"/></svg>

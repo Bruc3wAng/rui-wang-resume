@@ -25,7 +25,10 @@ export function studyGlobeCoverage(markets: readonly string[]) {
 }
 
 const radians = Math.PI / 180;
-export const researchRouteShape = { baseRadius: 1.010, lift: .030, halfWidth: .0078, phases: [0, 1 / 3, 2 / 3] } as const;
+export const researchRouteShape = {
+  baseRadius: 1.012, lift: .069, bend: .104, halfWidth: .0105,
+  flowRate: .105, phases: [0, .2, .4, .6, .8],
+} as const;
 // Same camera and projection as the WebGL view; used to bake its first-paint image.
 export function spherePoint(clipX: number, clipY: number, radius = 1) {
   const scale = 4.2 / 1.12, dx = clipX / scale, dy = clipY / scale;
@@ -79,8 +82,9 @@ export function networkMesh(groups: readonly (readonly string[])[] = []) {
     const normal = [start[1] * end[2] - start[2] * end[1], start[2] * end[0] - start[0] * end[2], start[0] * end[1] - start[1] * end[0]];
     const length = Math.hypot(...normal), side = normal.map(v => v / length);
     function vertex(t: number, direction: number) {
-      const r = researchRouteShape.baseRadius + researchRouteShape.lift * Math.sin(Math.PI * t), divisor = Math.sin(angle);
-      const point = start.map((v, i) => r * (v * Math.sin((1 - t) * angle) + end[i] * Math.sin(t * angle)) / divisor + side[i] * researchRouteShape.halfWidth * direction);
+      const rise = Math.sin(Math.PI * t), r = researchRouteShape.baseRadius + researchRouteShape.lift * rise;
+      const offset = rise * researchRouteShape.bend * Math.min(1, angle * 1.6) + researchRouteShape.halfWidth * direction;
+      const point = start.map((v, i) => r * (v * Math.sin((1 - t) * angle) + end[i] * Math.sin(t * angle)) / Math.sin(angle) + side[i] * offset);
       data.push(...point, t, direction, 0, 1, code);
     }
     for (let i = 0; i < segments; i++) {
@@ -91,7 +95,7 @@ export function networkMesh(groups: readonly (readonly string[])[] = []) {
   }
   const triangles = data.length / 8;
   places.forEach((p, market) => data.push(...p.map(v => v * 1.018), 0, 0, 0, 2, market * 16 + market));
-  // Three light packets per existing path. The GPU moves them; no per-frame mesh uploads.
+  // Light packets trace the same curves on the GPU; no per-frame mesh uploads.
   edges.forEach(([a, b]) => {
     for (const phase of researchRouteShape.phases) data.push(...places[a], ...places[b], 4 + phase, a * 16 + b);
   });

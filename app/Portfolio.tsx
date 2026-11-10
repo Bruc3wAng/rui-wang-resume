@@ -514,7 +514,6 @@ export function Portfolio({ language }: { language: Language }) {
           <HeroCaseIndex language={language} onOpen={openFeaturedStudy}/>
         </div>
         <div className="pf-hero-world">
-          <div className="pf-world-label"><span>{local(language, "多国研究地图", "RESEARCH BY MARKET")}</span><span>{local(language, "选择市场，查看研究项目", "Select a market to see its studies")}</span></div>
           <InteractiveGlobe language={language} paused={paused} ready={fragment !== null} linkedStudy={linkedMap >= 0 ? linkedMap : null} onExplore={openWorkFromMarket} onViewMap={setMapLocation}/>
         </div>
       </div>

@@ -4,7 +4,7 @@ import test from "node:test";
 import { cases, selectedWork } from "../content/resume.ts";
 import { caseWorkIndices, mapMarketForStudy, mapStudyIds, marketIndexScrollDelta, marketStudyIndex, preferredMarketStudyIndex, researchForMarket } from "../app/globe-research.ts";
 import { mapFragment, mapIndexFromFragment, portfolioLocaleHref } from "../app/study-location.ts";
-import { allResearchLinks, networkMesh, researchMarkets, researchRouteShape, studyGlobeCoverage } from "../app/globe-geometry.ts";
+import { allResearchLinks, networkMesh, researchMarkets, researchRouteShape, studyGlobeCoverage, worldPoint } from "../app/globe-geometry.ts";
 import { earthFragment, earthMaterial, earthVertex, shadeEarth } from "../app/earth-material.ts";
 import { marketStudyPresentation } from "../content/market-studies.ts";
 
@@ -24,7 +24,7 @@ test("filters every verified study without attributing brand tracking to an over
 
 test("builds visible surface ribbons and light packets only between verified co-study markets", () => {
   const groups=cases.slice(0,2).map(item=>item.markets),mesh=networkMesh(groups);
-  assert.equal(mesh.edges.length,35);assert.equal(mesh.points,9);assert.equal(mesh.particles,105);
+  assert.equal(mesh.edges.length,35);assert.equal(mesh.points,9);assert.equal(mesh.particles,175);
   assert.equal(mesh.triangles,35*48*6);
   assert.equal(mesh.data.length/8,mesh.triangles+mesh.points+mesh.particles);
   assert.ok(mesh.data.every(Number.isFinite));
@@ -33,7 +33,7 @@ test("builds visible surface ribbons and light packets only between verified co-
     assert.ok(a!==b);assert.ok(a===8||groups.some(group=>group.includes(researchMarkets[a].code)&&group.includes(researchMarkets[b].code)));
   }
   for(let i=0;i<mesh.triangles*8;i+=8) {
-    const r=Math.hypot(...mesh.data.slice(i,i+3));assert.ok(r>1.009&&r<1.041);
+    const r=Math.hypot(...mesh.data.slice(i,i+3));assert.ok(r>1.011&&r<1.090);
     assert.equal(mesh.data[i+6],1);assert.ok(mesh.data[i+3]>=0&&mesh.data[i+3]<=1);
     assert.ok(Math.abs(mesh.data[i+4])===1);
   }
@@ -45,12 +45,28 @@ test("builds visible surface ribbons and light packets only between verified co-
   }
   assert.equal(routePackets.size,mesh.edges.length);
   for(const [a,b] of mesh.edges){
-    const phases=routePackets.get(a*16+b);assert.equal(phases.length,3);
+    const phases=routePackets.get(a*16+b);assert.equal(phases.length,5);
     phases.forEach((phase,i)=>assert.ok(Math.abs(phase-researchRouteShape.phases[i])<1e-6));
   }
-  assert.match(earthVertex,/clock\*\.14/);assert.match(earthFragment,/edgeDistance/);
+  assert.match(earthVertex,/clock\*flow\.x/);assert.match(earthFragment,/edgeDistance/);
   assert.match(earthFragment,/dots=.*\(1\.-water\)/);
   assert.doesNotMatch(earthFragment,/torus|ringGeometry/);
+});
+
+test("bends the ribbons without inventing locations or breaking the anchor positions", () => {
+  const mesh=networkMesh([cases[0].markets,cases[1].markets]);
+  const points=[...researchMarkets.map(place=>worldPoint(place.lon,place.lat)),worldPoint(116.4,39.9)];
+  const ribbonCenter=(row,other)=>points[0].map((_,i)=>(mesh.data[row*8+i]+mesh.data[other*8+i])/2);
+  for(const [[a,b],index] of mesh.edges.map((edge,i)=>[edge,i])) {
+    const start=index*mesh.segments*6, middle=start+mesh.segments*3, last=start+(mesh.segments-1)*6;
+    const centers=[ribbonCenter(start,start+1),ribbonCenter(middle,middle+1),ribbonCenter(last+2,last+5)];
+    for(const [point,expected] of [[centers[0],points[a]],[centers[2],points[b]]]) {
+      assert.ok(point.every((v,i)=>Math.abs(v-expected[i]*researchRouteShape.baseRadius)<1e-6));
+    }
+    const [u,v,w]=points[a], [x,y,z]=points[b], side=[v*z-w*y,w*x-u*z,u*y-v*x];
+    const offset=centers[1].reduce((sum,value,i)=>sum+value*side[i],0)/Math.hypot(...side);
+    assert.ok(offset>.01&&offset<=researchRouteShape.bend+1e-6);
+  }
 });
 
 test("keeps the styled satellite surface deterministic for both live and first-paint views", () => {
@@ -61,19 +77,23 @@ test("keeps the styled satellite surface deterministic for both live and first-p
   assert.ok(sea.every(v=>Number.isFinite(v)&&v>=0&&v<=1));
   assert.ok(land[0]>sea[0]&&land[1]>sea[1]);
   assert.ok(land[0]>land[2]&&sea[2]>sea[0]);
-  assert.ok(earthMaterial.cloudOpacity<.4);
-  assert.match(earthFragment,/cloud\*0\.35/);
+  assert.ok(earthMaterial.cloudOpacity<.12);
+  assert.ok(earthMaterial.terrainBands>=4&&earthMaterial.terrainBandMix>.4);
+  assert.ok(earthFragment.includes(`mix(relief,terraces,${earthMaterial.terrainBandMix})`));
+  assert.ok(earthFragment.includes(`cloud*${earthMaterial.cloudOpacity}`));
 });
 
 test("uses actual route shape for the moving lights and distinguishes mode from camera", async () => {
   const ui=await readFile(new URL("../app/InteractiveGlobe.tsx",import.meta.url),"utf8");
-  assert.match(earthVertex,/routeShape\.x\+routeShape\.y\*sin/);
-  assert.match(ui,/researchRouteShape\.baseRadius, researchRouteShape\.lift/);
+  assert.match(earthVertex,/routeShape\.x\+routeShape\.y\*rise/);
+  assert.match(earthVertex,/normalize\(cross\(position,normal\)\)\*\(rise\*routeShape\.z/);
+  assert.match(ui,/researchRouteShape\.baseRadius, researchRouteShape\.lift, researchRouteShape\.bend/);
   assert.match(earthFragment,/if\(networkView<\.01\)discard/);
   assert.match(earthFragment,/alpha\*limb\*networkView/);
   assert.match(earthFragment,/smoothstep\(\.12,\.36,normalize\(point\)\.z\)/);
   assert.match(earthFragment,/smoothstep\(silhouette-\.012,silhouette,screenDistance\)/);
-  assert.match(ui,/aria-pressed=\{view === "US"\}[^>]*aria-label=\{loc\("美国视角", "U\.S\. view"\)\}/);
+  assert.match(ui,/className="rg-us-shortcut"[^>]*aria-controls="rg-market-research" onClick=\{\(\) => exploreFromGlobe\("US"\)\}/);
+  assert.match(ui,/\[requestedStyle, setStyle\] = useState\("network"\)/);
   assert.match(ui,/className="rg-network-key" hidden=\{style !== "network"\}/);
   assert.match(ui,/if \(el!\.width !== width \|\| el!\.height !== height\)/);
   assert.match(ui,/cancelAnimationFrame\(frame\); lastFrame = 0; draw\(performance\.now\(\)\)/);

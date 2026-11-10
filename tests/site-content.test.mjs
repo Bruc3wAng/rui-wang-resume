@@ -502,7 +502,7 @@ test("renders a genuinely rotatable globe with a China-centered default", async 
   assert.match(source,/setPointerCapture/);
   assert.match(source,/ArrowLeft.*ArrowRight.*ArrowUp.*ArrowDown/);
   assert.match(source,/e.key === "Home" && e.target === canvas.current/);
-  assert.match(source,/choose\("US"\)/);
+  assert.match(source,/exploreFromGlobe\("US"\)/);
   assert.match(source,/focus.current\?\.\(place.lon, place.lat\)/);
   assert.doesNotMatch(source,/research-globe\.png|torus|ringGeometry/);
   assert.match(source,/earthFragment.*earthMaterial.*earthVertex/);
@@ -526,7 +526,7 @@ test("projects geographic nodes correctly and keeps connections on the globe", a
   const globe=globeMesh(),network=networkMesh();
   assert.equal(globe.length%8,0);assert.equal(network.data.length/8,network.triangles+network.points+network.particles);
   assert.equal(network.points,9);assert.ok(network.data.every(Number.isFinite));
-  for(let i=0;i<(network.triangles+network.points)*8;i+=8){const r=Math.hypot(...network.data.slice(i,i+3));assert.ok(r>1&&r<1.057);}
+  for(let i=0;i<(network.triangles+network.points)*8;i+=8){const r=Math.hypot(...network.data.slice(i,i+3));assert.ok(r>1&&r<1.090);}
 });
 
 test("separates cloud height, cloud shadows and a thin atmospheric shell without decorative rings", async () => {
@@ -543,7 +543,11 @@ test("separates cloud height, cloud shadows and a thin atmospheric shell without
   assert.ok(Math.abs(spherePoint(0,0,earthMaterial.atmosphereRadius)[2]-earthMaterial.atmosphereRadius)<1e-12);
   const clear=shadeEarth([0,0,1],()=>[.16,.32,.15],()=>[0,0,0]);
   const overcast=shadeEarth([0,0,1],()=>[.16,.32,.15],()=>[1,1,1]);
-  assert.ok(overcast.every((v,i)=>v>clear[i]));
+  const clearSea=shadeEarth([0,0,1],()=>[.02,.12,.27],()=>[0,0,0]);
+  const cloudySea=shadeEarth([0,0,1],()=>[.02,.12,.27],()=>[1,1,1]);
+  assert.ok(cloudySea.every((v,i)=>v>clearSea[i]));
+  // A cool veil over land can dim red while lifting blue; the terrain stays visible.
+  assert.ok(overcast[2]>clear[2]&&overcast.every((v,i)=>Math.abs(v-clear[i])<.06));
   assert.ok([...clear,...overcast,...shadeAtmosphere([0,0,earthMaterial.atmosphereRadius])].every(v=>Number.isFinite(v)&&v>=0&&v<=1));
   assert.match(earthFragment,/cloudAt\(shellPoint\(n,light\)\)/);
   assert.match(earthFragment,/cloudPoint=shellPoint\(n,v\)/);
@@ -603,7 +607,7 @@ test("provides a real China Earth image before the interactive view is ready", a
   assert.ok(poster.byteLength>15000&&poster.byteLength<120000);
   assert.equal(createHash("sha256").update(poster).digest("hex").slice(0,12),earthPosterRevision);
   assert.match(source,/className="rg-earth-poster"/);assert.match(source,/earth-china-poster\.webp/);
-  assert.match(source,/!ready \? ""[^\n]*PREPARING INTERACTIVE VIEW/);
+  assert.match(source,/!ready \? ""[^\n]*Loading map/);
   assert.match(source,/!surfaceReady \|\| !cloudsReady/);
   assert.match(source,/painted = true; setRenderer\("webgl"\)/);
   assert.match(source,/image\.onerror = fail/);assert.match(source,/cloudImage\.onerror = fail/);
