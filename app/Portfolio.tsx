@@ -23,6 +23,8 @@ import { heroBrief, heroCases } from "./hero-brief";
 import { aiWorkflowProofFor } from "./ai-workflow-proof";
 import RelativeWeightExample, { relativeWeightExampleId, relativeWeightTitleId, WeightExampleLink } from "./RelativeWeightExample";
 import { relativeWeightFragment, relativeWeightOutput, relativeWeightPractice } from "./relative-weight";
+import TableCheckExample, { tableCheckId, tableCheckTitleId, TableCheckExampleLink } from "./TableCheckExample";
+import { tableCheckFragment, tableCheckOutput } from "./table-check";
 import { PlatformQuestionGuide, ResearchPlatformStory, platformGuideFragment, platformGuideTitle, platformPractice, platformStoryFragment, platformStoryTitle } from "./ResearchPlatform";
 import { browserPortfolioFragment, mapFragment, mapIndexFromFragment, outputFragment, outputFromFragment, portfolioLocaleHref, practiceFragment, practiceIndexFromFragment, staticPortfolioFragment, studyFragment, studyHistoryInitializer, studyIndexFromFragment, subscribePortfolioFragment, updatePortfolioFragment, type HistoryMode } from "./study-location";
 import "./portfolio.css";
@@ -59,6 +61,7 @@ const workAIPracticeById: Record<string, string | undefined> = {
 const workOutputs = selectedWork.map(work => ({ id: work.id, outputs: workStudyCopyFor(work.id).outputs }));
 const weightPracticeIndex = aiPractice.findIndex(practice => practice.id === relativeWeightPractice);
 const platformPracticeIndex = aiPractice.findIndex(practice => practice.id === platformPractice);
+const tableCheckWorkIndex = selectedWork.findIndex(work => work.id === tableCheckOutput.study);
 function relatedStudyForPractice(id: string) { return selectedWork.findIndex(work => workAIPracticeById[work.id] === id); }
 function isPlainLinkActivation(event: MouseEvent<HTMLAnchorElement>) { return event.button === 0 && !event.metaKey && !event.ctrlKey && !event.altKey && !event.shiftKey; }
 function practiceLanding(index: number) {
@@ -149,6 +152,7 @@ function ResearchObject({ active, language, paused, ready, outputIndex, onSelect
       <div className="pf-folio-output-tabs" role="tablist" aria-orientation="vertical" aria-label={local(language, "选择研究交付", "Choose a research output")}>{story.outputs.map((title, i) => <button type="button" role="tab" key={title.id} ref={i === output ? selectedOutput : undefined} id={`pf-folio-output-${active}-${i}`} aria-controls={detailId} aria-selected={output === i} tabIndex={output === i ? 0 : -1} onClick={() => onSelect(i, "replace")} onKeyDown={e => tabs(e, i, story.outputs.length, n => onSelect(n, "replace"))}><span aria-hidden="true">0{i + 1}</span>{title[language]}<span aria-hidden="true">↗</span></button>)}</div>
       <div className="pf-folio-detail" id={detailId} role="tabpanel" aria-labelledby={`pf-folio-output-${active}-${output}`} key={output}><dl><div><dt>{local(language, "我做的部分", "My contribution")}</dt><dd>{description.content[language]}</dd></div><div><dt>{local(language, "研究用途", "Research purpose")}</dt><dd>{description.purpose[language]}</dd></div></dl></div>
       {open && work.id === relativeWeightOutput.study && story.outputs[output].id === relativeWeightOutput.output && <WeightExampleLink language={language} className="rw-folio-link"/>}
+      {open && work.id === tableCheckOutput.study && story.outputs[output].id === tableCheckOutput.output && <TableCheckExampleLink language={language} className="tc-folio-link"/>}
       {open && <CopyPortfolioLink key={story.outputs[output].id} fragment={outputFragment(work.id, story.outputs[output].id)} kind="output" language={language}/>}
     </div>
     <div className="pf-folio-front" aria-hidden={open} inert={open}>
@@ -180,13 +184,15 @@ function WorkOutputBriefs({ index, language }: { index: number; language: Langua
       <p className="pf-output-brief-context">{work.title[language]} · {responsibilityLabel(work.role[language])}</p>
       <h4 id={`${id}-title`}>{output[language]}</h4>
       <dl><div><dt>{local(language, "我做的部分", "My contribution")}</dt><dd>{descriptions[i].content[language]}</dd></div><div><dt>{local(language, "研究用途", "Research purpose")}</dt><dd>{descriptions[i].purpose[language]}</dd></div></dl>
-      <div className="pf-output-brief-links"><a href={studyFragment(work.id)}>{local(language, "返回案例", "Back to case")}</a>{work.id === relativeWeightOutput.study && output.id === relativeWeightOutput.output && <WeightExampleLink language={language}/>}<a href={portfolioLocaleHref(base, other, fragment)} hrefLang={other === "zh" ? "zh-CN" : "en"} lang={other === "zh" ? "zh-CN" : "en"}>{other === "zh" ? "中文" : "English"}</a></div>
+      <div className="pf-output-brief-links"><a href={studyFragment(work.id)}>{local(language, "返回案例", "Back to case")}</a>{work.id === relativeWeightOutput.study && output.id === relativeWeightOutput.output && <WeightExampleLink language={language}/>}
+        {work.id === tableCheckOutput.study && output.id === tableCheckOutput.output && <TableCheckExampleLink language={language} className="tc-native-link"/>}
+        <a href={portfolioLocaleHref(base, other, fragment)} hrefLang={other === "zh" ? "zh-CN" : "en"} lang={other === "zh" ? "zh-CN" : "en"}>{other === "zh" ? "中文" : "English"}</a></div>
     </section>;
   });
 }
 
-function WorkStudyPanel({ index, selected, ready, compact, language, paused, onReturn, fromMarket, onExploreAI, onViewMap, outputIndex, onSelectOutput, onCloseOutput }: {
-  index: number; selected: boolean; ready: boolean; compact: boolean; language: Language; paused: boolean;
+function WorkStudyPanel({ index, selected, ready, compact, language, paused, tableCheck, onReturn, fromMarket, onExploreAI, onViewMap, outputIndex, onSelectOutput, onCloseOutput }: {
+  index: number; selected: boolean; ready: boolean; compact: boolean; language: Language; paused: boolean; tableCheck: boolean;
   onReturn: () => void; fromMarket: WorkMarketContext | null; onExploreAI: (index: number) => void; onViewMap: (index: number) => void;
   outputIndex: number | null; onSelectOutput: (output: number, mode: HistoryMode) => void; onCloseOutput: () => void;
 }) {
@@ -218,7 +224,8 @@ function WorkStudyPanel({ index, selected, ready, compact, language, paused, onR
         </a>
       </div>
       {story.ai && <div className="pf-contribution pf-case-ai-note"><h4>{local(language, "AI 用法", "How I used AI")}</h4><p>{story.ai[language]}</p></div>}
-      {(aiPracticeIndex >= 0 || mapIndex >= 0) && <div className="pf-case-paths">
+      {(aiPracticeIndex >= 0 || mapIndex >= 0 || index === tableCheckWorkIndex) && <div className="pf-case-paths">
+        {index === tableCheckWorkIndex && <TableCheckExampleLink language={language} className="tc-case-link"/>}
         {aiPracticeIndex >= 0 && <a className="pf-case-ai-link" data-ai-practice={aiPracticeIndex} href={practiceFragment(aiPractice[aiPracticeIndex].id)} onClick={event => {
           if (!isPlainLinkActivation(event)) return;
           event.preventDefault();
@@ -232,11 +239,12 @@ function WorkStudyPanel({ index, selected, ready, compact, language, paused, onR
       </div>}
     </div>
     <div className="pf-object-stage"><ResearchObject ref={folio} active={index} language={language} paused={paused} ready={ready} outputIndex={outputIndex} onSelect={onSelectOutput} onClose={onCloseOutput}/></div>
+    {index === tableCheckWorkIndex && <TableCheckExample language={language} active={tableCheck} ready={ready}/>}
   </article>;
 }
 
-function Work({ language, active, setActive, paused, ready, onExploreAI, onViewMap, marketContext, onBackToMarket, onReturnToIndex, deliverable, onSelectOutput, onCloseOutput }: {
-  language: Language; active: number; setActive: (n: number, mode?: HistoryMode) => void; paused: boolean; ready: boolean;
+function Work({ language, active, setActive, paused, ready, tableCheck, onExploreAI, onViewMap, marketContext, onBackToMarket, onReturnToIndex, deliverable, onSelectOutput, onCloseOutput }: {
+  language: Language; active: number; setActive: (n: number, mode?: HistoryMode) => void; paused: boolean; ready: boolean; tableCheck: boolean;
   onExploreAI: (index: number) => void; onViewMap: (index: number) => void; marketContext: WorkMarketContext | null; onBackToMarket: (context: WorkMarketContext) => void; onReturnToIndex: () => void;
   deliverable: LinkedOutput; onSelectOutput: (work: number, output: number, mode: HistoryMode) => void; onCloseOutput: (work: number) => void;
 }) {
@@ -271,7 +279,7 @@ function Work({ language, active, setActive, paused, ready, onExploreAI, onViewM
         </div>
         {selectedWork.map((item, index) => {
           const origin = marketContext?.workIndex === index ? marketContext : null;
-          return <WorkStudyPanel key={item.id} index={index} selected={active === index} ready={ready} compact={compact} language={language} paused={paused}
+          return <WorkStudyPanel key={item.id} index={index} selected={active === index} ready={ready} compact={compact} language={language} paused={paused} tableCheck={tableCheck}
             fromMarket={origin} onReturn={origin ? () => onBackToMarket(origin) : returnToIndex} onExploreAI={onExploreAI} onViewMap={onViewMap}
             outputIndex={deliverable?.workIndex === index ? deliverable.outputIndex : null} onSelectOutput={(output, mode) => onSelectOutput(index, output, mode)} onCloseOutput={() => onCloseOutput(index)}/>;
         })}
@@ -433,7 +441,8 @@ export function Portfolio({ language }: { language: Language }) {
   const fragment = useSyncExternalStore<string | null>(subscribePortfolioFragment, browserPortfolioFragment, staticPortfolioFragment);
   const linkedOutput = outputFromFragment(fragment, workOutputs);
   const outputLinked = linkedOutput !== null;
-  const linkedWork = linkedOutput?.workIndex ?? studyIndexFromFragment(fragment, selectedWork);
+  const tableCheck = fragment === tableCheckFragment;
+  const linkedWork = linkedOutput?.workIndex ?? (tableCheck ? tableCheckWorkIndex : studyIndexFromFragment(fragment, selectedWork));
   const weightExample = fragment === relativeWeightFragment;
   const platformGuide = fragment === platformGuideFragment;
   const platformStory = fragment === platformStoryFragment;
@@ -442,7 +451,7 @@ export function Portfolio({ language }: { language: Language }) {
   const activeWork = linkedWork < 0 ? lastWork : linkedWork;
   const activeAIPractice = linkedPractice < 0 ? aiView.practice : linkedPractice;
   const aiStage = activeAIPractice === aiView.practice ? aiView.stage : 0;
-  const localeFragment = (outputLinked || weightExample || platformGuide || platformStory) && fragment ? fragment
+  const localeFragment = (outputLinked || weightExample || tableCheck || platformGuide || platformStory) && fragment ? fragment
     : linkedWork >= 0 ? studyFragment(selectedWork[linkedWork].id)
     : linkedPractice >= 0 ? practiceFragment(aiPractice[linkedPractice].id)
     : linkedMap >= 0 ? mapFragment(mapStudyIds[linkedMap])
@@ -459,6 +468,7 @@ export function Portfolio({ language }: { language: Language }) {
     const frame = requestAnimationFrame(() => {
       if (window.location.hash !== fragment) return;
       const target = weightExample ? { scroll: relativeWeightExampleId, focus: relativeWeightTitleId }
+        : tableCheck ? { scroll: tableCheckId, focus: tableCheckTitleId }
         : platformGuide ? { scroll: platformGuideFragment.slice(1), focus: platformGuideTitle }
         : platformStory ? { scroll: platformStoryFragment.slice(1), focus: platformStoryTitle }
         : linkedWork >= 0 ? { scroll: `pf-work-panel-${linkedWork}`, focus: `pf-work-question-${linkedWork}` }
@@ -467,7 +477,7 @@ export function Portfolio({ language }: { language: Language }) {
       document.getElementById(target.focus)?.focus({ preventScroll: true });
     });
     return () => cancelAnimationFrame(frame);
-  }, [fragment, linkedWork, linkedPractice, linkedMap, outputLinked, weightExample, platformGuide, platformStory]);
+  }, [fragment, linkedWork, linkedPractice, linkedMap, outputLinked, weightExample, tableCheck, platformGuide, platformStory]);
   useEffect(() => {
     function keyboard(e: globalThis.KeyboardEvent) { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") { e.preventDefault(); setPalette(v => !v); } }
     window.addEventListener("keydown", keyboard); return () => window.removeEventListener("keydown", keyboard);
@@ -583,7 +593,7 @@ export function Portfolio({ language }: { language: Language }) {
       </div>
       <div className="pf-hero-bottom pf-wrap"><span>RESEARCH / ANALYSIS / DELIVERY</span><a href="#work">{local(language, "继续探索", "Continue exploring")}<Arrow down/></a><button type="button" onClick={() => setPaused(v => !v)} aria-pressed={paused}>{paused ? "◌" : "≈"} {local(language, paused ? "开启动效" : "暂停动效", paused ? "Enable motion" : "Pause motion")}</button></div>
     </section>
-    <Work language={language} active={activeWork} setActive={selectWork} paused={paused} ready={fragment !== null} marketContext={marketContext} onBackToMarket={backToMarket}
+    <Work language={language} active={activeWork} setActive={selectWork} paused={paused} ready={fragment !== null} tableCheck={tableCheck} marketContext={marketContext} onBackToMarket={backToMarket}
       onReturnToIndex={() => setSectionLocation("pf-work-index")} onExploreAI={openAIFromWork} onViewMap={setMapLocation}
       deliverable={linkedOutput} onSelectOutput={setOutputLocation} onCloseOutput={index => setWorkLocation(index, "replace")}/>
     <AIPractice language={language} practice={activeAIPractice} stage={aiStage} ready={fragment !== null} weightExample={weightExample} setPractice={setPracticeLocation} setStage={stage => setAIView({ practice: activeAIPractice, stage })} onExploreWork={index => { if (marketContext?.workIndex !== index) setMarketContext(null); showWork(index); }}/>

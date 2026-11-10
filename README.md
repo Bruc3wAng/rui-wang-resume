@@ -49,6 +49,8 @@ Each AI practice has a stable `#practice-…` address. Work cases link to their 
 
 The analysis workflow and the cross-market report description link to `#example-relative-weights`. The worked example holds correlations with satisfaction fixed and changes just one pairwise predictor correlation. It compares Pearson ranks with Johnson relative weights, exposes the inputs and an independent regression check of model R², and links back to the case deliverable. Two constructed scenarios render as ordinary tables and switch with native radio controls even without scripts.
 
+The search tracking case and its batch-validation tools folio link to `#example-table-check`. Three constructed groups show a match, a count discrepancy within the same definition, and equal percentages with different base definitions. The checks recalculate from binary example responses, compare definitions before counts, and never change the supplied report cells. Native radio controls and evidence disclosures work without scripts.
+
 The personal Research Data Platform prototype links to `#prototype-research-questions`. Three questions run the existing source review with comparable, single-record, and no-eligible-record scopes. The result view and all three exports use the same evidence decision; native disclosures show the decisions with scripts off. This is a presentation of the prototype's research logic using constructed records, not a publication of its database or implementation.
 
 ## Content maintenance

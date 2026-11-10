@@ -5,9 +5,62 @@ import { selectedWork } from "../content/resume.ts";
 import { workStudyCopy, workStudyCopyFor } from "../app/work-study-copy.ts";
 import { folioDescriptionsFor } from "../content/work-folios.ts";
 import { outputFragment, outputFromFragment, portfolioLocaleHref, studyFragment } from "../app/study-location.ts";
+import { exampleResponses, reviewReportCell, tableCheckFragment, tableCheckOutput, tableReview } from "../app/table-check.ts";
 const root=new URL("../",import.meta.url);
 const read=path=>readFile(new URL(path,root),"utf8");
 const escaped = value => value.replace(/[&<>"']/g, char => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#x27;" })[char]);
+
+test("recalculates example table cells from answer rows before comparing the report",()=>{
+  assert.equal(exampleResponses.length,18);
+  assert.equal(new Set(exampleResponses.map(row=>row.id)).size,18);
+  assert.deepEqual(tableReview.map(({report,check,verdict})=>[report.group,report.hits,report.base,check.hits,check.base,verdict]),[
+    ["a",3,4,3,4,"match"],["b",2,4,3,4,"mismatch"],["c",3,6,2,4,"scope"],
+  ]);
+  for(const {report,check,records} of tableReview){
+    assert.equal(records.length,6);
+    assert.ok(records.every(r=>r.group===report.group));
+    assert.equal(records.reduce((n,r)=>n+Number(r.used_last_7d),0),check.base);
+    assert.equal(records.reduce((n,r)=>n+Number(r.used_last_7d&&r.found_in_search),0),check.hits);
+  }
+  const {report,check}=tableReview[2];
+  assert.equal(report.hits*check.base,check.hits*report.base,"C has the same proportion");
+  assert.notEqual(report.scope,check.scope,"C must not be treated as a match");
+});
+
+test("does not treat a matching number or no eligible answers as a pass",()=>{
+  const matches=tableReview[0].report;
+  assert.equal(reviewReportCell(exampleResponses,{...matches,scope:"all"}).verdict,"scope");
+  assert.equal(reviewReportCell(exampleResponses,{...matches,hits:6,base:8}).verdict,"mismatch");
+  assert.equal(reviewReportCell([], {...matches,hits:0,base:0}).verdict,"empty");
+  assert.deepEqual(matches,{group:"a",scope:"recent",hits:3,base:4});
+});
+
+test("connects the static bilingual example to only its verified case and deliverable",async()=>{
+  assert.equal(tableCheckFragment,"#example-table-check");
+  assert.deepEqual(tableCheckOutput,{study:"search-tracking",output:"validation-tools"});
+  const index=selectedWork.findIndex(w=>w.id===tableCheckOutput.study);
+  assert.ok(index>=0);
+  assert.ok(workStudyCopyFor(tableCheckOutput.study).outputs.some(o=>o.id===tableCheckOutput.output));
+  const hash=outputFragment(tableCheckOutput.study,tableCheckOutput.output);
+  const targets=process.env.NEXT_PUBLIC_BASE_PATH?["out",process.env.RUI_SITES_BUILD_DIR??"dist/client"]:["out"];
+  for(const build of targets)for(const lang of ["zh","en"]){
+    const html=await read(`${build}/${lang==="en"?"en/":""}index.html`);
+    const panel=html.match(new RegExp(`<article\\b[^>]*id="pf-work-panel-${index}"[^>]*>([\\s\\S]*?)<\\/article>`))?.[1];
+    assert.ok(panel,"search case");
+    assert.equal([...html.matchAll(/id="example-table-check"/g)].length,1);
+    assert.ok(panel.includes(`class="tc-case-link" href="${tableCheckFragment}"`));
+    const brief=panel.match(new RegExp(`<section\\b[^>]*id="${hash.slice(1)}"[^>]*>([\\s\\S]*?)<\\/section>`))?.[1];
+    assert.ok(brief?.includes(`class="tc-native-link" href="${tableCheckFragment}"`));
+    const example=panel.match(/<section id="example-table-check"[^>]*>([\s\S]*?)<\/section>/)?.[1];
+    assert.ok(example);
+    assert.equal([...example.matchAll(/type="radio"/g)].length,3);
+    assert.equal([...example.matchAll(/<details class="tc-evidence"/g)].length,3);
+    assert.equal([...example.matchAll(/data-included="true"/g)].length,12);
+    assert.ok(example.includes(`href="${hash}"`));
+    assert.ok(example.includes(lang==="zh"?"示例答卷":"SAMPLE ANSWERS"));
+    assert.match(example,/data-group="c" data-verdict="scope"/);
+  }
+});
 
 test("case briefs use known study IDs, conservative claims and distinct evidenced AI work",()=>{
   assert.deepEqual(Object.keys(workStudyCopy),selectedWork.map(work=>work.id));
