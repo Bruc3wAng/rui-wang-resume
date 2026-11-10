@@ -47,7 +47,7 @@ without relying on a runtime image-optimization endpoint.
 
 ## Content maintenance
 
-Each practice leads with a runnable example: a changed analysis method, a new wave with a revised measure, or a pet-food source query. The tracking example traces each selected change to its specific updates and analyst checks while keeping the full plan and retained content visible. The visible document and text download share one output model. Each practice has three output documents; changed inputs invalidate prior results before anything can be downloaded again. The examples illustrate research rules, not client-data calculations.
+Each AI practice opens with the researcher's judgment, the work done with Codex, and the delivered result or prototype. These three steps stay visible when switching details. The runnable examples cover a changed analysis method, a new wave with a revised measure, and a pet-food source query. The tracking example traces each selected change to its specific updates and analyst checks while keeping the full plan and retained content visible. The visible document and text download share one output model. Each practice has three output documents; changed inputs invalidate prior results before anything can be downloaded again. The examples illustrate research rules, not client-data calculations.
 
 - Website copy: `content/resume.ts`
 - Chinese résumé download: `public/resume/rui-wang-resume-zh.pdf`

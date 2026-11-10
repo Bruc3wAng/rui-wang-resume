@@ -434,10 +434,9 @@ test("ships complete research panels and valid tab relationships", async () => {
 });
 
 test("presents project judgment and AI outcomes before optional exploration", async () => {
-  const { aiPractice, selectedWork } = await import("../content/resume.ts");
+  const { selectedWork } = await import("../content/resume.ts");
   assert.deepEqual(selectedWork.slice(0, 2).map(work => work.id), ["content-tracking", "brand-tracking"]);
   const targets = process.env.NEXT_PUBLIC_BASE_PATH ? ["out", sitesBuild] : ["out"];
-  const escaped = value => value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   for (const build of targets) for (const language of ["zh", "en"]) {
     const html = await readFile(new URL(`${build}/${language === "en" ? "en/" : ""}index.html`, root), "utf8");
     assert.equal([...html.matchAll(/class="pf-contribution"/g)].length, 5);
@@ -449,9 +448,8 @@ test("presents project judgment and AI outcomes before optional exploration", as
       const targets = [...panel.matchAll(/data-ai-practice="([^"]+)"/g)].map(([, value]) => value);
       assert.deepEqual(targets, i < 2 ? [String(i)] : [], "Only the two evidence-backed work-to-AI mappings are linked");
     }
-    const outcome = html.match(/<div class="pf-ai-outcome"><span>[^<]+<\/span><p>([\s\S]*?)<\/p><\/div>/)?.[1];
-    assert.equal(outcome, escaped(aiPractice[0].output[language]));
-    assert.ok(html.indexOf('class="pf-ai-outcome"') < html.indexOf('class="pf-stage-tabs"'));
+    assert.match(html, /id="pf-stage-proof-2">[^<]+<\/small>/);
+    assert.ok(html.indexOf('id="pf-stage-proof-2"') < html.indexOf('class="pf-ai-example"'));
     assert.match(html, /id="pf-ai-panel"[^>]*data-practice="0"[^>]*data-stage="0"/);
   }
 });
@@ -461,7 +459,8 @@ test("keeps AI workflow controls coordinated and company adoption separate from 
   assert.match(ui, /"content-tracking": 0, "brand-tracking": 1/);
   assert.match(ui, /data-ai-practice=\{aiPracticeIndex\}/);
   assert.match(ui, /practice < 2 && <p className="pf-adoption"/);
-  assert.match(ui, /stage !== 2 && <p>/);
+  assert.match(ui, /className="pf-ai-prototype"/);
+  assert.match(ui, /aria-describedby=\{`pf-stage-proof-\$\{i\}`\}/);
   assert.match(ui, /focusId\) document\.getElementById\(focusId\)\?\.focus\(\{ preventScroll: true \}\)/);
 });
 
