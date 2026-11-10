@@ -1,0 +1,55 @@
+.rlab-report-preview{--report-ink:#263f56;--report-muted:#496477;--report-line:#bdc9ce;--report-gold:#a18450;min-width:0;padding-top:15px;color:var(--report-ink)}
+.rlab-report-preview>header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:7px 12px;margin-bottom:12px}
+.rlab-report-preview h6{margin:0;color:var(--report-ink);font-size:13px;font-weight:600;line-height:1.4}
+.rlab-report-switch{display:flex;flex-wrap:wrap;gap:5px}
+.rlab .rlab-report-switch button{min-height:44px;padding:7px 11px;border:1px solid #aab9c0;background:#f6f4ed;color:var(--report-ink);font-size:12px;line-height:1.4;white-space:nowrap;transition:background .2s,border-color .2s}
+.rlab .rlab-report-switch button:hover{background:#e7edf0;border-color:#748e9b}
+.rlab .rlab-report-switch button[aria-pressed=true]{background:#29445d;border-color:#29445d;color:#faf7ee}
+.rlab-report-figure{margin:0;padding:12px 13px 10px;border:1px solid var(--report-line);background:#faf8f2}
+.rlab-report-figure figcaption{display:flex;flex-wrap:wrap;justify-content:space-between;gap:5px 10px;align-items:baseline;line-height:1.4}
+.rlab-report-figure figcaption strong{font-size:13px;font-weight:600;color:var(--report-ink)}
+.rlab-report-figure figcaption>span{font-size:11px;color:var(--report-muted)}
+.rlab-report-plot{display:grid;grid-template-columns:33px minmax(0,1fr);grid-template-rows:minmax(0,1fr);height:90px;margin:13px 0 22px;font-variant-numeric:tabular-nums}
+.rlab-report-axis{position:relative;color:var(--report-muted);font-size:10px;line-height:1}
+.rlab-report-axis>span{position:absolute;inset-inline-end:6px;translate:0 -50%}
+.rlab-report-axis>span:nth-child(1){top:0}
+.rlab-report-axis>span:nth-child(2){top:50%}
+.rlab-report-axis>span:nth-child(3){top:100%}
+.rlab-report-chart{position:relative;min-width:0}
+.rlab-report-chart svg{display:block;width:100%;height:100%;overflow:visible}
+.rlab-report-grid{fill:none;stroke:#d7dedf;stroke-width:1}
+.rlab-report-chart polyline{fill:none;stroke:#577789;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.rlab-report-chart rect{fill:#7a98a5}
+.rlab-report-chart rect[data-added=true]{fill:#a98a58}
+.rlab-report-values{position:absolute;inset:0;margin:0;padding:0;list-style:none}
+.rlab-report-values li{position:absolute;inset:0 auto 0 var(--plot-x);width:0}
+.rlab-report-values li>span{position:absolute;left:0;translate:-50% 0;white-space:nowrap}
+.rlab-report-rate{top:calc(var(--plot-y) - 22px);color:var(--report-ink);font-size:14px;font-weight:600;line-height:1.3}
+.rlab-report-wave{bottom:-18px;color:var(--report-muted);font-size:11px;line-height:1.2}
+.rlab-report-values i{position:absolute;top:var(--plot-y);left:0;translate:-50% -50%;width:7px;height:7px;border:1px solid #fff;border-radius:50%;background:#537486}
+.rlab-report-values li[data-report-point="3"] i{background:#a18450}
+.rlab-report-detached{display:flex;align-items:center;justify-content:space-between;gap:8px 12px;margin-top:9px;padding:8px 11px;border-left:2px solid var(--report-gold);background:#eee8da;color:#4b3b24;font-size:12px;line-height:1.5}
+.rlab-report-detached span{min-width:0}
+.rlab-report-detached small{display:block;color:#594d3b;font-size:11px}
+.rlab-report-detached strong{flex:none;font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.rlab-report-detached[data-report-missing] strong{font-size:12px}
+.rlab-report-copy{margin:10px 0 2px;padding:0;color:var(--report-muted);font-size:12px;line-height:1.62}
+.rlab-report-announcement{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.rlab .rlab-report-ledger>summary{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:44px;margin-top:4px;border-bottom:1px solid #c7d0d1;color:#2c4b63;font-size:12px;line-height:1.45;list-style:none;cursor:pointer}
+.rlab .rlab-report-ledger>summary::-webkit-details-marker{display:none}
+.rlab .rlab-report-ledger>summary::after{content:"＋";font-size:14px;font-weight:400}
+.rlab .rlab-report-ledger[open]>summary::after{content:"−"}
+.rlab .rlab-report-ledger>summary:focus-visible{outline:2px solid #785d34;outline-offset:3px}
+@media(max-width:419px){
+  .rlab [data-report-result] .rlab-result-banner{padding-bottom:14px}
+  .rlab [data-report-result] .rlab-result-actions{margin-top:12px}
+  .rlab-report-preview{padding-top:10px}
+  .rlab-report-figure{padding:10px 9px 7px}
+  .rlab-report-plot{height:76px;margin-top:11px}
+  .rlab-report-preview>header{margin-bottom:8px}
+  .rlab-report-rate{font-size:13px;top:calc(var(--plot-y) - 20px)}
+  .rlab-report-copy{margin-top:8px}
+}
+@media(min-width:360px) and (max-width:399px){.rlab [data-report-result] .rlab-result-actions{grid-template-columns:minmax(0,1fr) auto}}
+@media(prefers-reduced-motion:reduce){.rlab .rlab-report-switch button{transition:none}}
+.portfolio-v17[data-motion=still] .rlab .rlab-report-switch button{transition:none}

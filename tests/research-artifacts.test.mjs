@@ -141,13 +141,82 @@ test("tracking scope never counts retained content as an update or silently drop
   for(const language of ["zh","en"])for(let mask=0;mask<8;mask++){
     const values=[0,1,2].map(i=>Boolean(mask&(1<<i))),plan=lab.planTrackingUpdate(values);
     const doc=lab.buildResearchArtifact(1,0,values,"all",language);
-    assert.equal(doc.sections.length,3);
-    assert.equal((doc.sections[0].rows??[]).length,plan.updates.length);
-    assert.equal((doc.sections[1].rows??[]).length,plan.reviews.length);
-    assert.equal(doc.sections[2].points.length,2);
+    assert.equal(doc.sections.length,4);
+    assert.deepEqual(doc.sections[1].rows,plan.updates.map(item=>({label:item[language],text:item.action[language]})));
+    assert.deepEqual(doc.sections[2].rows,plan.reviews.map(item=>({label:item[language],text:item.action[language]})));
+    assert.equal(doc.sections[3].points.length,2);
     const review=lab.buildResearchArtifact(1,1,values,"all",language);
     assert.ok(review.sections.some(section=>(section.points??[]).length));
     if(!mask)assert.match(review.summary,/未选择变更|No changes selected/);
+  }
+});
+
+test("the report holds its historical series and appends only a same-definition wave",()=>{
+  const history=[[1,"usage-30d",.48],[2,"usage-30d",.52]];
+  const tuples=snapshot=>snapshot.trend.map(({wave,definition,rate})=>[wave,definition,rate]);
+  for(let mask=0;mask<8;mask++){
+    const [wave,revised,layout]=[0,1,2].map(i=>Boolean(mask&(1<<i)));
+    const {before,after}=lab.trackingReportFor([wave,revised,layout]);
+    assert.equal(before.format,"line");assert.equal(after.format,layout?"bars":"line");
+    assert.equal(before.trendDefinition,"usage-30d");assert.equal(after.trendDefinition,"usage-30d");
+    assert.deepEqual(tuples(before),history);
+    assert.deepEqual(tuples(after),wave&&!revised?[...history,[3,"usage-30d",.57]]:history);
+    assert.equal(before.separate,null);assert.equal(before.missingDefinition,null);
+    assert.ok(Math.abs(before.change-.04)<1e-12);
+    assert.deepEqual(after.separate,wave&&revised?{wave:3,definition:"usage-7d",rate:.38}:null);
+    assert.equal(after.missingDefinition,!wave&&revised?"usage-7d":null);
+    if(revised)assert.equal(after.change,null);
+    else assert.ok(Math.abs(after.change-(wave?.05:.04))<1e-12);
+    if(!mask)assert.deepEqual(before,after);
+    if(mask===4)assert.deepEqual(after,{...before,format:"bars"});
+  }
+  const draft=lab.trackingReportFor([true,true,false]);
+  draft.before.trend[0].rate=0;
+  draft.after.separate.rate=0;
+  const next=lab.trackingReportFor([true,true,false]);
+  assert.deepEqual(tuples(next.before),history);
+  assert.equal(next.after.separate.rate,.38);
+});
+
+test("bilingual report prose never compares the two definitions or invents missing data",()=>{
+  for(const lang of ["zh","en"]){
+    const unchanged=lab.trackingReportFor([false,false,false]);
+    const layoutOnly=lab.trackingReportFor([false,false,true]);
+    const appended=lab.trackingReportFor([true,false,false]);
+    const revised=lab.trackingReportFor([true,true,false]);
+    const missing=lab.trackingReportFor([false,true,false]);
+    const note=snapshot=>lab.trackingReportNote(snapshot,lang);
+    assert.equal(note(layoutOnly.after),note(unchanged.before));
+    assert.match(note(unchanged.before),/48\.0%.*52\.0%.*\+4\.0/);
+    assert.match(note(appended.after),/52\.0%.*57\.0%.*\+5\.0/);
+    assert.match(note(revised.after),/近 7 天使用率|7-day usage rate/);
+    assert.match(note(revised.after),/38\.0%.*(?:不直接比较|not directly comparable)/);
+    assert.doesNotMatch(note(revised.after),/57\.0%|百分点|\bpp\b|[+−-]14\.0/);
+    assert.match(note(missing.after),/暂无数据|No data yet/);
+    assert.doesNotMatch(note(missing.after),/%|百分点|\bpp\b/);
+    for(const snapshot of [unchanged.before,appended.after,revised.after,missing.after])assert.doesNotMatch(note(snapshot),/NaN|Infinity|undefined/);
+  }
+});
+
+test("the report output carries both snapshots, formats, and the exact preview prose",()=>{
+  for(const lang of ["zh","en"])for(let mask=0;mask<8;mask++){
+    const values=[0,1,2].map(i=>Boolean(mask&(1<<i))), {before,after}=lab.trackingReportFor(values);
+    const output=lab.buildResearchArtifact(1,0,values,"all",lang), report=output.sections[0];
+    assert.match(report.title,/样例报告对照|Example report comparison/);
+    const baseline=lang==="zh"?"第 1 期 48.0% · 第 2 期 52.0%":"Wave 1 48.0% · Wave 2 52.0%";
+    assert.equal(report.rows[0].text,baseline);
+    assert.equal(report.rows[1].text,mask%4===1?`${baseline} · ${lang==="zh"?"第 3 期":"Wave 3"} 57.0%`:baseline);
+    if(values[1]){
+      assert.equal(report.rows.length,4);
+      assert.match(report.rows[2].label,/近 7 天使用率|7-day usage rate/);
+      assert.equal(report.rows[2].text,values[0]?(lang==="zh"?"第 3 期 38.0%":"Wave 3 38.0%"):lab.trackingReportMissingLabel(lang));
+    }else assert.equal(report.rows.length,3);
+    assert.equal(report.rows.at(-1).text,`${lab.trackingFormatLabel(before.format,lang)} → ${lab.trackingFormatLabel(after.format,lang)}`);
+    assert.ok(report.points[0].endsWith(lab.trackingReportNote(before,lang)));
+    assert.ok(report.points[1].endsWith(lab.trackingReportNote(after,lang)));
+    const bytes=lab.serializeResearchArtifact(output,lang);
+    assert.ok(bytes.includes(report.rows[1].text));
+    assert.ok(bytes.includes(report.points[0])&&bytes.includes(report.points[1]));
   }
 });
 

@@ -110,6 +110,115 @@ export function trackingImpactForChange(values: boolean[], change: number) {
   const {updates, reviews} = planTrackingUpdate([0,1,2].map(index=>index===change));
   return {updates, reviews};
 }
+
+type UsageDefinition = "usage-30d" | "usage-7d";
+type ReportPoint = { wave: 1 | 2 | 3; definition: UsageDefinition; rate: number };
+type ReportFormat = "line" | "bars";
+export type TrackingReportSnapshot = {
+  format: ReportFormat;
+  trendDefinition: UsageDefinition;
+  trend: readonly ReportPoint[];
+} & (
+  | { separate: ReportPoint; missingDefinition: null; change: null }
+  | { separate: null; missingDefinition: UsageDefinition; change: null }
+  | { separate: null; missingDefinition: null; change: number }
+);
+export type TrackingReport = { before: TrackingReportSnapshot; after: TrackingReportSnapshot };
+
+// Constructed example data: a revised observation cannot extend the old series.
+const sampleUsageHistory: readonly ReportPoint[] = [
+  { wave: 1, definition: "usage-30d", rate: .48 },
+  { wave: 2, definition: "usage-30d", rate: .52 },
+];
+const sampleIncoming = {
+  "usage-30d": { wave: 3, definition: "usage-30d", rate: .57 },
+  "usage-7d": { wave: 3, definition: "usage-7d", rate: .38 },
+} satisfies Record<UsageDefinition, ReportPoint>;
+
+function trackingSnapshot(format: ReportFormat, incoming: ReportPoint | null, missingDefinition: UsageDefinition | null): TrackingReportSnapshot {
+  const trend = sampleUsageHistory.map(point => ({ ...point }));
+  const trendDefinition = trend[0].definition;
+  const separate = incoming && incoming.definition !== trendDefinition ? { ...incoming } : null;
+  if (separate) return { format, trendDefinition, trend, separate, missingDefinition: null, change: null };
+  if (missingDefinition) return { format, trendDefinition, trend, separate: null, missingDefinition, change: null };
+  if (incoming) trend.push({ ...incoming });
+  const latest = trend[trend.length - 1], previous = trend[trend.length - 2];
+  return { format, trendDefinition, trend, separate: null, missingDefinition: null, change: latest.rate - previous.rate };
+}
+
+export function trackingReportFor(values: readonly boolean[]): TrackingReport {
+  const definition: UsageDefinition = values[1] === true ? "usage-7d" : "usage-30d";
+  const incoming = values[0] === true ? sampleIncoming[definition] : null;
+  return {
+    before: trackingSnapshot("line", null, null),
+    after: trackingSnapshot(values[2] === true ? "bars" : "line", incoming, !incoming && definition === "usage-7d" ? definition : null),
+  };
+}
+
+export function trackingMeasureLabel(definition: UsageDefinition, language: ResearchLanguage) {
+  if (definition === "usage-7d") return language === "zh" ? "近 7 天使用率" : "7-day usage rate";
+  return language === "zh" ? "近 30 天使用率" : "30-day usage rate";
+}
+export function trackingWaveLabel(wave: number, language: ResearchLanguage) {
+  return language === "zh" ? `第 ${wave} 期` : `Wave ${wave}`;
+}
+export function trackingFormatLabel(format: ReportFormat, language: ResearchLanguage) {
+  return format === "bars" ? (language === "zh" ? "柱状图" : "Bar chart") : (language === "zh" ? "折线图" : "Line chart");
+}
+export function trackingReportMissingLabel(language: ResearchLanguage) {
+  return language === "zh" ? "暂无数据" : "No data yet";
+}
+export function trackingReportNote(snapshot: TrackingReportSnapshot, language: ResearchLanguage) {
+  const l = (zh: string, en: string) => language === "zh" ? zh : en;
+  const measure = trackingMeasureLabel(snapshot.trendDefinition, language);
+  if (snapshot.separate) {
+    const point = snapshot.separate, rate = mixRate(point.rate), wave = trackingWaveLabel(point.wave, language);
+    const revisedMeasure = trackingMeasureLabel(point.definition, language);
+    return l(`${wave}的${revisedMeasure}为 ${rate}。保留${measure}的历史趋势，两种口径不直接比较。`,
+      `${wave}: ${rate} (${revisedMeasure}). Keep the ${measure} trend. The two measures are not directly comparable.`);
+  }
+  if (snapshot.missingDefinition) {
+    const revisedMeasure = trackingMeasureLabel(snapshot.missingDefinition, language);
+    return l(`${revisedMeasure}暂无数据。保留${measure}历史趋势，不用旧口径填补新口径。`,
+      `No data yet for the ${revisedMeasure}. Keep the ${measure} history; do not use it to fill in the new measure.`);
+  }
+  const latest = snapshot.trend[snapshot.trend.length - 1], previous = snapshot.trend[snapshot.trend.length - 2];
+  const change = mixDelta(snapshot.change, language);
+  const prevWave = trackingWaveLabel(previous.wave, language), lastWave = trackingWaveLabel(latest.wave, language);
+  return l(`${measure}从${prevWave}的 ${mixRate(previous.rate)} 变为${lastWave}的 ${mixRate(latest.rate)}（${change}）。`,
+    `The ${measure} moved from ${mixRate(previous.rate)} in ${prevWave} to ${mixRate(latest.rate)} in ${lastWave} (${change}).`);
+}
+
+export function trackingReportHeadline(report: TrackingReport, language: ResearchLanguage) {
+  const l = (zh: string, en: string) => language === "zh" ? zh : en;
+  if (report.after.separate) return l("新口径单列，历史趋势保留", "New measure stays separate");
+  if (report.after.missingDefinition) return l("新口径暂无数据，保留历史", "No data for the new measure yet");
+  if (report.after.trend.length > report.before.trend.length) return l("新增一期，图表与正文同步", "The new wave updates both chart and text");
+  if (report.after.format !== report.before.format) return l("只改图表版式，数值与正文不变", "Chart format changes, not the figures or text");
+  return l("本次未选择变更", "No changes selected");
+}
+
+function trackingReportSection(values: boolean[], language: ResearchLanguage): ResearchArtifactSection {
+  const l = (zh: string, en: string) => language === "zh" ? zh : en;
+  const report = trackingReportFor(values);
+  const pointText = (p: ReportPoint) => `${trackingWaveLabel(p.wave, language)} ${mixRate(p.rate)}`;
+  const trendText = (snapshot: TrackingReportSnapshot) => snapshot.trend.map(pointText).join(" · ");
+  const measure = (definition: UsageDefinition) => trackingMeasureLabel(definition, language);
+  const { separate, missingDefinition } = report.after;
+  return {
+    title: l("样例报告对照", "Example report comparison"),
+    rows: [
+      { label: `${l("更新前", "Before")} · ${measure(report.before.trendDefinition)}`, text: trendText(report.before) },
+      { label: `${l("更新后", "After")} · ${measure(report.after.trendDefinition)}`, text: trendText(report.after) },
+      ...(separate ? [{ label: `${l("更新后单列", "After, shown separately")} · ${measure(separate.definition)}`, text: pointText(separate) }]
+        : missingDefinition ? [{ label: `${l("更新后", "After")} · ${measure(missingDefinition)}`, text: trackingReportMissingLabel(language) }] : []),
+      { label: l("图表版式", "Chart format"), text: `${trackingFormatLabel(report.before.format, language)} → ${trackingFormatLabel(report.after.format, language)}` },
+    ],
+    points: [l(`更新前正文：${trackingReportNote(report.before, language)}`, `Before: ${trackingReportNote(report.before, language)}`),
+      l(`更新后正文：${trackingReportNote(report.after, language)}`, `After: ${trackingReportNote(report.after, language)}`)],
+  };
+}
+
 export const libraryExamples = [
   {category:"health",zh:"健康产品",en:"Health products",topicZh:"规格与组合",topicEn:"Formats & bundles",sourceZh:"商品资料",sourceEn:"Product material"},
   {category:"health",zh:"健康产品",en:"Health products",topicZh:"价格带定义",topicEn:"Price-band definitions",sourceZh:"指标记录",sourceEn:"Measure record"},
@@ -129,7 +238,7 @@ const examples: readonly { title: Bilingual; prompt: Bilingual; values: readonly
   },
   {
     title: {zh:"新增一期、指标也变了，报告要改哪里？",en:"A new wave and a revised measure: what needs updating?"},
-    prompt: {zh:"点开每个变化，查看它影响的更新项、复核项，以及应保留的内容。",en:"Trace each change to what needs updating or reviewing and what stays as it is."},
+    prompt: {zh:"对照更新前后的图表与正文，看看新口径怎样单列、历史怎样保留。",en:"Compare the chart and text before and after. See how the new measure stays separate from the historical trend."},
     values: [true,true,false], category: "all",
   },
   {
@@ -185,6 +294,7 @@ export function buildResearchArtifact(practice: number, artifact: number, values
     else sections.push({title:l("下次分析沿用的依据","Basis for the next analysis"),points:[l("记录比较市场、人群、指标定义与分析方法。","Record the markets, audiences, measure definitions, and analysis method."),l("保留每组分子、分母和两期共用的参照构成。","Retain each group’s numerator and denominator and the shared reference mix."),l("条件变化后重新运行，不直接沿用旧判断。","Rerun when criteria change rather than carrying forward an old assessment.")]});
   } else if(practice===1){
     if(artifact===0)sections.push(
+      trackingReportSection(values, language),
       {title:l("需要更新","Update work"),rows:plan.updates.map(row),...(!plan.updates.length?{points:[l("未选择需要批量更新的内容。","No batch-update work selected.")]}:{})},
       {title:l("需要复核","Analyst review"),rows:plan.reviews.map(row),...(!plan.reviews.length?{points:[l("未选择新的变更范围。","No new change scope selected.")]}:{})},
       {title:l("保留内容","Retain valid content"),points:plan.preserve.map(item=>`${item[language]}${language==="zh"?"：":": "}${item.action[language]}`)},

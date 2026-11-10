@@ -5,9 +5,11 @@ import type { Language } from "../content/resume";
 import {
   buildResearchArtifact, comparableAudienceMix, compareConditions, planTrackingUpdate, queryLibrary,
   researchExampleFor, researchOutputLabels, researchResultSummary, serializeResearchArtifact, trackingImpactForChange,
+  trackingReportFor, trackingReportHeadline,
   type MixReference,
 } from "./research-lab";
 import AudienceMixView from "./AudienceMixView";
+import TrackingReportView from "./TrackingReportView";
 import "./research-artifacts.css";
 
 export type ResearchLabHandle = { runExample: () => void };
@@ -93,6 +95,7 @@ export default function ResearchLab({ practice, stage, language, onStageChange, 
   const l = (zh: string, en: string) => text(language, zh, en);
   const comparisons = compareConditions(values), records = queryLibrary(category);
   const mix = practice === 0 && executed ? comparableAudienceMix(values, reference) : null;
+  const report = practice === 1 && executed ? trackingReportFor(values) : null;
   const outputLabels = researchOutputLabels(practice, language);
   const outputDocument = buildResearchArtifact(practice, artifact, values, category, language, reference);
   const titles = [l("跨期比较检查器", "Comparison checker"), l("多期更新规划器", "Update planner"), l("研究资料查询器", "Research library explorer")];
@@ -160,11 +163,17 @@ export default function ResearchLab({ practice, stage, language, onStageChange, 
         <h5>{stage === 1 ? l("按你设定的条件，重新检查。", "Run the checks for your selected criteria.") : l("先检查，再查看交付。", "Run the checks before opening the outputs.")}</h5>
         <p>{l("结果会根据本次选择生成。", "Results are based on your current selection.")}</p>
         <button className="rlab-primary" type="button" onClick={execute}>{runLabel}<span aria-hidden="true">↗</span></button>
-      </div> : stage === 1 ? <div className="rlab-execution">
-        <div className="rlab-result-banner"><span>{mix ? l("样例数据", "EXAMPLE DATA") : l("当前结果", "CURRENT RESULT")}</span><h5 ref={resultHeading} tabIndex={-1} id="rlab-result-title">{summary}</h5></div>
+      </div> : stage === 1 ? <div className="rlab-execution" data-report-result={report ? true : undefined}>
+        <div className="rlab-result-banner"><span>{report ? l("报告样例", "EXAMPLE REPORT") : mix ? l("样例数据", "EXAMPLE DATA") : l("当前结果", "CURRENT RESULT")}</span><h5 ref={resultHeading} tabIndex={-1} id="rlab-result-title">{report ? trackingReportHeadline(report, language) : summary}</h5></div>
         {practice === 0 ? mix ? <AudienceMixView comparison={mix} language={language} criteria={settings} onReference={setReference}/>
           : <><p className="rlab-mix-held">{l("比较条件有变化，暂不计算两期差异。", "A criterion has changed, so the wave comparison is on hold.")}</p>{findings}</>
-          : practice === 1 ? <TrackingImpact key={focusVersion} values={values} language={language} settings={settings}/>
+          : report ? <>
+            <TrackingReportView key={focusVersion} report={report} language={language}/>
+            <details className="rlab-report-ledger" key={`ledger-${focusVersion}`}>
+              <summary>{l("查看更新、复核与保留", "Show updates, checks and what stays")}</summary>
+              <TrackingImpact values={values} language={language} settings={settings}/>
+            </details>
+          </>
           : <div className="rlab-table"><table>
             <caption>{categories.find(item => item.value === category)?.name ?? l("查询样例", "Example query")}</caption>
             <thead><tr><th>{l("品类", "Category")}</th><th>{l("研究主题", "Topic")}</th><th>{l("来源类型", "Source type")}</th></tr></thead>
