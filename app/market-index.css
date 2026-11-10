@@ -1,0 +1,192 @@
+.portfolio-v17 .rg-market-research {
+  --rg-index-dark: #1b3449;
+  --rg-index-surface: #f8f8f3;
+  --rg-index-gold: #e3ca94;
+  --rg-index-muted: #536979;
+  min-width: 0;
+  border: 1px solid #adbec4;
+  border-radius: 7px;
+  background: var(--rg-index-surface);
+  color: var(--rg-ink);
+  scroll-margin-top: clamp(14px, 14vh, 108px);
+}
+
+.portfolio-v17 .rg-market-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px 18px;
+  padding: 12px 16px;
+  border-radius: 6px 6px 0 0;
+  background: linear-gradient(108deg, #1a3146, #284a5d);
+  color: #f5f5ed;
+}
+.portfolio-v17 .rg-market-name {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  min-width: 0;
+  gap: 3px 12px;
+}
+.portfolio-v17 .rg-market-kicker {
+  display: flex;
+  flex: 0 1 100%;
+  align-items: center;
+  gap: 8px;
+  min-height: 17px;
+  font-size: 10px;
+  line-height: 1.2;
+  letter-spacing: .075em;
+  color: #c2d4df;
+}
+.portfolio-v17 .rg-market-code {
+  color: var(--rg-index-gold);
+  font-weight: 700;
+  padding-inline-start: 8px;
+  border-inline-start: 1px solid #788a94;
+}
+.portfolio-v17 .rg-market-head h3 {
+  min-width: 0;
+  margin: 0;
+  color: #f5f5ed;
+  font-size: clamp(20px, 1.8vw, 25px);
+  font-weight: 500;
+  line-height: 1.22;
+  overflow-wrap: anywhere;
+}
+.portfolio-v17 .rg-market-count {
+  margin: 0;
+  color: #d1e1ea;
+  font-size: 11px;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+.portfolio-v17 .rg-market-picker {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  border: 1px solid #91a6b4;
+  padding: 0 10px;
+  color: #f3f7f8;
+  background: #172d3e5c;
+  white-space: nowrap;
+}
+.portfolio-v17 .rg-market-picker:hover { background: #35586c; }
+.portfolio-v17 .rg-market-picker>span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  pointer-events: none;
+}
+.portfolio-v17 .rg-market-picker svg { width: 16px; height: 16px; stroke: currentColor; stroke-width: 1.5; }
+.portfolio-v17 .rg-market-picker select {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  font: 16px Arial, "Microsoft YaHei", sans-serif;
+  opacity: 0;
+  cursor: pointer;
+}
+.portfolio-v17 .rg-market-picker:has(select:focus-visible),
+.portfolio-v17 .rg-market-head h3:focus-visible {
+  outline: 2px solid var(--rg-index-gold);
+  outline-offset: 3px;
+}
+.portfolio-v17 :is(.rg-study-tabs, .rg-static-studies) {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  background: #b9c6ca;
+  border-bottom: 1px solid #b9c6ca;
+}
+.portfolio-v17 .rg-study-tabs button {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 3px;
+  min-width: 0;
+  min-height: 68px;
+  padding: 9px 13px;
+  border: 0;
+  border-inline-start: 3px solid transparent;
+  background: #f2f5f3;
+  color: var(--rg-ink);
+  text-align: left;
+  line-height: 1.35;
+}
+.portfolio-v17 .rg-study-tabs button:only-child { grid-column: 1 / -1; }
+.portfolio-v17 .rg-study-tabs button:hover { background: #e6eeed; }
+.portfolio-v17 .rg-study-tabs button[aria-selected=true] {
+  background: #ede6d6;
+  border-inline-start-color: #9b733c;
+}
+.portfolio-v17 .rg-study-tabs button:focus-visible { z-index: 1; outline-offset: -2px; }
+.portfolio-v17 .rg-study-tabs button strong { font-size: 13px; font-weight: 600; overflow-wrap: anywhere; }
+.portfolio-v17 .rg-study-kind { color: var(--rg-index-muted); font-size: 10px; line-height: 1.35; }
+.portfolio-v17 .rg-study-ownership { color: #6f522b; font-size: 10px; line-height: 1.4; }
+.portfolio-v17 .rg-study-detail { padding: 16px 16px 14px; }
+.portfolio-v17 .rg-study-detail h4 {
+  font-size: clamp(16px, 1.45vw, 20px);
+  line-height: 1.4;
+  font-weight: 600;
+  margin: 0;
+  text-wrap: pretty;
+}
+.portfolio-v17 .rg-study-detail .rg-study-role { color: #6f522b; font-size: 12px; line-height: 1.5; margin: 4px 0 0; }
+.portfolio-v17 .rg-study-proof { margin: 12px 0 0; }
+.portfolio-v17 .rg-study-proof>div {
+  display: grid;
+  grid-template-columns: 94px minmax(0, 1fr);
+  gap: 10px;
+  padding: 9px 0;
+  border-top: 1px solid #c8d2d3;
+  font-size: 13px;
+  line-height: 1.65;
+}
+.portfolio-v17 .rg-study-proof dt { color: var(--rg-ink); font-weight: 600; }
+.portfolio-v17 .rg-study-proof dd { margin: 0; color: var(--rg-index-muted); }
+.portfolio-v17 .rg-study-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; margin-top: 5px; }
+.portfolio-v17 :is(.rg-study-explore, .rg-back-to-globe) {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+.portfolio-v17 .rg-study-explore { padding: 8px 12px; background: var(--rg-index-dark); color: #f5f5ed; }
+.portfolio-v17 .rg-study-explore:hover { background: #2d5268; }
+.portfolio-v17 .rg-back-to-globe { margin-inline-start: auto; padding: 6px 4px; border: 0; border-bottom: 1px solid #adbec4; background: transparent; color: var(--rg-ink); }
+.portfolio-v17 .rg-back-to-globe:hover { color: #235d76; border-bottom-color: currentColor; }
+.portfolio-v17 .rg-study-actions [aria-hidden=true] { font-size: 15px; }
+.portfolio-v17 :is(.rg-study-detail, .rg-study-explore, .rg-static-study):focus-visible { outline: 2px solid #92682e; outline-offset: 2px; }
+.portfolio-v17 .rg-globe-stage:focus-within canvas:focus-visible { outline: 2px solid #92682e; outline-offset: 3px; }
+.portfolio-v17 .rg-globe[data-market-ready=false] :is(.rg-globe-toolbar, .rg-market-picker, .rg-study-tabs, .rg-study-detail) { display: none; }
+.portfolio-v17 .rg-static-studies { border-bottom: 0; border-radius: 0 0 6px 6px; }
+.portfolio-v17 .rg-static-study {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 9px;
+  min-height: 50px;
+  padding: 9px 12px;
+  background: var(--rg-index-surface);
+  color: var(--rg-ink);
+  font-size: 13px;
+}
+.portfolio-v17 .rg-static-study small { display: block; margin-top: 2px; font-size: 11px; color: #6f522b; }
+.portfolio-v17 .rg-static-study:hover { background: #e6eeed; }
+@media (max-width: 900px) {
+  .portfolio-v17 .rg-study-proof>div { grid-template-columns: minmax(0, 1fr); gap: 3px; }
+}
+@media (max-width: 480px) {
+  .portfolio-v17 .rg-market-head { padding: 11px 12px; gap: 8px; }
+  .portfolio-v17 .rg-market-name { gap: 4px 8px; }
+  .portfolio-v17 .rg-study-tabs button { padding-inline: 9px; }
+  .portfolio-v17 .rg-study-detail { padding-inline: 12px; }
+}

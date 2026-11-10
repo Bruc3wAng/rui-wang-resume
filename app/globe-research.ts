@@ -15,3 +15,14 @@ export function marketStudyIndex<T extends { markets: readonly string[] }>(studi
   const matches = researchForMarket(studies, market);
   return marketStudyOrder.flatMap(index => matches.filter(study => study.index === index));
 }
+
+export function preferredMarketStudyIndex<T extends { markets: readonly string[] }>(studies: readonly T[], market: string) {
+  const choices = marketStudyIndex(studies, market);
+  return (market === "US" ? choices.find(choice => choice.index === 3) : undefined)?.index ?? choices[0]?.index ?? null;
+}
+
+// Reveal just the short case index, not the entire (possibly tall) evidence panel.
+export function marketIndexScrollDelta(rect: { top: number; bottom: number }, viewportTop: number, viewportBottom: number) {
+  if (rect.top < viewportTop || rect.bottom - rect.top > viewportBottom - viewportTop) return rect.top - viewportTop;
+  return Math.max(0, rect.bottom - viewportBottom);
+}

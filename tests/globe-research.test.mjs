@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { cases, selectedWork } from "../content/resume.ts";
-import { caseWorkIndices, marketStudyIndex, researchForMarket } from "../app/globe-research.ts";
+import { caseWorkIndices, marketIndexScrollDelta, marketStudyIndex, preferredMarketStudyIndex, researchForMarket } from "../app/globe-research.ts";
 import { networkMesh, researchMarkets, researchRouteShape } from "../app/globe-geometry.ts";
 import { earthFragment, earthMaterial, earthVertex, shadeEarth } from "../app/earth-material.ts";
 import { marketStudyPresentation } from "../content/market-studies.ts";
@@ -80,8 +80,9 @@ test("uses actual route shape for the moving lights and distinguishes mode from 
 
 test("keeps market filtering usable when rotation is unavailable and preserves scope during manual rotation", async () => {
   const ui=await readFile(new URL("../app/InteractiveGlobe.tsx",import.meta.url),"utf8");
-  const selector=ui.slice(ui.indexOf('<div className="rg-market-selector"'),ui.indexOf('<section className="rg-market-research"'));
+  const selector=ui.match(/<select id="rg-market-select"[\s\S]*?<\/select>/)?.[0];
   assert.ok(selector);assert.doesNotMatch(selector,/disabled=/);
+  assert.match(selector,/researchMarkets.map/);assert.match(selector,/chooseMarket\(e.currentTarget.value\)/);
   assert.match(ui,/role="tabpanel"[^>]*data-study=/);
   assert.match(ui,/caseWorkIndices\[currentStudy.index\]/);
   assert.match(ui,/onExplore\(workIndex, \{ market: selected, studyIndex: currentStudy.index \}\)/);
@@ -89,6 +90,24 @@ test("keeps market filtering usable when rotation is unavailable and preserves s
   assert.match(ui,/!motion.current && networkTarget > \.01/);
   assert.match(ui,/document.hidden/);assert.match(ui,/IntersectionObserver/);
   assert.match(ui,/gl!\.disable\(gl!\.CULL_FACE\)/);
+});
+
+test("opens independently owned U.S. work first, with deterministic defaults for all other verified markets", () => {
+  assert.equal(preferredMarketStudyIndex(cases,"US"),3);
+  assert.equal(preferredMarketStudyIndex(cases,"CN"),0);
+  assert.equal(preferredMarketStudyIndex(cases,"UNKNOWN"),null);
+  for (const {code} of researchMarkets.filter(place=>place.code!=="US")) {
+    assert.equal(preferredMarketStudyIndex(cases,code),marketStudyIndex(cases,code)[0].index);
+  }
+});
+
+test("moves only as far as needed to show the market index, keeping part of the globe in view where space permits", () => {
+  assert.equal(marketIndexScrollDelta({top:675,bottom:869},84,886),0);
+  assert.equal(marketIndexScrollDelta({top:690,bottom:916},84,886),30);
+  assert.equal(marketIndexScrollDelta({top:540,bottom:743},74,798),0);
+  assert.equal(marketIndexScrollDelta({top:680,bottom:923},74,798),125);
+  assert.equal(marketIndexScrollDelta({top:62,bottom:245},74,798),-12);
+  assert.equal(marketIndexScrollDelta({top:307,bottom:779},74,410),233);
 });
 
 test("leads the U.S. index with its primary tracking and independent study without changing the verified markets", () => {
@@ -118,7 +137,11 @@ test("exports the responsibility labels and separates contribution, AI use and d
     assert.ok(region.includes(language==="zh"?">深度参与<":">Key contribution<"));
     assert.ok(region.includes(marketStudyPresentation[0].ai[language]));
     assert.ok(region.includes(marketStudyPresentation[0].delivery[language]));
-    assert.match(region,/class="rg-study-explore"[^>]*aria-controls="pf-work-panel-0"/);
+    assert.match(region,/class="rg-study-explore" href="#study-content-tracking"[^>]*aria-controls="pf-work-panel-0"/);
+    const options=[...region.matchAll(/<option value="([A-Z]+)"/g)].map(match=>match[1]);
+    assert.deepEqual(options,["CN",...researchMarkets.map(place=>place.code)]);
+    const fallback=[...region.matchAll(/<a class="rg-static-study" href="([^"]+)"/g)].map(match=>match[1]);
+    assert.deepEqual(fallback,["#study-content-tracking","#study-search-tracking"]);
     const work=html.match(/<section\b[^>]*id="work"[^>]*>[\s\S]*?<section class="pf-internship-expanded"/)?.[0];
     assert.ok(work);
     assert.equal([...work.matchAll(/class="pf-contribution pf-case-ai-note"/g)].length,3);

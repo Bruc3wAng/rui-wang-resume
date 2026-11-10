@@ -532,7 +532,7 @@ export function Portfolio({ language }: { language: Language }) {
         </div>
         <div className="pf-hero-world">
           <div className="pf-world-label"><span>{local(language, "多国研究地图", "RESEARCH BY MARKET")}</span><span>{local(language, "选择市场，查看研究项目", "Select a market to see its studies")}</span></div>
-          <InteractiveGlobe language={language} paused={paused} onExplore={openWorkFromMarket}/>
+          <InteractiveGlobe language={language} paused={paused} ready={fragment !== null} onExplore={openWorkFromMarket}/>
         </div>
       </div>
       <div className="pf-hero-bottom pf-wrap"><span>RESEARCH / ANALYSIS / DELIVERY</span><a href="#work">{local(language, "继续探索", "Continue exploring")}<Arrow down/></a><button type="button" onClick={() => setPaused(v => !v)} aria-pressed={paused}>{paused ? "◌" : "≈"} {local(language, paused ? "开启动效" : "暂停动效", paused ? "Enable motion" : "Pause motion")}</button></div>

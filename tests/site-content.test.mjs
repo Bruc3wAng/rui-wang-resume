@@ -600,6 +600,7 @@ test("provides a real China Earth image before the interactive view is ready", a
   assert.ok(poster.byteLength>15000&&poster.byteLength<120000);
   assert.equal(createHash("sha256").update(poster).digest("hex").slice(0,12),earthPosterRevision);
   assert.match(source,/className="rg-earth-poster"/);assert.match(source,/earth-china-poster\.webp/);
+  assert.match(source,/!ready \? ""[^\n]*PREPARING INTERACTIVE VIEW/);
   assert.match(source,/!surfaceReady \|\| !cloudsReady/);
   assert.match(source,/painted = true; setRenderer\("webgl"\)/);
   assert.match(source,/image\.onerror = fail/);assert.match(source,/cloudImage\.onerror = fail/);
@@ -610,7 +611,8 @@ test("provides a real China Earth image before the interactive view is ready", a
     assert.deepEqual(await readFile(new URL(`${target}/images/earth-china-poster.webp`,root)),poster);
     for(const locale of ["","en/"]){
       const html=await readFile(new URL(`${target}/${locale}index.html`,root),"utf8");
-      assert.match(html,/earth-china-poster\.webp/);assert.match(html,/PREPARING INTERACTIVE VIEW|正在准备地球交互/);
+      assert.ok(/class="rg-globe"[^>]*data-renderer="loading"[^>]*data-market-ready="false"/.test(html));
+      assert.ok(/class="rg-globe-note" role="status"><\/span>/.test(html));
       assert.ok(html.includes("earth-china-poster.webp?v="+earthPosterRevision));
     }
   }
