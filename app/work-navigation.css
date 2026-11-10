@@ -4,16 +4,16 @@
 .pf-work-layout[data-study-url-ready=false] .pf-work-panel[data-selected=false]{display:none}
 .pf-work-layout[data-study-url-ready=false]:has(.pf-study-anchor:target) .pf-work-panel:not(:has(.pf-study-anchor:target)){display:none}
 .pf-work-layout[data-study-url-ready=false] .pf-work-panel:has(.pf-study-anchor:target){display:grid}
-.pf-work-layout[data-study-url-ready=false] .pf-study-copy{visibility:hidden}
+.pf-work-layout[data-study-url-ready=false] .pf-study-header>:is(.pf-study-copy,.pf-work-return,.pf-market-return){display:none}
 .pf-work-return{display:none}
 .pf-market-return{display:inline-flex;align-items:center;gap:12px;min-height:44px;margin:0 0 14px;padding:8px 0;border:0;border-bottom:1px solid #bbc8d1;background:none;color:#365a7a;font-size:12px;white-space:nowrap}
 .pf-market-return .pf-arrow{width:16px;height:16px;rotate:180deg}
 .pf-market-return:focus-visible{outline:2px solid currentColor;outline-offset:4px}
-.pf-study-header{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px 14px;align-items:start;margin:0 0 17px;padding-bottom:13px;border-bottom:1px solid #c7d0d4}
-.pf-study-meta{min-width:0;align-self:center}
-.pf-work-story .pf-study-name{font-size:14px;line-height:1.5;font-weight:600;color:#344f69;text-wrap:pretty}
-.pf-study-header .pf-role{margin:4px 0 0!important;font-size:11px;color:#325e62;text-wrap:pretty}
-.pf-study-copy{position:relative}
+.pf-study-header{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 14px;align-items:center;padding-bottom:10px;border-bottom:1px solid #c7d0d4}
+.pf-study-header>.pf-market-return{grid-column:1/-1;justify-self:start;margin:0 0 5px}
+.pf-work-story .pf-study-name{grid-column:1/-1;min-width:0;font-size:clamp(23px,2.1vw,31px);line-height:1.27;font-weight:600;color:#1c394d;text-wrap:pretty;overflow-wrap:anywhere}
+.pf-study-header .pf-role{grid-column:1;margin:0!important;font-size:12px;color:#325e62;text-wrap:pretty}
+.pf-study-copy{position:relative;grid-column:2;justify-self:end}
 .portfolio-v17 .pf-copy-study{display:inline-flex;align-items:center;gap:7px;justify-content:center;min-height:44px;padding:8px 9px;background:transparent;border:1px solid #a9b8c2;color:#315673;font-size:11px;white-space:nowrap}
 .portfolio-v17 .pf-copy-study:hover{background:#e4e9e9;border-color:#7890a3}
 .portfolio-v17 .pf-copy-study:focus-visible,.pf-study-copy-field input:focus-visible{outline:2px solid #315673;outline-offset:3px}
@@ -43,6 +43,14 @@
   .portfolio-v17 .pf-work-nav button:focus-visible{outline:2px solid #4c6e8b;outline-offset:3px;z-index:1}
   .portfolio-v17 .pf-work-return{display:inline-flex;align-items:center;gap:12px;min-height:44px;padding:8px 0;margin:0 0 16px;border:0;border-bottom:1px solid #bbc8d1;background:none;color:#4c6e8b;font-size:11px}
   .pf-work-return .pf-arrow{width:16px;height:16px;rotate:180deg}
+  .pf-study-header{gap:6px 10px;padding-bottom:11px}
+  .portfolio-v17 .pf-study-header>:is(.pf-work-return,.pf-market-return){order:-2;grid-column:1;justify-self:start;margin:0;gap:7px;font-size:11px;white-space:normal;line-height:1.35;text-align:left}
+  .pf-study-header>:is(.pf-work-return,.pf-market-return) .pf-arrow{flex:none}
+  .pf-study-header>.pf-study-copy{order:-2}
+  .pf-study-header>.pf-study-copy-field{order:-1}
+  .pf-study-header .pf-role{grid-column:1/-1}
+  .pf-work-story .pf-study-name{font-size:25px;line-height:1.23}
+  .pf-study-header:has(>.pf-study-copy) .pf-study-name{margin-top:4px}
   .pf-ai-project{align-items:flex-start;gap:16px;margin-top:-4px;margin-bottom:26px;padding-top:12px}
   .pf-ai-project p{font-size:12px}
   .pf-ai-project>button{font-size:11px;gap:9px}

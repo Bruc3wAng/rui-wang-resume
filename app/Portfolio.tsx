@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useImperativeHandle, useRef, useState, useSyncExternalStore, type KeyboardEvent, type MouseEvent, type PointerEvent, type CSSProperties, type Ref } from "react";
+import { useEffect, useImperativeHandle, useRef, useState, useSyncExternalStore, type KeyboardEvent, type MouseEvent, type CSSProperties, type Ref } from "react";
 import Image from "next/image";
 import NavigationAvatar from "./NavigationAvatar";
 import { profile, selectedWork, experiences, aiPractice, creativeCategories, capabilities, education, type CreativeItem, type Language } from "../content/resume";
@@ -59,34 +59,6 @@ function practiceLanding(index: number) {
   const focus = `pf-ai-tab-${index}`;
   return { focus, scroll: isCompactAI() ? focus : "method" };
 }
-const workNotes = [
-  {
-    question: { zh: "哪些体验因素，与用户满意度关联更强？", en: "Which experiences matter most to user satisfaction?" },
-    outputs: { zh: ["跨市场分析报告", "跨期比较", "分析方法 SOP"], en: ["Cross-market report", "Wave comparisons", "Analysis guide"] },
-    nodes: { zh: ["市场与平台", "用户分组", "体验因素", "满意度分析"], en: ["Markets & platforms", "Audience groups", "Experience factors", "Satisfaction analysis"] },
-  },
-  {
-    question: { zh: "不同客群、品类与期次，如何持续判断品牌表现？", en: "How does brand performance compare across audiences, categories, and waves?" },
-    outputs: { zh: ["多期数据与报告", "来源与指标映射", "复用程序"], en: ["Multi-wave reports", "Source & metric mapping", "Reusable tools"] },
-    nodes: { zh: ["客群与品类", "指标定义", "历史可比性", "品牌表现"], en: ["Audiences & categories", "Metric definitions", "Historical comparisons", "Brand performance"] },
-  },
-  {
-    question: { zh: "不同用户怎样消费内容，目标人群在哪里？", en: "How do audiences consume content, and where do they overlap?" },
-    outputs: { zh: ["用户分层", "偏好与习惯比较", "分析交付"], en: ["Audience segments", "Preference comparisons", "Analytical delivery"] },
-    nodes: { zh: ["用户分层", "内容偏好", "消费习惯", "人群重合"], en: ["Audience segments", "Content preferences", "Consumption habits", "Audience overlap"] },
-  },
-  {
-    question: { zh: "用户什么时候搜索，又会想到哪些平台？", en: "When do people search, and which platforms come to mind?" },
-    outputs: { zh: ["跨市场比较", "用户与场景分析", "批量核验工具"], en: ["Market comparisons", "Audience & context analysis", "Batch-validation tools"] },
-    nodes: { zh: ["平台认知", "搜索场景", "使用习惯", "趋势比较"], en: ["Platform awareness", "Search contexts", "Usage habits", "Trend comparisons"] },
-  },
-  {
-    question: { zh: "使用场景和采购决策背后，有哪些真实需求？", en: "What needs shape product use and purchasing decisions?" },
-    outputs: { zh: ["实地研究资料", "用户画像", "需求与决策分析"], en: ["Field-research evidence", "User profiles", "Needs & decision analysis"] },
-    nodes: { zh: ["实地访谈", "用户场景", "产品需求", "采购决策"], en: ["Field interviews", "Use cases", "Product needs", "Purchasing decisions"] },
-  },
-];
-
 function Arrow({ down = false }: { down?: boolean }) {
   return <svg aria-hidden="true" viewBox="0 0 24 24" className={down ? "pf-arrow is-down" : "pf-arrow"} fill="none"><path d="M4 12h15m-6-6 6 6-6 6" /></svg>;
 }
@@ -116,30 +88,31 @@ function tabs(e: KeyboardEvent<HTMLButtonElement>, index: number, total: number,
   e.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>(selector)[n]?.focus();
 }
 
-function tilt(e: PointerEvent<HTMLElement>, paused: boolean) {
-  if (paused || e.pointerType === "touch") return;
-  const r = e.currentTarget.getBoundingClientRect();
-  e.currentTarget.style.setProperty("--rx", `${(.5 - (e.clientY - r.top) / r.height) * 7}deg`);
-  e.currentTarget.style.setProperty("--ry", `${((e.clientX - r.left) / r.width - .5) * 9}deg`);
-}
-function resetTilt(e: PointerEvent<HTMLElement>) { e.currentTarget.style.setProperty("--rx", "0deg"); e.currentTarget.style.setProperty("--ry", "0deg"); }
-
 type ResearchFolioHandle = { openAt: (output: number, source: HTMLButtonElement) => void };
 
-function ResearchObject({ active, language, paused, ref }: { active: number; language: Language; paused: boolean; ref: Ref<ResearchFolioHandle> }) {
-  const [open, setOpen] = useState(false), [output, setOutput] = useState(0);
+function ResearchObject({ active, language, paused, ready, ref }: { active: number; language: Language; paused: boolean; ready: boolean; ref: Ref<ResearchFolioHandle> }) {
+  const story = workStudyCopyFor(selectedWork[active].id);
+  const [open, setOpen] = useState(false), [output, setOutput] = useState<number>(story.output);
   const [focusRequest, setFocusRequest] = useState(0);
-  const selectedOutput = useRef<HTMLButtonElement>(null), toggleButton = useRef<HTMLButtonElement>(null), page = useRef<HTMLDivElement>(null), focusContents = useRef(false);
-  const opener = useRef<HTMLButtonElement | null>(null);
-  const note = workNotes[active];
+  const selectedOutput = useRef<HTMLButtonElement>(null), page = useRef<HTMLDivElement>(null), focusContents = useRef(false);
+  const opener = useRef<HTMLButtonElement | null>(null), restore = useRef<HTMLButtonElement | null>(null);
   const description = folioDescriptionsFor(selectedWork[active].id)[output];
   const pageId = `pf-folio-page-${active}`;
   const detailId = `pf-folio-detail-${active}`;
   useEffect(() => {
-    if (!open || !focusContents.current) return;
-    focusContents.current = false;
-    page.current?.scrollIntoView({ behavior: paused ? "auto" : "smooth", block: "nearest" });
-    selectedOutput.current?.focus({ preventScroll: true });
+    if (open && focusContents.current) {
+      focusContents.current = false;
+      page.current?.scrollIntoView({ behavior: paused ? "instant" : "smooth", block: isCompactWork() ? "start" : "nearest" });
+      selectedOutput.current?.focus({ preventScroll: true });
+    } else if (!open && restore.current) {
+      const target = restore.current;
+      restore.current = null;
+      // The cover row may be inert while the folio is open. Restore only
+      // after the closed view is available again, and never into a hidden case.
+      if (!target.isConnected || !target.getClientRects().length) return;
+      target.scrollIntoView({ behavior: paused ? "instant" : "smooth", block: "nearest" });
+      target.focus({ preventScroll: true });
+    }
   }, [open, paused, focusRequest]);
   function openAt(index: number, source: HTMLButtonElement) {
     opener.current = source;
@@ -150,40 +123,30 @@ function ResearchObject({ active, language, paused, ref }: { active: number; lan
   }
   useImperativeHandle(ref, () => ({ openAt }));
   function closeFolio() {
-    setOpen(false);
-    const target = opener.current;
+    restore.current = opener.current;
     opener.current = null;
-    if (target?.isConnected && target !== toggleButton.current) {
-      target.scrollIntoView({ behavior: paused ? "instant" : "smooth", block: "center" });
-      target.focus({ preventScroll: true });
-    } else toggleButton.current?.focus({ preventScroll: true });
-  }
-  function toggleFolio() {
-    if (open) closeFolio();
-    else if (toggleButton.current) openAt(output, toggleButton.current);
+    setOpen(false);
   }
   return <div className={`pf-research-object object-${active}`} data-open={open} data-output={output} onKeyDown={e => { if (e.key === "Escape" && open) { e.preventDefault(); e.stopPropagation(); closeFolio(); } }}>
-    <div className="pf-object-orbit" aria-hidden="true" />
-    <div className="pf-report-sheet sheet-back" aria-hidden="true" />
-    <div className="pf-report-sheet sheet-middle" aria-hidden="true" />
     <div className="pf-folio-page" id={pageId} ref={page} aria-hidden={!open} inert={!open}>
-      <span className="pf-folio-kicker">{selectedWork[active].index} / RESEARCH</span>
-      <h4>{local(language, "研究交付", "Research outputs")}</h4>
-      <div className="pf-folio-output-tabs" role="tablist" aria-orientation="vertical" aria-label={local(language, "选择研究交付", "Choose a research output")}>{note.outputs[language].map((title, i) => <button type="button" role="tab" key={title} ref={i === output ? selectedOutput : undefined} id={`pf-folio-output-${active}-${i}`} aria-controls={detailId} aria-selected={output === i} tabIndex={output === i ? 0 : -1} onClick={() => setOutput(i)} onKeyDown={e => tabs(e, i, 3, setOutput)}><span>0{i + 1}</span>{title}<span aria-hidden="true">↗</span></button>)}</div>
+      <div className="pf-folio-page-head"><span className="pf-folio-kicker">{selectedWork[active].index} / RESEARCH</span>
+        <button className="pf-folio-toggle" type="button" aria-controls={pageId} onClick={closeFolio}>{local(language, "合上档案", "Close folio")}<span aria-hidden="true">×</span></button>
+      </div>
+      <h4>{local(language, "研究档案", "Research folio")}</h4>
+      <div className="pf-folio-output-tabs" role="tablist" aria-orientation="vertical" aria-label={local(language, "选择研究交付", "Choose a research output")}>{story.outputs.map((title, i) => <button type="button" role="tab" key={title.en} ref={i === output ? selectedOutput : undefined} id={`pf-folio-output-${active}-${i}`} aria-controls={detailId} aria-selected={output === i} tabIndex={output === i ? 0 : -1} onClick={() => setOutput(i)} onKeyDown={e => tabs(e, i, story.outputs.length, setOutput)}><span aria-hidden="true">0{i + 1}</span>{title[language]}<span aria-hidden="true">↗</span></button>)}</div>
       <div className="pf-folio-detail" id={detailId} role="tabpanel" aria-labelledby={`pf-folio-output-${active}-${output}`} key={output}><dl><div><dt>{local(language, "我做的部分", "My contribution")}</dt><dd>{description.content[language]}</dd></div><div><dt>{local(language, "研究用途", "Research purpose")}</dt><dd>{description.purpose[language]}</dd></div></dl></div>
     </div>
-    <div className="pf-report-cover" aria-hidden={open}>
-      <div className="pf-report-top"><span>RESEARCH / {selectedWork[active].index}</span><span>RUI WANG</span></div>
-      <h4>{selectedWork[active].title[language]}</h4>
-      <div className="pf-report-map">
-        <svg viewBox="0 0 400 220" preserveAspectRatio="none" aria-hidden="true"><path d="M80 47H320V173H80Z"/><path className="pf-trace" d="M80 47H320V173H80V47"/><path d="M80 47 320 173M320 47 80 173"/></svg>
-        {note.nodes[language].map((n, i) => <div key={n} className={`pf-map-node map-node-${i}`}><i aria-hidden="true"/><span>{n}</span></div>)}
-        <span className="pf-map-center" aria-hidden="true">+</span>
+    <div className="pf-folio-front" aria-hidden={open} inert={open}>
+      <div className="pf-folio-cover">
+        <div className="pf-folio-cover-head"><span>{selectedWork[active].index} / RESEARCH</span><span>RUI WANG</span></div>
+        <h4>{local(language, "研究档案", "Research folio")}</h4>
+        <ul className="pf-folio-cover-index">
+          {story.outputs.map((title, i) => <li key={title.en}><button className="pf-folio-cover-link" type="button" disabled={!ready} data-output-index={i} data-representative={i === story.output} aria-controls={pageId} aria-expanded={open && i === output} onClick={event => openAt(i, event.currentTarget)}>
+            <span aria-hidden="true">0{i + 1}</span><strong>{title[language]}</strong><Arrow/>
+          </button></li>)}
+        </ul>
       </div>
-      <div className="pf-report-bottom"><span>{local(language, "分析与研究交付", "ANALYSIS & RESEARCH DELIVERY")}</span><span>↗</span></div>
     </div>
-    <div className="pf-object-shadow" aria-hidden="true" />
-    <button className="pf-folio-toggle" type="button" ref={toggleButton} aria-expanded={open} aria-controls={pageId} onClick={toggleFolio}><span>{local(language, open ? "合上研究档案" : "翻开研究档案", open ? "Close research folio" : "Open research folio")}</span><span aria-hidden="true">{open ? "−" : "＋"}</span></button>
   </div>;
 }
 
@@ -194,23 +157,20 @@ function WorkStudyPanel({ index, selected, ready, compact, language, paused, onR
   onReturn: () => void; fromMarket: WorkMarketContext | null; onExploreAI: (index: number) => void; onViewMap: (index: number) => void;
 }) {
   const folio = useRef<ResearchFolioHandle>(null);
-  const item = selectedWork[index], note = workNotes[index], story = workStudyCopyFor(item.id);
+  const item = selectedWork[index], story = workStudyCopyFor(item.id);
   const aiPracticeIndex = aiPractice.findIndex(practice => practice.id === workAIPracticeById[item.id]);
   const mapIndex = caseWorkIndices.findIndex(work => work === index);
-  const outputName = note.outputs[language][story.output];
+  const outputName = story.outputs[story.output][language];
   const outputPurpose = folioDescriptionsFor(item.id)[story.output].purpose[language];
   const titleId = `pf-case-output-title-${index}`;
   return <article hidden={ready && !selected} className="pf-work-panel" data-selected={selected} id={`pf-work-panel-${index}`} role={compact ? "region" : "tabpanel"} aria-labelledby={`pf-work-tab-${index}`}>
     <span className="pf-study-anchor" id={studyFragment(item.id).slice(1)} aria-hidden="true"/>
     <div className="pf-work-story">
-      {fromMarket
+      <WorkStudyHeader id={item.id} index={index} title={item.title[language]} role={item.role[language]} language={language} returnAction={fromMarket
         ? <button className="pf-market-return" type="button" onClick={onReturn}><Arrow/>{fromMarket.fromMapLink ? local(language, "返回案例地图", "Back to study map") : local(language, "返回市场研究", "Back to market studies")}</button>
-        : <button className="pf-work-return" type="button" onClick={onReturn}><Arrow/>{local(language, "返回研究目录", "Back to study index")}</button>}
-      <WorkStudyHeader id={item.id} title={item.title[language]} role={item.role[language]} language={language}/>
-      <h3 id={`pf-work-question-${index}`} tabIndex={-1}>{note.question[language]}</h3>
+        : <button className="pf-work-return" type="button" onClick={onReturn}><Arrow/>{local(language, "返回研究目录", "Back to study index")}</button>}/>
       <p className="pf-work-summary">{story.context[language]}</p>
-      <div className="pf-contribution"><h4>{local(language, "我的关键判断", "My analytical contribution")}</h4><p>{story.contribution[language]}</p></div>
-      {story.ai && <div className="pf-contribution pf-case-ai-note"><h4>{local(language, "AI 用法", "How I used AI")}</h4><p>{story.ai[language]}</p></div>}
+      <div className="pf-contribution"><h4>{local(language, "我的工作", "What I did")}</h4><p><strong>{story.action[language]}</strong>{local(language, "", " ")}{story.contribution[language]}</p></div>
       <div className="pf-case-result" data-case-output={story.output}>
         <h4>{local(language, "代表性交付", "Selected deliverable")}</h4>
         <strong id={titleId}>{outputName}</strong>
@@ -219,6 +179,7 @@ function WorkStudyPanel({ index, selected, ready, compact, language, paused, onR
           {local(language, "查看交付说明", "View output details")}<Arrow/>
         </button>
       </div>
+      {story.ai && <div className="pf-contribution pf-case-ai-note"><h4>{local(language, "AI 用法", "How I used AI")}</h4><p>{story.ai[language]}</p></div>}
       {(aiPracticeIndex >= 0 || mapIndex >= 0) && <div className="pf-case-paths">
         {aiPracticeIndex >= 0 && <a className="pf-case-ai-link" data-ai-practice={aiPracticeIndex} href={practiceFragment(aiPractice[aiPracticeIndex].id)} onClick={event => {
           if (!isPlainLinkActivation(event)) return;
@@ -232,7 +193,7 @@ function WorkStudyPanel({ index, selected, ready, compact, language, paused, onR
         }}>{local(language, "查看案例地图", "View study map")}<svg aria-hidden="true" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8"/><ellipse cx="12" cy="12" rx="4" ry="8"/><path d="M4 12h16"/></svg></a>}
       </div>}
     </div>
-    <div className="pf-object-stage" onPointerMove={e => tilt(e, paused)} onPointerLeave={resetTilt}><ResearchObject ref={folio} active={index} language={language} paused={paused}/></div>
+    <div className="pf-object-stage"><ResearchObject ref={folio} active={index} language={language} paused={paused} ready={ready}/></div>
   </article>;
 }
 

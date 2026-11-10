@@ -1,20 +1,22 @@
-.pf-contribution{margin-top:22px;padding-top:16px;border-top:1px solid #bbc8d1}
-.pf-contribution h4{font-size:12px;font-weight:500;color:#4c6e8b;line-height:1.8;margin:0}
-.pf-contribution p{font-size:13px;line-height:1.85;color:#687f90;margin:8px 0 0}
-.pf-work-story .pf-contribution p{font-size:13px;line-height:1.78;color:#465f6e}
-.pf-work-story .pf-work-summary{margin-top:12px!important;line-height:1.78}
-.pf-case-result{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:6px 14px;margin-top:18px;padding:13px 14px;border:1px solid #c9d3d2;border-left:2px solid #749599;background:#e8eeeb}
-.pf-case-result>h4{grid-column:1/-1;font-size:11px;font-weight:500;line-height:1.5;color:#3d6268}
+.pf-contribution{margin-top:15px;padding-top:12px;border-top:1px solid #bbc8d1}
+.pf-contribution h4{font-size:12px;font-weight:600;color:#365a72;line-height:1.55;margin:0}
+.pf-work-story .pf-contribution p{font-size:14px;line-height:1.64;color:#405967;margin:6px 0 0}
+.pf-work-story .pf-contribution p strong{color:#243f51;font-weight:600}
+.pf-work-story .pf-work-summary{margin-top:10px!important;line-height:1.65}
+.pf-case-result{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:4px 14px;margin-top:15px;padding:11px 13px;border:1px solid #c9d3d2;border-left:2px solid #749599;background:#e8eeeb}
+.pf-case-result>h4{grid-column:1;font-size:11px;font-weight:600;line-height:1.5;color:#3d6268}
 .pf-case-result>strong{grid-column:1;font-size:14px;font-weight:600;line-height:1.5;color:#203f51;text-wrap:pretty}
-.pf-case-result>p{grid-column:1;font-size:12px;line-height:1.7;color:#3c5966;text-wrap:pretty}
-.portfolio-v17 .pf-case-output-action{grid-column:2;grid-row:2/4;align-self:center;display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:5px 0;border:0;border-bottom:1px solid #8ba1aa;background:none;color:#244e68;font-size:11px;white-space:nowrap}
+.pf-case-result>p{grid-column:1/-1;font-size:13px;line-height:1.58;color:#3c5966;text-wrap:pretty}
+.portfolio-v17 .pf-case-output-action{grid-column:2;grid-row:1/3;align-self:center;display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:5px 0;border:0;border-bottom:1px solid #8ba1aa;background:none;color:#244e68;font-size:11px;white-space:nowrap}
 .pf-case-output-action .pf-arrow{width:15px;height:15px}
 .portfolio-v17 .pf-case-output-action:hover{border-bottom-color:currentColor;color:#17374d}
 .portfolio-v17 .pf-case-output-action:focus-visible{outline:2px solid #315a70;outline-offset:3px}
-.pf-work-layout[data-study-url-ready=false] .pf-case-output-action{visibility:hidden}
+.pf-work-layout[data-study-url-ready=false] .pf-case-output-action{display:none}
+.pf-work-layout[data-study-url-ready=false] .pf-case-result{grid-template-columns:minmax(0,1fr)}
+.pf-work-story .pf-case-ai-note{border-top:0;margin-top:13px;padding-top:0}
 @media(max-width:699px){
-  .pf-case-result{grid-template-columns:minmax(0,1fr);gap:5px;padding:12px 13px}
-  .portfolio-v17 .pf-case-output-action{grid-column:1;grid-row:auto;justify-self:start}
+  .pf-case-result{gap:4px 10px;padding:10px 11px}
+  .pf-work-story .pf-contribution p{font-size:13px;line-height:1.62}
 }
 .pf-case-ai-link{display:inline-flex;align-items:center;gap:22px;min-height:44px;padding:8px 0;margin-top:17px;border:0;border-bottom:1px solid #a8bbc9;background:none;color:#385e7e;font-size:12px}
 .pf-case-ai-link .pf-arrow{width:18px;height:18px}
@@ -42,7 +44,7 @@
   .pf-ai-example h3{font-size:16px}
   .pf-ai-run-example{justify-self:start}
 }
-@media(max-width:699px){.pf-contribution{margin-top:18px;padding-top:14px}.pf-contribution p{font-size:12px}.pf-ai-outcome>p{font-size:12px}.pf-ai-outcome{padding-left:13px;margin-block:18px}}
+@media(max-width:699px){.pf-ai-outcome>p{font-size:12px}.pf-ai-outcome{padding-left:13px;margin-block:18px}}
 @media(max-width:767px){
   .portfolio-v17 .pf-ai-tabs{display:grid;grid-template-columns:minmax(0,1fr);gap:0;overflow:visible;border-top:1px solid #354155;border-bottom:0;margin-bottom:24px;scrollbar-width:none}
   .portfolio-v17 .pf-ai-tabs::-webkit-scrollbar{display:none}

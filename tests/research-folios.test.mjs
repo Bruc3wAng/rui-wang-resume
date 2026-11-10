@@ -15,10 +15,13 @@ test("case briefs use known study IDs, conservative claims and distinct evidence
   for(const work of selectedWork)for(const language of ["zh","en"]){
     const story=workStudyCopyFor(work.id);
     assert.ok(story.context[language].length < work.summary[language].length);
+    assert.match(story.action[language],language === "zh" ? /^我/ : /^I /);
     assert.ok(story.contribution[language].length > 25);
+    assert.equal(new Set(story.outputs.map(title=>title[language])).size,3);
     if(story.ai)assert.match(story.ai[language],/Codex/);
     assert.ok(folioDescriptionsFor(work.id)[story.output].purpose[language]);
   }
+  assert.doesNotMatch(JSON.stringify(workStudyCopy.qualitative),/独立|主导|independently|\bled\b/i);
   assert.doesNotMatch(JSON.stringify(workStudyCopy),/TikTok|ByteDance|Lenovo|联想|字节|BHT|Dreamina|\d+%|客户已采纳|Senior|GTM|全自动/i);
   assert.throws(()=>workStudyCopyFor("not-a-study"),RangeError);
 });
@@ -31,11 +34,16 @@ test("exposes the exact approved output purpose and a specific action in every b
       const panel=html.match(new RegExp(`<article\\b[^>]*id="pf-work-panel-${index}"[^>]*>([\\s\\S]*?)<\\/article>`))?.[1];
       assert.ok(panel);
       const story=workStudyCopyFor(work.id);
+      assert.ok(panel.includes(`<h3 class="pf-study-name" id="pf-work-question-${index}" tabindex="-1">${escaped(work.title[language])}</h3>`));
+      assert.ok(panel.includes(`<p class="pf-role">${escaped(work.role[language])}</p>`));
       assert.ok(panel.includes(`<p class="pf-work-summary">${escaped(story.context[language])}</p>`));
+      assert.ok(panel.includes(`<strong>${escaped(story.action[language])}</strong>`));
       const result=panel.match(new RegExp(`<div class="pf-case-result" data-case-output="${story.output}">([\\s\\S]*?)<\\/div>`))?.[1];
+      assert.ok(result?.includes(`<strong id="pf-case-output-title-${index}">${escaped(story.outputs[story.output][language])}</strong>`));
       assert.ok(result?.includes(escaped(folioDescriptionsFor(work.id)[story.output].purpose[language])));
       assert.match(result,new RegExp(`class="pf-case-output-action" aria-controls="pf-folio-page-${index}" aria-describedby="pf-case-output-title-${index}"`));
       assert.equal(panel.includes('class="pf-contribution pf-case-ai-note"'),Boolean(story.ai));
+      if(story.ai)assert.ok(panel.indexOf('class="pf-case-result"')<panel.indexOf('class="pf-contribution pf-case-ai-note"'));
     }
   }
 });
@@ -73,7 +81,7 @@ test("renders substantive output selection and moves focus only for explicit ope
   assert.match(ui,/description.content\[language\]/);assert.match(ui,/description.purpose\[language\]/);
   assert.match(ui,/focusContents.current/);assert.match(ui,/selectedOutput.current\?\.focus\(\{ preventScroll: true \}\)/);
   assert.match(ui,/ref=\{i === output \? selectedOutput : undefined\}/);
-  assert.match(ui,/e.key === "Escape"/);assert.match(ui,/toggleButton.current\?\.focus\(\{ preventScroll: true \}\)/);
+  assert.match(ui,/e.key === "Escape"/);assert.match(ui,/else if \(!open && restore.current\)/);
   assert.match(ui,/folio.current\?\.openAt\(story.output, event.currentTarget\)/);
   assert.match(ui,/opener.current = source/);
   assert.match(ui,/target.focus\(\{ preventScroll: true \}\)/);
@@ -85,7 +93,7 @@ test("exports responsibility at first scan and unique accessible output targets 
     const html=await read(`${build}/${lang==="en"?"en/":""}index.html`);
     assert.equal([...html.matchAll(/class="pf-work-ownership"/g)].length,5);
     for(let i=0;i<5;i++){
-      const region=html.match(new RegExp(`<div[^>]*id="pf-folio-page-${i}"[^>]*>([\\s\\S]*?)<div class="pf-report-cover"`))?.[1];assert.ok(region);
+      const region=html.match(new RegExp(`<div[^>]*id="pf-folio-page-${i}"[^>]*>([\\s\\S]*?)<div class="pf-folio-front"`))?.[1];assert.ok(region);
       for(let n=0;n<3;n++)assert.ok(region.includes(`id="pf-folio-output-${i}-${n}"`));
       assert.ok(region.includes(`id="pf-folio-detail-${i}"`));
       assert.ok(region.includes(lang==="zh"?"我做的部分":"My contribution"));
@@ -95,13 +103,35 @@ test("exports responsibility at first scan and unique accessible output targets 
   }
 });
 
-test("lets the open folio grow with content and keeps its reading plane still",async()=>{
+test("uses the actual output titles as the folio's three explicit cover controls",async()=>{
+  const targets=process.env.NEXT_PUBLIC_BASE_PATH?["out",process.env.RUI_SITES_BUILD_DIR??"dist/client"]:["out"];
+  for(const build of targets)for(const lang of ["zh","en"]){
+    const html=await read(`${build}/${lang==="en"?"en/":""}index.html`);
+    for(const [index,work] of selectedWork.entries()){
+      const panel=html.match(new RegExp(`<article\\b[^>]*id="pf-work-panel-${index}"[^>]*>([\\s\\S]*?)<\\/article>`))?.[1];
+      assert.ok(panel);
+      const cover=panel.match(/<ul class="pf-folio-cover-index">([\s\S]*?)<\/ul>/)?.[1];
+      assert.ok(cover);
+      const rows=[...cover.matchAll(/<button class="pf-folio-cover-link"([^>]*)>[\s\S]*?<strong>([\s\S]*?)<\/strong>[\s\S]*?<\/button>/g)];
+      const story=workStudyCopyFor(work.id);
+      assert.deepEqual(rows.map(r=>r[2]),story.outputs.map(t=>escaped(t[lang])));
+      for(const [n,row] of rows.entries()){
+        assert.ok(row[1].includes(`data-output-index="${n}"`));
+        assert.ok(row[1].includes(`data-representative="${n===story.output}"`));
+        assert.ok(row[1].includes(`aria-controls="pf-folio-page-${index}"`) && row[1].includes('aria-expanded="false"') && row[1].includes('disabled'));
+      }
+    }
+  }
+});
+
+test("lets both folio states grow with content and keeps the controls on a still reading plane",async()=>{
   const css=await read("app/research-folios.css");
-  assert.match(css,/\.pf-research-object\[data-open=true\]\{[^}]*height:auto/);
-  assert.match(css,/\.pf-research-object\[data-open=true\]\{[^}]*transform:none/);
-  assert.match(css,/\.pf-research-object\[data-open=true\]\{[^}]*transform-style:flat/);
-  assert.match(css,/:is\(\.pf-report-cover,\.pf-report-sheet,\.pf-object-orbit\)\{[^}]*visibility:hidden/);
+  assert.match(css,/\.pf-research-object\{[^}]*height:auto/);
+  assert.match(css,/\.pf-research-object\{[^}]*transform:none/);
+  assert.match(css,/\.pf-research-object\{[^}]*transform-style:flat/);
+  assert.match(css,/\.pf-research-object\[data-open=true\] \.pf-folio-front\{display:none/);
   assert.match(css,/\.pf-folio-page\{[^}]*height:auto/);
   assert.match(css,/\.pf-folio-output-tabs button\{[^}]*min-height:44px/);
-  assert.match(css,/\.pf-folio-detail dd\{[^}]*font-size:12px/);
+  assert.match(css,/\.pf-folio-cover-link\{[^}]*min-height:48px/);
+  assert.match(css,/\.pf-folio-detail dd\{[^}]*font-size:13px/);
 });

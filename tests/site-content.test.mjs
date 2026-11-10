@@ -39,7 +39,7 @@ test("exports the bilingual public profile", async () => {
   assert.match(zh, /多国用户研究与品牌追踪/);
   assert.match(zh, /跨市场分析报告/);
   assert.match(zh, /品牌表现追踪/);
-  assert.match(zh, /跨客群、多品类/);
+  assert.match(zh, /不同客群和品类的品牌认知、评价与形象/);
   assert.match(zh, /海外内容消费研究/);
   assert.match(zh, /用户需求与决策研究/);
   assert.match(zh, /AI 提效实践/);
@@ -444,7 +444,7 @@ test("presents project judgment and AI outcomes before optional exploration", as
     for (let i = 0; i < 5; i++) {
       const panel = html.match(new RegExp(`<article\\b[^>]*id="pf-work-panel-${i}"[^>]*>([\\s\\S]*?)<\\/article>`))?.[1];
       assert.ok(panel);
-      assert.match(panel, /<div class="pf-contribution"><h4>[^<]+<\/h4><p>[^<]+<\/p><\/div>/);
+      assert.match(panel, /<div class="pf-contribution"><h4>[^<]+<\/h4><p><strong>[^<]+<\/strong>(?:[^<]|<!-- -->)+<\/p><\/div>/);
       const targets = [...panel.matchAll(/data-ai-practice="([^"]+)"/g)].map(([, value]) => value);
       assert.deepEqual(targets, i < 2 ? [String(i)] : [], "Only the two evidence-backed work-to-AI mappings are linked");
     }
@@ -468,6 +468,7 @@ test("adds explorable research folios and a synchronized workflow route", async 
   for (const path of ["out/index.html", "out/en/index.html"]) {
     const html = await readFile(new URL(path, root), "utf8");
     assert.equal([...html.matchAll(/class="pf-folio-toggle"/g)].length, 5);
+    assert.equal([...html.matchAll(/class="pf-folio-cover-link"/g)].length, 15);
     for (let i = 0; i < 5; i++) {
       assert.ok(html.includes(`id="pf-folio-page-${i}"`));
       assert.ok(html.includes(`aria-controls="pf-folio-page-${i}"`));
