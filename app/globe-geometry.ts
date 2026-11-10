@@ -10,6 +10,11 @@ export const researchMarkets = [
 ];
 
 export const allResearchLinks = -1;
+export const terrainZoomLevels = [1, 1.25, 1.5] as const;
+
+export function stepTerrainZoom(step: number, direction: -1 | 1) {
+  return Math.max(0, Math.min(terrainZoomLevels.length - 1, step + direction));
+}
 
 // These bit positions are the same market indices packed into the geometry.
 // The Beijing base is deliberately outside this set: it is not a study market.
@@ -27,7 +32,7 @@ export function studyGlobeCoverage(markets: readonly string[]) {
 const radians = Math.PI / 180;
 export const researchRouteShape = {
   baseRadius: 1.012, lift: .069, bend: .104, halfWidth: .0105,
-  flowRate: .105, phases: [0, .2, .4, .6, .8],
+  flowRate: .12, phases: [0, 1 / 6, 2 / 6, 3 / 6, 4 / 6, 5 / 6],
 } as const;
 // Same camera and projection as the WebGL view; used to bake its first-paint image.
 export function spherePoint(clipX: number, clipY: number, radius = 1) {
@@ -46,12 +51,15 @@ export function worldPoint(lon: number, lat: number) {
   const a = lon * radians, b = lat * radians;
   return [Math.sin(a) * Math.cos(b), Math.sin(b), Math.cos(a) * Math.cos(b)];
 }
-export function projectPoint(lon: number, lat: number, centerLon: number, centerLat: number, aspect: number) {
+export function projectPoint(lon: number, lat: number, centerLon: number, centerLat: number, aspect: number, zoom = 1) {
   const [x, y, z] = worldPoint(lon, lat), a = centerLat * radians, b = centerLon * radians;
   const qx = Math.cos(b) * x - Math.sin(b) * z, qz = Math.sin(b) * x + Math.cos(b) * z;
   const vy = Math.cos(a) * y - Math.sin(a) * qz, vz = Math.sin(a) * y + Math.cos(a) * qz;
-  const depth = 4.6 - vz * 1.015, scale = 4.2 / 1.12;
-  return { x: .5 + qx * 1.015 * scale / aspect / depth / 2, y: .5 - vy * 1.015 * scale / depth / 2, visible: vz > .27 };
+  const depth = 4.6 - vz * 1.018, scale = 4.2 / 1.12 * zoom;
+  const xView = .5 + qx * 1.018 * scale / aspect / depth / 2, yView = .5 - vy * 1.018 * scale / depth / 2;
+  // Omit labels cropped by the close view; the market picker remains available.
+  const inside = zoom <= 1 || (xView >= .12 && xView <= .88 && yView >= .12 && yView <= .88);
+  return { x: xView, y: yView, visible: vz > .27 && inside };
 }
 export function globeMesh(material = 0, radius = 1) {
   const data: number[] = [], columns = 128, rows = 96;

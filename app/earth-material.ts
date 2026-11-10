@@ -1,43 +1,45 @@
 // Shared lighting and shell dimensions for the live Earth and its offline poster.
-export const earthPosterRevision = "7b15aaa2fc3a";
+export const earthPosterRevision = "03629259e660";
 
 export const earthMaterial = {
   light: [-.88, .58, 1.14],
   cloudRadius: 1.003,
   atmosphereRadius: 1.018,
-  ambient: .25,
-  exposure: 1.10,
-  landShadows: [.36, .46, .47],
-  landHighlights: [.91, .84, .67],
-  oceanBase: [.030, .147, .248],
-  oceanDetail: .10,
-  cloudOpacity: .085,
+  ambient: .32,
+  exposure: 1.07,
+  landShadows: [.34, .47, .46],
+  landHighlights: [.92, .85, .69],
+  oceanBase: [.038, .166, .254],
+  oceanDetail: .043,
+  cloudOpacity: .065,
   cloudShadow: .09,
   cloudTint: [.80, .91, .98],
   coastTint: [.24, .28, .26],
-  terrainBands: 6,
-  terrainBandMix: .54,
+  terrainBands: 7,
+  terrainBandMix: .67,
 } as const;
 
 export const earthVertex = `#version 300 es
 precision highp float;
 in vec3 position;in vec3 normal;in float material;in float market;
-uniform vec2 resolution;uniform vec2 orientation;uniform vec3 routeShape;uniform vec2 flow;uniform float activeMarket;uniform float clock;uniform float pixelRatio;uniform int caseMarketMask;
-out vec3 point;out vec3 surface;out float pathPosition;out float edgeDistance;flat out float kind;flat out float picked;flat out float routeCode;flat out float inCoverage;
+uniform vec2 resolution;uniform vec2 orientation;uniform vec3 routeShape;uniform vec2 flow;uniform float activeMarket;uniform float clock;uniform float pixelRatio;uniform float cameraZoom;uniform int caseMarketMask;
+out vec3 point;out vec3 surface;out float pathPosition;out float edgeDistance;flat out float kind;flat out float picked;flat out float routeCode;flat out float inCoverage;flat out float reverseRoute;
 vec3 view(vec3 w){float a=orientation.y,b=orientation.x;vec3 p=vec3(cos(b)*w.x-sin(b)*w.z,w.y,sin(b)*w.x+cos(b)*w.z);return vec3(p.x,cos(a)*p.y-sin(a)*p.z,sin(a)*p.y+cos(a)*p.z);}
 void main(){
  vec3 p=position;pathPosition=normal.x;edgeDistance=normal.y;
+ bool caseOnly=caseMarketMask>=0;
+ reverseRoute=(!caseOnly&&abs(mod(market,16.)-activeMarket)<.1)?1.:0.;
  if(material>3.5){
   float t=fract(clock*flow.x+market*.013+material-4.);
+  t=mix(t,1.-t,reverseRoute);
   float a=acos(clamp(dot(position,normal),-1.,1.)),rise=sin(3.14159265*t);
   p=(position*sin((1.-t)*a)+normal*sin(t*a))/sin(a)*(routeShape.x+routeShape.y*rise);
   p+=normalize(cross(position,normal))*(rise*routeShape.z*min(1.,a*1.6));pathPosition=t;
  }
  if((material>.5&&material<2.5)||material>3.5)p=view(p);
- float depth=4.6-p.z,scale=4.2/1.12;
+ float depth=4.6-p.z,scale=(4.2/1.12)*cameraZoom;
  gl_Position=vec4(p.x*scale/(resolution.x/resolution.y),p.y*scale,1.020202*depth-.2020202,depth);
  point=p;surface=normal;kind=material;routeCode=market;
- bool caseOnly=caseMarketMask>=0;
  bool bothInCase=true;
  if(caseOnly&&market>=0.){
   int source=int(market)/16,destination=int(mod(market,16.));
@@ -45,14 +47,14 @@ void main(){
  }
  inCoverage=(!caseOnly||bothInCase)?1.:0.;
  picked=caseOnly?inCoverage:((abs(floor(market/16.)-activeMarket)<.1||abs(mod(market,16.)-activeMarket)<.1)?1.:0.);
- gl_PointSize=material>3.5?(picked>.5?13.:8.)*pixelRatio:material>1.5&&material<2.5?(picked>.5?24.:15.)*pixelRatio:1.;
+ gl_PointSize=material>3.5?(picked>.5?14.:8.5)*pixelRatio:material>1.5&&material<2.5?(picked>.5?24.:15.)*pixelRatio:1.;
  if(caseOnly&&bothInCase&&material>1.5&&material<2.5)gl_PointSize=(25.+2.*sin(clock*2.4))*pixelRatio;
 }`;
 
 export const earthFragment = `#version 300 es
 precision highp float;
-in vec3 point;in vec3 surface;in float pathPosition;in float edgeDistance;flat in float kind;flat in float picked;flat in float routeCode;flat in float inCoverage;out vec4 color;
-uniform sampler2D earth;uniform sampler2D clouds;uniform sampler2D night;uniform vec2 orientation;uniform vec2 resolution;uniform vec2 flow;uniform float networkView;uniform float routeReveal;uniform float clock;
+in vec3 point;in vec3 surface;in float pathPosition;in float edgeDistance;flat in float kind;flat in float picked;flat in float routeCode;flat in float inCoverage;flat in float reverseRoute;out vec4 color;
+uniform sampler2D earth;uniform sampler2D clouds;uniform sampler2D night;uniform vec2 orientation;uniform vec2 resolution;uniform vec2 flow;uniform float networkView;uniform float routeReveal;uniform float clock;uniform float cameraZoom;
 const float PI=3.14159265359;
 const float CLOUD_RADIUS=${earthMaterial.cloudRadius};
 vec3 world(vec3 n){float a=orientation.y,b=orientation.x;vec3 p=vec3(n.x,cos(a)*n.y+sin(a)*n.z,-sin(a)*n.y+cos(a)*n.z);return vec3(cos(b)*p.x+sin(b)*p.z,p.y,-sin(b)*p.x+cos(b)*p.z);}
@@ -72,10 +74,10 @@ void main(){
  if((kind>.5&&kind<2.5)||kind>3.5){
   if(inCoverage<.5)discard;
   // Fade emission into the projected sphere silhouette, not the canvas edge.
-  float silhouette=(4.2/1.12)/sqrt(4.6*4.6-1.);
+  float silhouette=(4.2/1.12)*cameraZoom/sqrt(4.6*4.6-1.);
   float screenDistance=length((gl_FragCoord.xy-resolution*.5)*2./resolution.y);
   float limb=smoothstep(.12,.36,normalize(point).z)*(1.-smoothstep(silhouette-.012,silhouette,screenDistance));
-  vec3 signal=mix(vec3(.28,.81,.94),vec3(1.,.73,.32),picked);
+  vec3 signal=mix(vec3(.29,.85,.84),vec3(.99,.72,.35),picked);
   if(kind>1.5){
    if(kind>3.5&&networkView<.01)discard;
    float d=length(gl_PointCoord-.5);if(d>.5)discard;
@@ -85,11 +87,14 @@ void main(){
    color=vec4(mix(signal,vec3(.98,.99,1.),core*.79),alpha);
   }else{
    if(networkView<.01)discard;
-   float reveal=1.-smoothstep(routeReveal,routeReveal+.045,pathPosition);
+   // The brighter wave originates at the active market even for routes stored in reverse order.
+   float distanceFromFocus=mix(pathPosition,1.-pathPosition,reverseRoute);
+   float reveal=1.-smoothstep(routeReveal,routeReveal+.045,distanceFromFocus);
    float x=abs(edgeDistance),core=1.-smoothstep(.11,.48,x),halo=pow(1.-smoothstep(.08,1.,x),1.4);
-   float trail=exp(-6.5*fract((clock*flow.x+routeCode*.013-pathPosition)*flow.y));
-   float alpha=clamp(core*(mix(.61,.94,picked)+trail*.25)+halo*mix(.20,.37,picked),0.,.98);
-   color=vec4(mix(signal,vec3(.98,.99,1.),core*(.18+trail*.60)),alpha*limb*networkView*mix(1.,reveal,picked));
+   float trail=exp(-6.5*fract((clock*flow.x+routeCode*.013-distanceFromFocus)*flow.y));
+   float wave=(1.-smoothstep(.012,.064,abs(fract(distanceFromFocus-clock*flow.x*1.8+.5)-.5)))*picked;
+   float alpha=clamp(core*(mix(.56,.91,picked)+trail*.24)+halo*(mix(.22,.40,picked)+wave*.32),0.,.98);
+   color=vec4(mix(signal,vec3(.99,.99,.94),core*(.15+max(trail*.56,wave*.76))),alpha*limb*networkView*mix(1.,reveal,picked));
   }return;
  }
  vec3 n=normalize(surface),v=normalize(vec3(0.,0.,4.6)-point),light=normalize(vec3(${earthMaterial.light.join(",")}));
@@ -115,12 +120,12 @@ void main(){
  vec2 gridDistance=abs(sin(geo*12.));vec2 gridWidth=max(fwidth(geo*12.),vec2(.001));
  float grid=1.-min(smoothstep(vec2(0.),gridWidth*1.2,gridDistance).x,smoothstep(vec2(0.),gridWidth*1.2,gridDistance).y);
  float facing=max(0.,dot(n,v)),relief=smoothstep(.27,.79,dot(natural,vec3(.28,.58,.14)));
- vec3 network=mix(vec3(.031,.078,.133),mix(vec3(.070,.180,.218),vec3(.143,.296,.325),relief),1.-water);
- network*=.73+.27*facing;network+=vec3(.28,.54,.73)*grid*.061;
+ vec3 network=mix(vec3(.032,.088,.142),mix(vec3(.069,.178,.208),vec3(.129,.275,.289),relief),1.-water);
+ network*=.73+.27*facing;network+=vec3(.28,.54,.66)*grid*.061;
  vec2 cells=geo*vec2(113.,94.);vec2 cell=floor(cells);float seed=fract(sin(dot(cell,vec2(127.1,311.7)))*43758.5453);
  float d=length(fract(cells)-.5),radius=mix(.17,.31,seed),aa=clamp(fwidth(d),.028,.13);
  float dots=(1.-smoothstep(radius-aa,radius+aa,d))*step(.20,seed)*(1.-water)*smoothstep(.15,.52,facing);
- network+=vec3(.29,.68,.82)*dots*(.22+.31*seed);
+ network+=vec3(.28,.76,.77)*dots*(.18+.32*seed);
  network+=vec3(.46,.72,.84)*pow(max(0.,dot(lights,vec3(.35,.45,.2))),.64)*.99;
  network+=vec3(.055,.18,.27)*pow(1.-facing,3.);
  color=vec4(mix(satellite,network,networkView),1.);

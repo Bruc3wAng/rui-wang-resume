@@ -87,7 +87,7 @@
 }
 .portfolio-v17 .rg-map-link-brief { display: none; }
 .portfolio-v17 .rg-globe[data-market-ready=false] .rg-map-link-brief:target { display: block; }
-.portfolio-v17 .rg-globe[data-market-ready=false]:has(.rg-map-link-brief:target)>:is(.rg-globe-stage, .rg-globe-toolbar, .rg-market-research),
+.portfolio-v17 .rg-globe[data-market-ready=false]:has(.rg-map-link-brief:target)>:is(.rg-globe-stage, .rg-globe-views, .rg-camera-guide, .rg-globe-toolbar, .rg-market-research),
 .portfolio-v17 .rg-globe[data-map-link=true][data-renderer=fallback]>:is(.rg-globe-stage, .rg-globe-toolbar) { display: none; }
 .portfolio-v17 .rg-globe[data-map-link=true][data-renderer=loading] :is(.rg-earth-poster, .rg-globe-shadow) { opacity: 0; }
 .portfolio-v17 .rg-globe[data-map-link=true][data-renderer=loading] .rg-globe-note { inset: 0; display: grid; place-items: center; font-size: 12px; }

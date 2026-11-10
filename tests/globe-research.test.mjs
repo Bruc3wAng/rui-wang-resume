@@ -4,7 +4,7 @@ import test from "node:test";
 import { cases, selectedWork } from "../content/resume.ts";
 import { caseWorkIndices, mapMarketForStudy, mapStudyIds, marketIndexScrollDelta, marketStudyIndex, preferredMarketStudyIndex, researchForMarket } from "../app/globe-research.ts";
 import { mapFragment, mapIndexFromFragment, portfolioLocaleHref } from "../app/study-location.ts";
-import { allResearchLinks, networkMesh, researchMarkets, researchRouteShape, studyGlobeCoverage, worldPoint } from "../app/globe-geometry.ts";
+import { allResearchLinks, networkMesh, projectPoint, researchMarkets, researchRouteShape, stepTerrainZoom, studyGlobeCoverage, terrainZoomLevels, worldPoint } from "../app/globe-geometry.ts";
 import { earthFragment, earthMaterial, earthVertex, shadeEarth } from "../app/earth-material.ts";
 import { marketStudyPresentation } from "../content/market-studies.ts";
 
@@ -36,7 +36,7 @@ test("filters every verified study without attributing brand tracking to an over
 
 test("builds visible surface ribbons and light packets only between verified co-study markets", () => {
   const groups=cases.slice(0,2).map(item=>item.markets),mesh=networkMesh(groups);
-  assert.equal(mesh.edges.length,35);assert.equal(mesh.points,9);assert.equal(mesh.particles,175);
+  assert.equal(mesh.edges.length,35);assert.equal(mesh.points,9);assert.equal(mesh.particles,210);
   assert.equal(mesh.triangles,35*48*6);
   assert.equal(mesh.data.length/8,mesh.triangles+mesh.points+mesh.particles);
   assert.ok(mesh.data.every(Number.isFinite));
@@ -57,12 +57,48 @@ test("builds visible surface ribbons and light packets only between verified co-
   }
   assert.equal(routePackets.size,mesh.edges.length);
   for(const [a,b] of mesh.edges){
-    const phases=routePackets.get(a*16+b);assert.equal(phases.length,5);
+    const phases=routePackets.get(a*16+b);assert.equal(phases.length,6);
     phases.forEach((phase,i)=>assert.ok(Math.abs(phase-researchRouteShape.phases[i])<1e-6));
   }
   assert.match(earthVertex,/clock\*flow\.x/);assert.match(earthFragment,/edgeDistance/);
+  assert.match(earthVertex,/t=mix\(t,1\.-t,reverseRoute\)/);
+  assert.match(earthFragment,/float distanceFromFocus=mix\(pathPosition,1\.-pathPosition,reverseRoute\)/);
   assert.match(earthFragment,/dots=.*\(1\.-water\)/);
   assert.doesNotMatch(earthFragment,/torus|ringGeometry/);
+});
+
+test("keeps the terrain zoom bounded and projects the labels through the same zoom as the globe", () => {
+  assert.deepEqual(terrainZoomLevels, [1, 1.25, 1.5]);
+  assert.equal(stepTerrainZoom(0, -1), 0);
+  assert.equal(stepTerrainZoom(0, 1), 1);
+  assert.equal(stepTerrainZoom(1, 1), 2);
+  assert.equal(stepTerrainZoom(2, 1), 2);
+  assert.equal(stepTerrainZoom(2, -1), 1);
+  const project = (lon, lat, zoom) => projectPoint(lon, lat, -98, 37, 1.08, zoom);
+  const center = project(-98, 37, 1.5);
+  assert.ok(center.visible && Math.abs(center.x-.5)<1e-10 && Math.abs(center.y-.5)<1e-10);
+  const overview = project(-80, 34, 1), zoom = project(-80, 34, 1.5);
+  assert.ok(overview.visible && zoom.visible);
+  assert.ok(Math.abs(zoom.x-.5-1.5*(overview.x-.5))<1e-10);
+  assert.ok(Math.abs(zoom.y-.5-1.5*(overview.y-.5))<1e-10);
+  const edge = project(-51, -14, 1), cropped = project(-51, -14, 1.5);
+  assert.ok(edge.visible && !cropped.visible);
+  assert.match(earthVertex,/scale=\(4\.2\/1\.12\)\*cameraZoom/);
+});
+
+test("places the verified U.S. case shortcut above the canvas and reserves zoom for live terrain", async () => {
+  const ui = await readFile(new URL("../app/InteractiveGlobe.tsx", import.meta.url), "utf8");
+  assert.ok(ui.indexOf('className="rg-us-shortcut"') < ui.indexOf('id="rg-globe-stage"'));
+  assert.match(ui,/const usCaseCount = marketStudyIndex\(cases, "US"\)\.length/);
+  assert.match(ui,/const terrainActive = renderer === "webgl" && style === "earth"/);
+  assert.match(ui,/\{terrainActive && <div className="rg-terrain-zoom"/);
+  assert.match(ui,/gl!\.uniform1f\(uZoom, cameraZoom\)/);
+  assert.match(ui,/function centerMarket\(\) \{\s*setView\(selected\);\s*setZoomStep\(0\);/);
+  const builds=process.env.NEXT_PUBLIC_BASE_PATH?["out",process.env.RUI_SITES_BUILD_DIR??"dist/client"]:["out"];
+  for(const build of builds)for(const locale of ["","en/"]){
+    const html=await readFile(new URL(`../${build}/${locale}index.html`,import.meta.url),"utf8");
+    assert.match(html,/<a class="rg-us-shortcut" href="#study-us-content">/);
+  }
 });
 
 test("bends the ribbons without inventing locations or breaking the anchor positions", () => {
